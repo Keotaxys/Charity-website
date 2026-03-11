@@ -21,9 +21,7 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      // ກວດສອບ Email ແລະ Password ກັບ Firebase
       await signInWithEmailAndPassword(auth, email, password);
-      // ຖ້າຖືກຕ້ອງ ໃຫ້ສົ່ງໄປໜ້າ Dashboard
       router.push(`/${locale}/admin/dashboard`);
     } catch (err: any) {
       console.error(err);
@@ -62,7 +60,8 @@ export default function AdminLoginPage() {
             <input 
               type="email" 
               required
-              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white transition-all"
+              /* ເພີ່ມ text-gray-900 ເຂົ້າໄປບ່ອນນີ້ເພື່ອໃຫ້ໂຕໜັງສືເປັນສີດຳເຂັ້ມແຈ້ງໆ */
+              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white transition-all"
               placeholder="admin@beast.lao"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -74,7 +73,8 @@ export default function AdminLoginPage() {
             <input 
               type="password" 
               required
-              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white transition-all"
+              /* ເພີ່ມ text-gray-900 ເຂົ້າໄປບ່ອນນີ້ເຊັ່ນກັນ */
+              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white transition-all"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
