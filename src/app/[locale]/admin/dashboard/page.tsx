@@ -121,7 +121,7 @@ export default function AdminDashboard() {
             <button 
               type="submit" 
               disabled={loadingVideo}
-              className="bg-teal-900 hover:bg-teal text-white font-bold py-4 px-8 rounded-xl transition-all disabled:bg-gray-400 whitespace-nowrap"
+              className="bg-gray-900 hover:bg-teal text-white font-bold py-4 px-8 rounded-xl transition-all disabled:bg-gray-400 whitespace-nowrap"
             >
               {loadingVideo ? 'ກຳລັງບັນທຶກ...' : 'ບັນທຶກວິດີໂອ'}
             </button>
