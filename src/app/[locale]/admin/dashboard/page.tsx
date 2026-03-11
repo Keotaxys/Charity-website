@@ -48,7 +48,7 @@ export default function AdminDashboard() {
             onChange={(e) => setFormData({...formData, target_amount: Number(e.target.value)})} value={formData.target_amount} />
           <input type="text" placeholder="ລິ້ງຮູບພາບໜ້າປົກ (Cover Image URL)" className="w-full p-3 border rounded-lg"
             onChange={(e) => setFormData({...formData, cover_image: e.target.value})} value={formData.cover_image} />
-          <button className="w-full bg-blue-600 text-white p-4 rounded-xl font-bold hover:bg-blue-700">
+          <button className="w-full bg-teal-600 text-white p-4 rounded-xl font-bold hover:bg-teal-700">
             ບັນທຶກ ແລະ ເຜີຍແຜ່ໂຄງການ
           </button>
         </div>
