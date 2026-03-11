@@ -1,0 +1,11 @@
+{
+    "HomePage": {
+      "title": "Welcome to Charity Project",
+      "description": "Together we can make the world a better place."
+    },
+    "Menu": {
+      "home": "Home",
+      "campaigns": "Campaigns",
+      "about": "About Us"
+    }
+  }
