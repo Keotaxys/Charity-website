@@ -9,12 +9,13 @@ export default function Navbar() {
   const locale = useLocale();
   const pathname = usePathname();
 
-  // ລາຍການເມນູ 2 ພາສາ
+  // ລາຍການເມນູ 2 ພາສາ (ເພີ່ມເມນູ Admin ເຂົ້າໄປແລ້ວ)
   const navLinks = [
     { name: locale === 'lo' ? 'ໜ້າຫຼັກ' : 'HOME', path: `/${locale}` },
     { name: locale === 'lo' ? 'ກ່ຽວກັບພວກເຮົາ' : 'WHO WE ARE', path: `/${locale}/about` },
     { name: locale === 'lo' ? 'ໂຄງການ' : 'CAMPAIGNS', path: `/${locale}/campaigns` },
     { name: locale === 'lo' ? 'ຮ້ານຄ້າ' : 'STORE', path: `/${locale}/store` },
+    { name: locale === 'lo' ? 'ແອັດມິນ' : 'ADMIN', path: `/${locale}/admin/login` }, // <-- ເພີ່ມແຖວນີ້ເຂົ້າໄປ
   ];
 
   return (
@@ -58,7 +59,7 @@ export default function Navbar() {
         {/* 3. ປຸ່ມຈັດການ (ເບື້ອງຂວາ) */}
         <div className="w-1/4 flex justify-end items-center gap-4">
           
-          {/* ປຸ່ມປ່ຽນພາສາ (ດຶງ Component ເກົ່າທີ່ເຈົ້າມີມາໃຊ້) */}
+          {/* ປຸ່ມປ່ຽນພາສາ */}
           <div className="hidden sm:block">
             <LanguageSwitcher />
           </div>
