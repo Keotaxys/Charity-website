@@ -1,103 +1,96 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { useLocale, useTranslations } from 'next-intl';
+
+import { useLocale } from 'next-intl';
 import Link from 'next/link';
 
-export default function CampaignsPage() {
+export default function HomePage() {
   const locale = useLocale();
-  const t = useTranslations('Menu');
-  const [campaigns, setCampaigns] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const q = query(collection(db, "campaigns"), orderBy("created_at", "desc"));
-        const querySnapshot = await getDocs(q);
-        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setCampaigns(data);
-      } catch (error) {
-        console.error("Error fetching campaigns:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  if (loading) return <div className="flex justify-center items-center h-screen">ກຳລັງໂຫຼດ...</div>;
 
   return (
-    <div className="bg-white min-h-screen">
-      {/* Header Section */}
-      <section className="bg-gray-900 text-white py-20 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter">
-            {locale === 'lo' ? 'ທຸກໆການຊ່ວຍເຫຼືອມີຄວາມໝາຍ' : 'EVERY DONATION MATTERS'}
+    <div className="bg-white min-h-screen flex flex-col">
+      
+      {/* 1. ສ່ວນ Hero (ວິດີໂອພື້ນຫຼັງເຕັມຈໍ) */}
+      <section className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden">
+        
+        {/* Video Background */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute top-0 left-0 w-full h-full object-cover z-0"
+        >
+          {/* ລິ້ງວິດີໂອຕົວຢ່າງ (ເຈົ້າສາມາດປ່ຽນເປັນລິ້ງວິດີໂອຂອງເຈົ້າເອງ ຫຼື ເອົາໄຟລ໌ mp4 ມາໄວ້ໃນໂຟນເດີ public) */}
+          <source src="https://cdn.pixabay.com/video/2023/10/22/186115-877638061_large.mp4" type="video/mp4" />
+        </video>
+
+        {/* Overlay ສີດຳທັບວິດີໂອ ເພື່ອໃຫ້ຕົວໜັງສືອ່ານງ່າຍຂຶ້ນ */}
+        <div className="absolute top-0 left-0 w-full h-full bg-black/60 z-10"></div>
+
+        {/* ເນື້ອຫາທີ່ຢູ່ເທິງວິດີໂອ */}
+        <div className="relative z-20 text-center px-6 max-w-4xl mx-auto flex flex-col items-center mt-16">
+          <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight leading-tight drop-shadow-lg">
+            {locale === 'lo' ? 'ຍິນດີຕ້ອນຮັບສູ່ ໂຄງການຊ່ວຍເຫຼືອສັງຄົມ' : 'WELCOME TO BEAST PHILANTHROPY LAO'}
           </h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-gray-200 mb-10 font-medium drop-shadow-md">
             {locale === 'lo' 
-              ? 'ຮ່ວມເປັນສ່ວນໜຶ່ງໃນການປ່ຽນແປງສັງຄົມ ຜ່ານໂຄງການຕ່າງໆຂອງພວກເຮົາ.' 
-              : 'Be a part of the change through our ongoing impact projects.'}
+              ? 'ພວກເຮົາຮ່ວມມືກັນເພື່ອປ່ຽນແປງໂລກໃຫ້ດີຂຶ້ນ.' 
+              : 'Together we are changing the world for the better.'}
           </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            {/* ປຸ່ມຫຼັກສີ Teal */}
+            <Link 
+              href={`/${locale}/campaigns`}
+              className="bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-teal-600/50 uppercase tracking-wider text-lg transform hover:-translate-y-1"
+            >
+              {locale === 'lo' ? 'ຊ່ວຍເຫຼືອດຽວນີ້' : 'HELP NOW'}
+            </Link>
+            
+            {/* ປຸ່ມຮອງ (ມີຂອບສີບົວອ່ອນ) */}
+            <Link 
+              href={`/${locale}/about`}
+              className="bg-transparent border-2 border-pink-300 text-pink-300 hover:bg-pink-300 hover:text-gray-900 font-black py-4 px-10 rounded-full transition-all uppercase tracking-wider text-lg"
+            >
+              {locale === 'lo' ? 'ຮຽນຮູ້ເພີ່ມເຕີມ' : 'LEARN MORE'}
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Campaigns Grid */}
-      <div className="max-w-7xl mx-auto px-6 py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-          {campaigns.map((item) => {
-            const percent = Math.min(Math.round((item.raised_amount / item.target_amount) * 100), 100);
+      {/* 2. ສ່ວນຕົວເລກສະຖິຕິແຫ່ງຄວາມໂປ່ງໃສ (Impact Stats) */}
+      <section className="bg-white py-20 px-6 relative z-30 -mt-10">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             
-            return (
-              <Link href={`/${locale}/campaigns/${item.id}`} key={item.id} className="group">
-                <div className="relative overflow-hidden rounded-3xl bg-gray-100 aspect-[16/10] mb-6 shadow-sm group-hover:shadow-xl transition-all duration-300">
-                  <img 
-                    src={item.cover_image} 
-                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700"
-                    alt="cover"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-bold uppercase">
-                      {item.status}
-                    </span>
-                  </div>
-                </div>
+            {/* ກ່ອງທີ 1 */}
+            <div className="bg-white border-2 border-gray-100 rounded-3xl p-10 text-center shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-2">
+              <h2 className="text-6xl font-black text-teal-600 mb-4">100%</h2>
+              <p className="text-gray-600 font-bold uppercase tracking-wide">
+                {locale === 'lo' ? 'ໄປເຖິງຜູ້ຮັບໂດຍກົງ' : 'GOES DIRECTLY TO CAUSE'}
+              </p>
+            </div>
 
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                    {locale === 'lo' ? item.title_lo : item.title_en}
-                  </h2>
-                  
-                  {/* Progress Section */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm font-bold">
-                      <span className="text-blue-600">{percent}% {locale === 'lo' ? 'ສຳເລັດ' : 'Raised'}</span>
-                      <span className="text-gray-500">{item.target_amount.toLocaleString()} LAK</span>
-                    </div>
-                    <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-blue-600 rounded-full transition-all duration-1000" 
-                        style={{ width: `${percent}%` }}
-                      ></div>
-                    </div>
-                  </div>
+            {/* ກ່ອງທີ 2 */}
+            <div className="bg-white border-2 border-gray-100 rounded-3xl p-10 text-center shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-2">
+              <h2 className="text-6xl font-black text-teal-600 mb-4">50+</h2>
+              <p className="text-gray-600 font-bold uppercase tracking-wide">
+                {locale === 'lo' ? 'ໂຄງການທີ່ສຳເລັດ' : 'COMPLETED CAMPAIGNS'}
+              </p>
+            </div>
 
-                  <p className="text-gray-600 line-clamp-2 text-sm leading-relaxed">
-                    {locale === 'lo' ? item.description_lo : item.description_en}
-                  </p>
+            {/* ກ່ອງທີ 3 (ເນັ້ນສີບົວອ່ອນ) */}
+            <div className="bg-white border-2 border-pink-100 rounded-3xl p-10 text-center shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-2">
+              <h2 className="text-6xl font-black text-pink-400 mb-4">$0</h2>
+              <p className="text-gray-600 font-bold uppercase tracking-wide">
+                {locale === 'lo' ? 'ຫັກຄ່າທຳນຽມແພລດຟອມ' : 'PLATFORM FEES'}
+              </p>
+            </div>
 
-                  <button className="w-full border-2 border-gray-900 py-3 rounded-xl font-bold group-hover:bg-gray-900 group-hover:text-white transition-all">
-                    {locale === 'lo' ? 'ເບິ່ງລາຍລະອຽດ' : 'VIEW DETAILS'}
-                  </button>
-                </div>
-              </Link>
-            );
-          })}
+          </div>
         </div>
-      </div>
+      </section>
+
     </div>
   );
 }
