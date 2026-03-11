@@ -1,16 +1,17 @@
 import { notFound } from 'next/navigation';
 import { getRequestConfig } from 'next-intl/server';
 
-// ກຳນົດພາສາທັງໝົດທີ່ເວັບໄຊ້ເຮົາຮອງຮັບ
 const locales = ['lo', 'en'];
 
 export default getRequestConfig(async ({ locale }) => {
-  // ຖ້າຜູ້ໃຊ້ພິມ URL ເປັນພາສາອື່ນທີ່ເຮົາບໍ່ມີ (ເຊັ່ນ: /fr, /th) ໃຫ້ສະແດງໜ້າ 404 Not Found
-  if (!locales.includes(locale as any)) notFound();
+  // ສ້າງຕົວປ່ຽນໃໝ່: ຖ້າ locale ເປັນ undefined ໃຫ້ໃຊ້ 'lo' ແທນອັດຕະໂນມັດ
+  const currentLocale = locale || 'lo';
+
+  // ກວດສອບວ່າພາສາທີ່ໄດ້ມາ ຢູ່ໃນລາຍຊື່ທີ່ເຮົາຮອງຮັບຫຼືບໍ່
+  if (!locales.includes(currentLocale)) notFound();
 
   return {
-    // ໂຫຼດໄຟລ໌ຄຳແປຈາກໂຟນເດີ messages ຕາມພາສາທີ່ຜູ້ໃຊ້ກຳລັງເບິ່ງຢູ່
-    // ໃຊ້ `../` ເພາະໄຟລ໌ນີ້ຢູ່ໃນ src/ ແຕ່ messages ຢູ່ຂ້າງນອກ
-    messages: (await import(`../messages/${locale}.json`)).default
+    locale: currentLocale, // ຕອນນີ້ TypeScript ຮູ້ແລ້ວວ່າມັນເປັນ string ແນ່ນອນ 100%
+    messages: (await import(`../messages/${currentLocale}.json`)).default
   };
 });
