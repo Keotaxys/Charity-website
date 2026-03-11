@@ -1,7 +1,7 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
-import Navbar from '@/components/Navbar'; // <-- ເພີ່ມການ Import Navbar ບ່ອນນີ້
-import "./../globals.css";
+import Navbar from '@/components/Navbar'; 
+import "../globals.css"; // <-- ອັບເດດ Path ເປັນ ../ ເພື່ອດຶງໄຟລ໌ຈາກໂຟນເດີ app
 
 export default async function LocaleLayout({
   children,
