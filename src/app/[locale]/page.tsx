@@ -16,12 +16,12 @@ export default function HomePage() {
         <video
           autoPlay
           loop
-          muted
+          muted={true} // ໃນ React/Next.js ແນະນຳໃຫ້ຂຽນ muted={true} ແບບນີ້ເພື່ອບັງຄັບໃຫ້ Browser ຍອມໃຫ້ຫຼິ້ນອັດຕະໂນມັດ
           playsInline
           className="absolute top-0 left-0 w-full h-full object-cover z-0"
         >
-          {/* ລິ້ງວິດີໂອຕົວຢ່າງ (ເຈົ້າສາມາດປ່ຽນເປັນລິ້ງວິດີໂອຂອງເຈົ້າເອງ ຫຼື ເອົາໄຟລ໌ mp4 ມາໄວ້ໃນໂຟນເດີ public) */}
-          <source src="https://cdn.pixabay.com/video/2023/10/22/186115-877638061_large.mp4" type="video/mp4" />
+          {/* ປ່ຽນມາໃຊ້ລິ້ງວິດີໂອທົດສອບທີ່ຫຼິ້ນໄດ້ 100% ແນ່ນອນ */}
+          <source src="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4" />
         </video>
 
         {/* Overlay ສີດຳທັບວິດີໂອ ເພື່ອໃຫ້ຕົວໜັງສືອ່ານງ່າຍຂຶ້ນ */}
