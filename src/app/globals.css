@@ -8,8 +8,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  
+  /* ປ່ຽນຈາກ geist ມາເປັນ Noto Sans Lao ທີ່ເຮົາຕັ້ງຄ່າໄວ້ໃນ layout.tsx */
+  --font-sans: var(--font-noto-lao), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +23,8 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  
+  /* ລຶບ font-family ໂຕເກົ່າອອກ ເພາະຕອນນີ້ Tailwind ຈະດຶງເອົາ var(--font-noto-lao) 
+    ໄປໃຊ້ຜ່ານ Class "font-sans" ທີ່ເຮົາໃສ່ໄວ້ໃນ <body> ຂອງໄຟລ໌ layout.tsx ອັດຕະໂນມັດ 
+  */
 }
