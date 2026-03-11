@@ -5,20 +5,23 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import Link from 'next/link';
 
-export default function CampaignDetailPage({
-  params
-}: {
-  params: Promise<{ locale: string; id: string }>
-}) {
-  // ໃຊ້ React.use() ເພື່ອແກະຄ່າ params ທີ່ເປັນ Promise (ກົດເກນໃໝ່ຂອງ Next.js)
-  const { locale, id } = use(params);
+// ກຳນົດຮູບແບບຂອງ Page Props ໃຫ້ຊັດເຈນ ເພື່ອບໍ່ໃຫ້ Next.js ສັບສົນ
+type Props = {
+  params: Promise<{ locale: string; id: string }>;
+};
+
+export default function CampaignDetailPage({ params }: Props) {
+  // ໃຊ້ React.use() ເພື່ອແກະຄ່າ Promise
+  const resolvedParams = use(params);
+  const locale = resolvedParams.locale;
+  const id = resolvedParams.id;
+
   const [campaign, setCampaign] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCampaign = async () => {
       try {
-        // ດຶງຂໍ້ມູນໂຄງການອັນດຽວ ຈາກ Document ID
         const docRef = doc(db, "campaigns", id);
         const docSnap = await getDoc(docRef);
 
@@ -44,21 +47,13 @@ export default function CampaignDetailPage({
 
   return (
     <div className="bg-white min-h-screen pb-20">
-      
-      {/* 1. ສ່ວນຮູບພາບໜ້າປົກຂະໜາດໃຫຍ່ (Hero Image) */}
       <div className="w-full h-[50vh] md:h-[70vh] relative bg-gray-900">
-        <img 
-          src={campaign.cover_image} 
-          alt="cover" 
-          className="w-full h-full object-cover opacity-80"
-        />
+        <img src={campaign.cover_image} alt="cover" className="w-full h-full object-cover opacity-80" />
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent"></div>
       </div>
 
-      {/* 2. ສ່ວນເນື້ອຫາທີ່ຍົກຂຶ້ນມາທັບຮູບ (Overlapping Card) */}
       <div className="max-w-4xl mx-auto px-6 -mt-32 relative z-10">
         <div className="bg-white rounded-3xl p-8 md:p-12 shadow-2xl">
-          
           <div className="mb-6">
             <Link href={`/${locale}/campaigns`} className="text-blue-600 font-bold hover:underline mb-4 inline-block">
               &larr; {locale === 'lo' ? 'ກັບຄືນໜ້າລວມໂຄງການ' : 'Back to Campaigns'}
@@ -69,7 +64,6 @@ export default function CampaignDetailPage({
             {locale === 'lo' ? campaign.title_lo : campaign.title_en}
           </h1>
 
-          {/* 3. ສ່ວນ Dashboard ສະແດງຍອດເງິນບໍລິຈາກ */}
           <div className="bg-gray-50 p-6 md:p-8 rounded-3xl mb-10 border border-gray-100">
             <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-6 gap-4">
               <div>
@@ -88,21 +82,15 @@ export default function CampaignDetailPage({
               </div>
             </div>
             
-            {/* Progress Bar */}
             <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden mb-8">
-              <div 
-                className="h-full bg-blue-600 rounded-full transition-all duration-1000" 
-                style={{ width: `${percent}%` }}
-              ></div>
+              <div className="h-full bg-blue-600 rounded-full transition-all duration-1000" style={{ width: `${percent}%` }}></div>
             </div>
             
-            {/* ປຸ່ມບໍລິຈາກ */}
             <button className="w-full bg-blue-600 text-white text-xl font-black py-5 rounded-2xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-600/30 transform hover:-translate-y-1">
               {locale === 'lo' ? 'ຮ່ວມບໍລິຈາກດຽວນີ້' : 'DONATE NOW'}
             </button>
           </div>
 
-          {/* 4. ສ່ວນລາຍລະອຽດໂຄງການ */}
           <div className="prose prose-lg max-w-none text-gray-700">
             <h3 className="text-2xl font-bold mb-4 text-gray-900">
               {locale === 'lo' ? 'ກ່ຽວກັບໂຄງການນີ້' : 'About this Campaign'}
@@ -111,7 +99,6 @@ export default function CampaignDetailPage({
               {locale === 'lo' ? campaign.description_lo : campaign.description_en}
             </p>
           </div>
-          
         </div>
       </div>
     </div>
