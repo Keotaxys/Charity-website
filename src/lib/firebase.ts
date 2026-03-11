@@ -4,12 +4,12 @@ import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyB0jjymv2_y9ZHPNRjVNNJjPaQiY1qYhdc",
+    authDomain: "charity-website-f2daf.firebaseapp.com",
+    projectId: "charity-website-f2daf",
+    storageBucket: "charity-website-f2daf.firebasestorage.app",
+    messagingSenderId: "871312035963",
+    appId: "1:871312035963:web:16f1d96b47524b9db0d2de"
 };
 
 // ປ້ອງກັນການ initialize ຊ້ຳຊ້ອນ
