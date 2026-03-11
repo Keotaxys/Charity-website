@@ -5,13 +5,11 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import Link from 'next/link';
 
-// ກຳນົດຮູບແບບຂອງ Page Props ໃຫ້ຊັດເຈນ ເພື່ອບໍ່ໃຫ້ Next.js ສັບສົນ
 type Props = {
   params: Promise<{ locale: string; id: string }>;
 };
 
 export default function CampaignDetailPage({ params }: Props) {
-  // ໃຊ້ React.use() ເພື່ອແກະຄ່າ Promise
   const resolvedParams = use(params);
   const locale = resolvedParams.locale;
   const id = resolvedParams.id;
@@ -40,8 +38,8 @@ export default function CampaignDetailPage({ params }: Props) {
     fetchCampaign();
   }, [id]);
 
-  if (loading) return <div className="min-h-screen flex justify-center items-center font-bold text-xl">ກຳລັງໂຫຼດຂໍ້ມູນ...</div>;
-  if (!campaign) return <div className="min-h-screen flex justify-center items-center font-bold text-xl">ບໍ່ພົບຂໍ້ມູນໂຄງການນີ້</div>;
+  if (loading) return <div className="min-h-screen flex justify-center items-center font-bold text-xl text-teal-600">ກຳລັງໂຫຼດຂໍ້ມູນ...</div>;
+  if (!campaign) return <div className="min-h-screen flex justify-center items-center font-bold text-xl text-gray-500">ບໍ່ພົບຂໍ້ມູນໂຄງການນີ້</div>;
 
   const percent = Math.min(Math.round((campaign.raised_amount / campaign.target_amount) * 100), 100);
 
@@ -55,7 +53,8 @@ export default function CampaignDetailPage({ params }: Props) {
       <div className="max-w-4xl mx-auto px-6 -mt-32 relative z-10">
         <div className="bg-white rounded-3xl p-8 md:p-12 shadow-2xl">
           <div className="mb-6">
-            <Link href={`/${locale}/campaigns`} className="text-blue-600 font-bold hover:underline mb-4 inline-block">
+            {/* ປ່ຽນລິ້ງກັບຄືນເປັນສີ Teal */}
+            <Link href={`/${locale}/campaigns`} className="text-teal-600 font-bold hover:text-teal-700 hover:underline mb-4 inline-block transition-colors">
               &larr; {locale === 'lo' ? 'ກັບຄືນໜ້າລວມໂຄງການ' : 'Back to Campaigns'}
             </Link>
           </div>
@@ -67,7 +66,8 @@ export default function CampaignDetailPage({ params }: Props) {
           <div className="bg-gray-50 p-6 md:p-8 rounded-3xl mb-10 border border-gray-100">
             <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-6 gap-4">
               <div>
-                <p className="text-5xl font-black text-blue-600">{percent}%</p>
+                {/* ຕົວເລກເປີເຊັນເປັນສີ Teal */}
+                <p className="text-5xl font-black text-teal-600">{percent}%</p>
                 <p className="text-gray-500 font-bold mt-1 uppercase tracking-wider">
                   {locale === 'lo' ? 'ຂອງເປົ້າໝາຍ' : 'Funded'}
                 </p>
@@ -83,10 +83,12 @@ export default function CampaignDetailPage({ params }: Props) {
             </div>
             
             <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden mb-8">
-              <div className="h-full bg-blue-600 rounded-full transition-all duration-1000" style={{ width: `${percent}%` }}></div>
+              {/* ຫຼອດເປີເຊັນເປັນສີ Teal */}
+              <div className="h-full bg-teal-600 rounded-full transition-all duration-1000" style={{ width: `${percent}%` }}></div>
             </div>
             
-            <button className="w-full bg-blue-600 text-white text-xl font-black py-5 rounded-2xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-600/30 transform hover:-translate-y-1">
+            {/* ປຸ່ມບໍລິຈາກເປັນສີ Teal */}
+            <button className="w-full bg-teal-600 text-white text-xl font-black py-5 rounded-2xl hover:bg-teal-700 transition-all shadow-lg hover:shadow-teal-600/30 transform hover:-translate-y-1 tracking-wide">
               {locale === 'lo' ? 'ຮ່ວມບໍລິຈາກດຽວນີ້' : 'DONATE NOW'}
             </button>
           </div>

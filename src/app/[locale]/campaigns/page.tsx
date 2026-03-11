@@ -26,11 +26,10 @@ export default function CampaignsPage() {
     fetchData();
   }, []);
 
-  if (loading) return <div className="flex justify-center items-center h-screen">ກຳລັງໂຫຼດ...</div>;
+  if (loading) return <div className="flex justify-center items-center h-screen font-bold text-teal-600">ກຳລັງໂຫຼດ...</div>;
 
   return (
     <div className="bg-white min-h-screen">
-      {/* Header Section */}
       <section className="bg-gray-900 text-white py-20 px-6">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter">
@@ -44,7 +43,6 @@ export default function CampaignsPage() {
         </div>
       </section>
 
-      {/* Campaigns Grid */}
       <div className="max-w-7xl mx-auto px-6 py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
           {campaigns.map((item) => {
@@ -61,26 +59,29 @@ export default function CampaignsPage() {
                     alt="cover"
                   />
                   <div className="absolute top-4 left-4">
-                    <span className="bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-bold uppercase">
+                    {/* ປ່ຽນປ້າຍສະຖານະເປັນສີບົວອ່ອນ (Pink-400) ຕັດກັບຮູບພາບ */}
+                    <span className="bg-pink-400 text-white px-4 py-1 rounded-full text-xs font-bold uppercase shadow-sm">
                       {item.status || 'Active'}
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <h2 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                  {/* ເວລາເອົາເມົ້າຊີ້ ຊື່ໂຄງການຈະປ່ຽນເປັນສີ Teal */}
+                  <h2 className="text-2xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
                     {locale === 'lo' ? item.title_lo : item.title_en}
                   </h2>
                   
-                  {/* Progress Section */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm font-bold">
-                      <span className="text-blue-600">{percent}% {locale === 'lo' ? 'ສຳເລັດ' : 'Raised'}</span>
+                      {/* ເປີເຊັນເປັນສີ Teal */}
+                      <span className="text-teal-600">{percent}% {locale === 'lo' ? 'ສຳເລັດ' : 'Raised'}</span>
                       <span className="text-gray-500">{Number(item.target_amount).toLocaleString()} LAK</span>
                     </div>
                     <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
+                      {/* ຫຼອດເປີເຊັນເປັນສີ Teal */}
                       <div 
-                        className="h-full bg-blue-600 rounded-full transition-all duration-1000" 
+                        className="h-full bg-teal-600 rounded-full transition-all duration-1000" 
                         style={{ width: `${percent}%` }}
                       ></div>
                     </div>
