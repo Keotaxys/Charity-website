@@ -2,7 +2,7 @@ import createNextIntlPlugin from 'next-intl/plugin';
 import type { NextConfig } from "next";
 
 // ສ້າງ Plugin ຂອງ next-intl (ມັນຈະໄປຊອກຫາໄຟລ໌ src/i18n.ts ອັດຕະໂນມັດ)
-const withNextIntl = createNextIntlPlugin();
+const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
 const nextConfig: NextConfig = {
   // ຖ້າມີການຕັ້ງຄ່າອື່ນໆໃນອະນາຄົດ ເຊັ່ນ: ການອະນຸຍາດລິ້ງຮູບພາບຈາກ Firebase ສາມາດມາໃສ່ບ່ອນນີ້ໄດ້
