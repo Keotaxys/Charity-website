@@ -1,52 +1,49 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
-import { useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
-export default function CampaignsPage() {
-  const locale = useLocale();
-  const [campaigns, setCampaigns] = useState<any[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const querySnapshot = await getDocs(collection(db, "campaigns"));
-      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setCampaigns(data);
-    };
-    fetchData();
-  }, []);
+export default function HomePage() {
+  // ເອີ້ນໃຊ້ຄຳແປຈາກກຸ່ມ "HomePage" ໃນໄຟລ໌ JSON
+  const t = useTranslations('HomePage');
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <h1 className="text-4xl font-bold mb-12">ໂຄງການທັງໝົດ (All Campaigns)</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-        {campaigns.map((item) => (
-          <div key={item.id} className="group cursor-pointer">
-            <div className="relative aspect-video overflow-hidden rounded-2xl bg-gray-100 mb-4">
-              <img 
-                src={item.cover_image} 
-                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                alt="campaign cover"
-              />
-            </div>
-            {/* ດຶງຊື່ຕາມພາສາທີ່ຜູ້ໃຊ້ເບິ່ງຢູ່ */}
-            <h2 className="text-xl font-bold mb-2">
-              {locale === 'lo' ? item.title_lo : item.title_en}
-            </h2>
-            <p className="text-gray-500 line-clamp-2 mb-4">
-              {locale === 'lo' ? item.description_lo : item.description_en}
-            </p>
-            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-blue-600" 
-                style={{ width: `${(item.raised_amount / item.target_amount) * 100}%` }}
-              ></div>
-            </div>
+    <div className="max-w-4xl mx-auto px-6 py-20">
+      {/* Hero Section */}
+      <section className="text-center space-y-6">
+        <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+          {t('title')}
+        </h1>
+        <p className="text-xl text-gray-600 leading-8">
+          {t('description')}
+        </p>
+        
+        <div className="mt-10 flex items-center justify-center gap-x-6">
+          <button className="rounded-full bg-blue-600 px-8 py-3 text-lg font-semibold text-white shadow-sm hover:bg-blue-500 transition-all">
+            ຊ່ວຍເຫຼືອດຽວນີ້
+          </button>
+          <a href="#" className="text-lg font-semibold leading-6 text-gray-900">
+            ຮຽນຮູ້ເພີ່ມເຕີມ <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </section>
+
+      {/* Transparency Section - ເພື່ອສ້າງຄວາມເຊື່ອໝັ້ນ */}
+      <section className="mt-32 border-t pt-16">
+        <h2 className="text-3xl font-bold text-gray-900 mb-8">ຜົນກະທົບຂອງພວກເຮົາ</h2>
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+          <div className="bg-gray-50 p-8 rounded-2xl text-center">
+            <p className="text-4xl font-bold text-blue-600">100%</p>
+            <p className="text-gray-600 mt-2">ໄປເຖິງຜູ້ຮັບໂດຍກົງ</p>
           </div>
-        ))}
-      </div>
+          <div className="bg-gray-50 p-8 rounded-2xl text-center">
+            <p className="text-4xl font-bold text-blue-600">50+</p>
+            <p className="text-gray-600 mt-2">ໂຄງການທີ່ສຳເລັດ</p>
+          </div>
+          <div className="bg-gray-50 p-8 rounded-2xl text-center">
+            <p className="text-4xl font-bold text-blue-600">$0</p>
+            <p className="text-gray-600 mt-2">ຄ່າທຳນຽມແພລັດຟອມ</p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
