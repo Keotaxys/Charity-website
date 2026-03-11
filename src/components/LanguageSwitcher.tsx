@@ -19,7 +19,7 @@ export default function LanguageSwitcher() {
           key={lang}
           onClick={() => toggleLanguage(lang)}
           className={`px-4 py-1 rounded-full text-xs font-bold transition-all ${
-            locale === lang ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-900'
+            locale === lang ? 'bg-teal-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-900'
           }`}
         >
           {lang.toUpperCase()}
