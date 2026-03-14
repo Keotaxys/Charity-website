@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocale } from 'next-intl';
 import { db, storage } from '@/lib/firebase';
 import { collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
@@ -11,7 +11,7 @@ export default function DonatePage() {
 
   const [campaigns, setCampaigns] = useState<any[]>([]);
   
-  // State ຂອງຟອມ (ເອົາ amount ອອກ, ເພີ່ມການອັບໂຫຼດໄຟລ໌ແທນ)
+  // State ຂອງຟອມ
   const [formData, setFormData] = useState({
     campaign_id: 'general',
     name: '',
@@ -24,6 +24,10 @@ export default function DonatePage() {
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ type: '', text: '' });
+
+  // State ສຳລັບຄວບຄຸມ Custom Dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // ດຶງລາຍຊື່ໂຄງການ
   useEffect(() => {
@@ -40,6 +44,17 @@ export default function DonatePage() {
     fetchCampaigns();
   }, []);
 
+  // ປິດ Dropdown ເວລາກົດບ່ອນອື່ນ
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // ຟັງຊັນບັນທຶກການບໍລິຈາກພ້ອມອັບໂຫຼດສະລິບ
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,17 +68,15 @@ export default function DonatePage() {
     setStatus({ type: '', text: '' });
 
     try {
-      // 1. ອັບໂຫຼດຮູບສະລິບຂຶ້ນ Firebase Storage ກ່ອນ
       const storageRef = ref(storage, `receipts/${Date.now()}_${receiptFile.name}`);
       await uploadBytes(storageRef, receiptFile);
       const receiptUrl = await getDownloadURL(storageRef);
 
-      // 2. ບັນທຶກຂໍ້ມູນລົງ Database ພ້ອມກັບລິ້ງຮູບສະລິບ
       await addDoc(collection(db, 'donations'), {
         ...formData,
         receipt_url: receiptUrl,
-        amount: 0, // ໃຫ້ແອັດມິນມາປ້ອນໃສ່ຕາມຫຼັງ
-        status: 'pending', // ລໍຖ້າແອັດມິນກວດສອບ
+        amount: 0, 
+        status: 'pending', 
         created_at: new Date()
       });
       
@@ -72,7 +85,6 @@ export default function DonatePage() {
         text: locale === 'lo' ? 'ຂໍຂອບໃຈ! ພວກເຮົາໄດ້ຮັບແຈ້ງການໂອນເງິນຂອງທ່ານແລ້ວ. ທີມງານຈະກວດສອບສະລິບ ແລະ ອັບເດດຍອດເງິນໃຫ້ໂດຍໄວ.' : 'Thank you! We have received your receipt. Our team will verify and update the amount soon.' 
       });
       
-      // ລ້າງຟອມ
       setFormData({ campaign_id: 'general', name: '', email: '', phone: '', hideName: false, hideAmount: false });
       setReceiptFile(null);
     } catch (error) {
@@ -83,10 +95,18 @@ export default function DonatePage() {
     }
   };
 
+  // ຊອກຫາຊື່ໂຄງການທີ່ຖືກເລືອກເພື່ອມາສະແດງໃນກ່ອງ Dropdown
+  const selectedCampaignTitle = formData.campaign_id === 'general' 
+    ? (locale === 'lo' ? 'ກອງທຶນລວມ (ນຳໃຊ້ເຂົ້າໃນທຸກໂຄງການ)' : 'General Fund (Use where most needed)')
+    : (() => {
+        const camp = campaigns.find(c => c.id === formData.campaign_id);
+        return camp ? (locale === 'lo' ? camp.title_lo : camp.title_en) : '';
+      })();
+
   return (
     <div className="bg-gray-50 min-h-screen pb-24">
       
-      {/* 1. ສ່ວນຫົວ (Header) - ປ່ຽນເປັນສີ Teal ອ່ອນໆ ບໍ່ໃຫ້ມືດ */}
+      {/* 1. ສ່ວນຫົວ (Header) */}
       <section className="bg-teal-50 py-20 px-6 relative overflow-hidden border-b border-teal-100">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-60"></div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
@@ -101,14 +121,13 @@ export default function DonatePage() {
         </div>
       </section>
 
-      {/* 2. ສ່ວນເນື້ອຫາຫຼັກ (ສະຫວ່າງ ແລະ ຄລີນ) */}
+      {/* 2. ສ່ວນເນື້ອຫາຫຼັກ */}
       <section className="max-w-7xl mx-auto px-6 -mt-8 relative z-20">
         <div className="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden flex flex-col lg:flex-row">
           
           {/* ຝັ່ງຊ້າຍ: ຊ່ອງທາງການຊຳລະເງິນ (QR & PayPal) */}
           <div className="w-full lg:w-2/5 bg-white p-8 md:p-12 border-b lg:border-b-0 lg:border-r border-gray-100 relative">
             
-            {/* ຊ່ອງທາງທີ 1: BCEL */}
             <div className="mb-10">
               <h2 className="text-xl font-black mb-6 uppercase tracking-widest text-teal-600 flex items-center gap-3">
                 <span className="bg-teal-100 text-teal-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
@@ -116,7 +135,6 @@ export default function DonatePage() {
               </h2>
               <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 text-center">
                 <div className="bg-white p-3 rounded-2xl inline-block mb-4 shadow-sm border border-gray-100">
-                  {/* ປ່ຽນຮູບນີ້ເປັນ QR Code ຂອງມູນນິທິແທ້ໆ */}
                   <img src="https://via.placeholder.com/200x200/ffffff/0d9488?text=QR+CODE" alt="BCEL QR Code" className="w-40 h-40 object-contain rounded-xl" />
                 </div>
                 <div className="space-y-2">
@@ -127,14 +145,12 @@ export default function DonatePage() {
               </div>
             </div>
 
-            {/* ເສັ້ນຂັ້ນ */}
             <div className="flex items-center gap-4 mb-10 opacity-60">
               <div className="flex-1 h-px bg-gray-300"></div>
               <span className="text-gray-500 font-bold uppercase text-sm">{locale === 'lo' ? 'ຫຼື (OR)' : 'OR'}</span>
               <div className="flex-1 h-px bg-gray-300"></div>
             </div>
 
-            {/* ຊ່ອງທາງທີ 2: PayPal */}
             <div>
               <h2 className="text-xl font-black mb-6 uppercase tracking-widest text-[#00457C] flex items-center gap-3">
                 <span className="bg-blue-50 text-[#00457C] w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
@@ -145,7 +161,7 @@ export default function DonatePage() {
                   {locale === 'lo' ? 'ສຳລັບຜູ້ທີ່ຢູ່ຕ່າງປະເທດ ສາມາດບໍລິຈາກໄດ້ຢ່າງປອດໄພຜ່ານລະບົບ PayPal.' : 'For international donors, safely donate using PayPal.'}
                 </p>
                 <a 
-                  href="https://paypal.me/yourpaypal" // ປ່ຽນເປັນລິ້ງ PayPal ຂອງເຈົ້າເອງ
+                  href="https://paypal.me/yourpaypal" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 bg-[#0070BA] hover:bg-[#003087] text-white font-black py-4 px-8 rounded-xl transition-all shadow-md w-full justify-center text-lg"
@@ -176,48 +192,74 @@ export default function DonatePage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wider">{locale === 'lo' ? 'ເລືອກໂຄງການ' : 'SELECT CAMPAIGN'}</label>
-                  <select 
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-teal-600 outline-none font-bold cursor-pointer"
-                    value={formData.campaign_id} onChange={(e) => setFormData({...formData, campaign_id: e.target.value})}
+                
+                {/* Custom Dropdown ສຳລັບເລືອກໂຄງການ */}
+                <div className="md:col-span-2 relative" ref={dropdownRef}>
+                  <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wider">
+                    {locale === 'lo' ? 'ເລືອກໂຄງການ' : 'SELECT CAMPAIGN'}
+                  </label>
+                  
+                  {/* ກ່ອງປຸ່ມກົດ Dropdown */}
+                  <div 
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className={`w-full p-4 bg-gray-50 border rounded-xl text-gray-900 flex justify-between items-center cursor-pointer transition-all
+                      ${isDropdownOpen ? 'border-teal-600 ring-2 ring-teal-600/20' : 'border-gray-200 hover:border-teal-400'}
+                    `}
                   >
-                    <option value="general">{locale === 'lo' ? 'ກອງທຶນລວມ (ນຳໃຊ້ເຂົ້າໃນທຸກໂຄງການ)' : 'General Fund'}</option>
-                    {campaigns.map(camp => (
-                      <option key={camp.id} value={camp.id}>{locale === 'lo' ? camp.title_lo : camp.title_en}</option>
-                    ))}
-                  </select>
+                    <span className="font-bold truncate pr-4">{selectedCampaignTitle}</span>
+                    <svg className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180 text-teal-600' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </div>
+
+                  {/* ລາຍການຕົວເລືອກທີ່ຊ້ອນລົງມາ */}
+                  {isDropdownOpen && (
+                    <div className="absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
+                      <div 
+                        onClick={() => { setFormData({...formData, campaign_id: 'general'}); setIsDropdownOpen(false); }}
+                        className={`p-4 cursor-pointer transition-colors text-sm md:text-base border-b border-gray-50
+                          ${formData.campaign_id === 'general' ? 'bg-teal-50 text-teal-700 font-black' : 'text-gray-700 hover:bg-teal-50 hover:text-teal-700 font-medium'}
+                        `}
+                      >
+                        {locale === 'lo' ? 'ກອງທຶນລວມ (ນຳໃຊ້ເຂົ້າໃນທຸກໂຄງການ)' : 'General Fund'}
+                      </div>
+                      
+                      {campaigns.map(camp => (
+                        <div 
+                          key={camp.id}
+                          onClick={() => { setFormData({...formData, campaign_id: camp.id}); setIsDropdownOpen(false); }}
+                          className={`p-4 cursor-pointer transition-colors text-sm md:text-base border-b border-gray-50
+                            ${formData.campaign_id === camp.id ? 'bg-teal-50 text-teal-700 font-black' : 'text-gray-700 hover:bg-teal-50 hover:text-teal-700 font-medium'}
+                          `}
+                        >
+                          {locale === 'lo' ? camp.title_lo : camp.title_en}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wider">{locale === 'lo' ? 'ຊື່ ແລະ ນາມສະກຸນ' : 'FULL NAME'}</label>
-                  <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-teal-600 outline-none" placeholder={locale === 'lo' ? 'ຊື່ຜູ້ບໍລິຈາກ' : 'John Doe'} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                  <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-teal-600 outline-none transition-all" placeholder={locale === 'lo' ? 'ຊື່ຜູ້ບໍລິຈາກ' : 'John Doe'} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
                 </div>
                 <div>
                   <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wider">{locale === 'lo' ? 'ເບີໂທລະສັບ' : 'PHONE NUMBER'}</label>
-                  <input type="tel" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-teal-600 outline-none" placeholder="020 xxxx xxxx" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+                  <input type="tel" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-teal-600 outline-none transition-all" placeholder="020 xxxx xxxx" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
                 </div>
 
-                {/* ອັບໂຫຼດຮູບສະລິບ (ປ່ຽນແທນບ່ອນປ້ອນຈຳນວນເງິນ) */}
+                {/* ອັບໂຫຼດຮູບສະລິບ */}
                 <div className="md:col-span-2">
                   <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wider">
                     {locale === 'lo' ? 'ແນບຮູບໃບບິນ/ສະລິບການໂອນເງິນ' : 'UPLOAD TRANSFER SLIP / RECEIPT'}
                   </label>
-                  <div className="relative border-2 border-dashed border-teal-200 bg-teal-50/30 rounded-2xl p-6 text-center hover:bg-teal-50 transition-colors">
+                  <div className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-colors cursor-pointer
+                    ${receiptFile ? 'border-teal-500 bg-teal-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-teal-400'}`}>
                     <input 
-                      type="file" 
-                      accept="image/*"
-                      required
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          setReceiptFile(e.target.files[0]);
-                        }
-                      }}
+                      type="file" accept="image/*" required className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      onChange={(e) => { if (e.target.files && e.target.files[0]) { setReceiptFile(e.target.files[0]); } }}
                     />
                     <div className="flex flex-col items-center pointer-events-none">
-                      <svg className="w-10 h-10 text-teal-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                      <span className="font-bold text-teal-700">
+                      <svg className={`w-10 h-10 mb-2 ${receiptFile ? 'text-teal-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                      <span className={`font-bold ${receiptFile ? 'text-teal-700' : 'text-gray-600'}`}>
                         {receiptFile ? receiptFile.name : (locale === 'lo' ? 'ກົດເພື່ອເລືອກຮູບສະລິບ' : 'Click to select receipt image')}
                       </span>
                       {!receiptFile && <span className="text-gray-400 text-sm mt-1">{locale === 'lo' ? 'ຮອງຮັບໄຟລ໌ .jpg, .png' : 'Supports .jpg, .png'}</span>}
@@ -226,7 +268,7 @@ export default function DonatePage() {
                 </div>
               </div>
 
-              {/* ການຕັ້ງຄ່າຄວາມເປັນສ່ວນຕົວ (Privacy Settings) */}
+              {/* ການຕັ້ງຄ່າຄວາມເປັນສ່ວນຕົວ */}
               <div className="bg-pink-50/50 p-6 rounded-2xl border border-pink-100 mt-6 space-y-4">
                 <h3 className="font-bold text-gray-900 flex items-center gap-2 mb-4">
                   <svg className="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z" /></svg>
