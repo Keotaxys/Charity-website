@@ -9,23 +9,29 @@ export default function Navbar() {
   const locale = useLocale();
   const pathname = usePathname();
 
-  // 1. ອັບເດດລາຍການເມນູ ໃຫ້ຮອງຮັບລະບົບ Dropdown
+  // ຈັດລຽງລຳດັບໃໝ່ຕາມທີ່ເຈົ້າຕ້ອງການ
   const navLinks = [
     { name: locale === 'lo' ? 'ໜ້າຫຼັກ' : 'HOME', path: `/${locale}` },
+    { name: locale === 'lo' ? 'ໂຄງການ' : 'CAMPAIGNS', path: `/${locale}/campaigns` },
     { 
       name: locale === 'lo' ? 'ກ່ຽວກັບພວກເຮົາ' : 'WHO WE ARE', 
       path: `/${locale}/about`,
-      // ເພີ່ມ dropdown ເຂົ້າໄປໃນເມນູນີ້
       dropdown: [
         { name: locale === 'lo' ? 'ປະຫວັດຂອງເຮົາ' : 'OUR HISTORY', path: `/${locale}/about/history` },
         { name: locale === 'lo' ? 'ທີມງານ' : 'OUR TEAM', path: `/${locale}/about/team` },
         { name: locale === 'lo' ? 'ຕິດຕໍ່ເຮົາ' : 'CONTACT US', path: `/${locale}/about/contact` },
       ]
     },
-    { name: locale === 'lo' ? 'ໂຄງການ' : 'CAMPAIGNS', path: `/${locale}/campaigns` },
-    { name: locale === 'lo' ? 'ຜູ້ສະໜັບສະໜູນ' : 'SUPPORTERS', path: `/${locale}/supporters` }, // ເມນູໃໝ່
-    { name: locale === 'lo' ? 'ວິດີໂອ' : 'VIDEOS', path: `/${locale}/videos` }, // ເມນູໃໝ່
-    { name: locale === 'lo' ? 'ຮ້ານຄ້າ' : 'STORE', path: `/${locale}/store` },
+    { name: locale === 'lo' ? 'ຜູ້ສະໜັບສະໜູນ' : 'SUPPORTERS', path: `/${locale}/supporters` },
+    { name: locale === 'lo' ? 'ວິດີໂອ' : 'VIDEOS', path: `/${locale}/videos` },
+    
+    // ເພີ່ມ isExternal: true ເພື່ອບອກລະບົບວ່ານີ້ຄືລິ້ງໄປເວັບອື່ນ
+    { 
+      name: locale === 'lo' ? 'ຮ້ານຄ້າ' : 'STORE', 
+      path: 'https://your-store-website.com', // 👈 ຢ່າລືມເອົາລິ້ງເວັບຮ້ານຄ້າຕົວຈິງຂອງເຈົ້າມາປ່ຽນໃສ່ບ່ອນນີ້ເດີ
+      isExternal: true 
+    }, 
+    
     { name: locale === 'lo' ? 'ແອັດມິນ' : 'ADMIN', path: `/${locale}/admin/login` },
   ];
 
@@ -45,25 +51,28 @@ export default function Navbar() {
         {/* ເມນູຫຼັກ */}
         <nav className="hidden lg:flex flex-1 justify-center items-center space-x-6">
           {navLinks.map((link) => {
-            const isActive = pathname === link.path || (link.path !== `/${locale}` && pathname.startsWith(link.path));
+            // ຖ້າເປັນລິ້ງພາຍນອກ ຈະບໍ່ມີເອັບເຟັກ Active (ຂີດກ້ອງ)
+            const isActive = !link.isExternal && (pathname === link.path || (link.path !== `/${locale}` && pathname.startsWith(link.path)));
 
             return (
               <div key={link.name} className="relative group">
-                {/* ຕົວລິ້ງຫຼັກ */}
                 <Link 
                   href={link.path}
+                  // ຖ້າເປັນຮ້ານຄ້າ ໃຫ້ເປີດໜ້າຕ່າງໃໝ່ (target="_blank")
+                  target={link.isExternal ? "_blank" : "_self"}
+                  rel={link.isExternal ? "noopener noreferrer" : ""}
                   className={`font-black text-xs xl:text-sm tracking-wide uppercase transition-all duration-300 py-6 block
                     ${isActive ? 'text-teal-600' : 'text-gray-900 hover:text-teal-600'}
                   `}
                 >
                   {link.name}
-                  {/* ເອັບເຟັກຂີດກ້ອງເວລາກົດແລ້ວ (Active) */}
+                  
                   {isActive && (
                     <span className="absolute bottom-4 left-0 w-full h-1 bg-pink-300 rounded-full"></span>
                   )}
                 </Link>
 
-                {/* 2. ລະບົບ Dropdown ຈະສະແດງກໍຕໍ່ເມື່ອມີ array 'dropdown' ແລະ ເອົາເມົ້າໄປຊີ້ (group-hover) */}
+                {/* ລະບົບ Dropdown */}
                 {link.dropdown && (
                   <div className="absolute top-full left-1/2 -translate-x-1/2 bg-white border border-gray-100 shadow-xl rounded-2xl w-48 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                     {link.dropdown.map((subLink) => (
