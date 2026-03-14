@@ -1,43 +1,62 @@
+import type { Metadata } from 'next';
+import { Noto_Sans_Lao } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
-import { Noto_Sans_Lao } from 'next/font/google'; // <-- 1. Import Font ເຂົ້າມາ
-import Navbar from '@/components/Navbar'; 
-import "../globals.css";
+import { notFound } from 'next/navigation';
 
-// 2. ຕັ້ງຄ່າ Font Noto Sans Lao
-const notoSansLao = Noto_Sans_Lao({
-  subsets: ['lao'],
-  weight: ['400', '500', '600', '700'], // ຮອງຮັບຄວາມໜາຫຼາຍລະດັບ ເພື່ອຄວາມສວຍງາມໃນການອອກແບບ
-  variable: '--font-noto-lao', // ສ້າງ CSS Variable ໄວ້ໃຫ້ Tailwind ເອີ້ນໃຊ້
-  display: 'swap',
+// Import Components ຫຼັກທີ່ຕ້ອງມີທຸກໜ້າ
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+
+import '../globals.css';
+
+// ຕັ້ງຄ່າ Font ພາສາລາວ
+const notoSansLao = Noto_Sans_Lao({ 
+  subsets: ['lao'], 
+  weight: ['400', '500', '700', '900'] 
 });
 
-export default async function LocaleLayout({
+export const metadata: Metadata = {
+  title: 'BEAST.LAO - Charity Website',
+  description: 'Hope is built through action.',
+};
+
+export default async function RootLayout({
   children,
   params
 }: {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
+  const resolvedParams = await params;
+  const locale = resolvedParams.locale;
 
-  // ໂຫຼດຄຳແປ (messages)
-  const messages = await getMessages();
+  // ດຶງຂໍ້ຄວາມແປພາສາ (Translations)
+  let messages;
+  try {
+    messages = await getMessages();
+  } catch (error) {
+    notFound();
+  }
 
   return (
-    // 3. ເອົາຕົວປ່ຽນ Font (notoSansLao.variable) ມາໃສ່ໃນ Tag html
-    <html lang={locale} className={notoSansLao.variable}>
-      
-      {/* 4. ເພີ່ມ font-sans ໃສ່ໃນ body ເພື່ອໃຫ້ທຸກຂໍ້ຄວາມໃນເວັບໃຊ້ Font ນີ້ເປັນຫຼັກ */}
-      <body className="antialiased bg-white text-gray-900 font-sans">
-        
-        <NextIntlClientProvider messages={messages}>
+    <html lang={locale}>
+      {/* ໃຊ້ flex flex-col ແລະ min-h-screen ທີ່ body ເພື່ອຈັດການໂຄງສ້າງໜ້າເວັບ */}
+      <body className={`${notoSansLao.className} flex flex-col min-h-screen bg-white`}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          
+          {/* ແຖບເມນູດ້ານເທິງ */}
           <Navbar />
-          <main className="min-h-screen pt-16">
+          
+          {/* ເນື້ອຫາຫຼັກຂອງແຕ່ລະໜ້າ: ໃຊ້ flex-grow ເພື່ອຍູ້ Footer ລົງລຸ່ມສຸດສະເໝີ */}
+          <main className="flex-grow pt-20">
             {children}
           </main>
+
+          {/* ແຖບຂໍ້ມູນດ້ານລຸ່ມ */}
+          <Footer />
+
         </NextIntlClientProvider>
-        
       </body>
     </html>
   );
