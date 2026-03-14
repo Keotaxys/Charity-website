@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
+// ດຶງເອົາ Component ໂຄງການລ່າສຸດ ທີ່ເຮົາຫາກໍສ້າງມານຳໃຊ້
+import HomeCampaigns from '@/components/HomeCampaigns';
+
 export default function HomePage() {
   const locale = useLocale();
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -87,7 +90,7 @@ export default function HomePage() {
             {/* ປຸ່ມຮອງ (ມີຂອບສີບົວອ່ອນ) */}
             <Link 
               href={`/${locale}/about`}
-              className="bg-transparent border-2 border-pink-300 text-pink-300 hover:bg-pink-300 hover:text-white font-black py-4 px-10 rounded-full transition-all uppercase tracking-wider text-lg"
+              className="bg-transparent border-2 border-pink-300 text-pink-300 hover:bg-pink-300 hover:text-gray-900 font-black py-4 px-10 rounded-full transition-all uppercase tracking-wider text-lg"
             >
               {locale === 'lo' ? 'ຮຽນຮູ້ເພີ່ມເຕີມ' : 'LEARN MORE'}
             </Link>
@@ -127,6 +130,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* 3. ສ່ວນສະແດງໂຄງການລ່າສຸດ (ດຶງມາຈາກ Component ທີ່ແຍກໄຟລ໌ໄວ້) */}
+      <HomeCampaigns />
 
     </div>
   );
