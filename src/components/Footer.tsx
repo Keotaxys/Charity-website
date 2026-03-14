@@ -7,24 +7,10 @@ export default function Footer() {
   const locale = useLocale();
 
   return (
-    <footer className="bg-white pt-20 pb-10 px-6 mt-auto">
+    <footer className="bg-white pt-16 pb-10 px-6 mt-auto border-t border-gray-100">
       <div className="max-w-7xl mx-auto">
-        
-        {/* 1. ສ່ວນການຮັບຮອງ (Accreditations & Certifications) */}
-        <div className="bg-gray-50 rounded-[2.5rem] py-16 px-6 mb-16 border border-gray-100">
-          <h3 className="text-center text-2xl md:text-3xl font-black text-gray-900 mb-10 uppercase tracking-tight">
-            {locale === 'lo' ? 'ການຮັບຮອງ ແລະ ມາດຕະຖານ' : 'ACCREDITATIONS & CERTIFICATIONS'}
-          </h3>
-          
-          <div className="flex flex-wrap justify-center items-center gap-10 md:gap-20 opacity-80">
-            {/* ໂລໂກ້ການຮັບຮອງ (ໃຊ້ຮູບ Placeholder ໄປກ່ອນ ສາມາດປ່ຽນເປັນຮູບຈິງໄດ້) */}
-            <img src="https://via.placeholder.com/200x100/ffffff/0d9488?text=CERTIFICATE+1" alt="Cert 1" className="h-20 w-auto object-contain rounded-xl shadow-sm" />
-            <img src="https://via.placeholder.com/150x150/ffffff/0d9488?text=CERTIFICATE+2" alt="Cert 2" className="h-24 w-auto object-contain rounded-full shadow-sm" />
-            <img src="https://via.placeholder.com/200x100/ffffff/0d9488?text=CERTIFICATE+3" alt="Cert 3" className="h-20 w-auto object-contain rounded-xl shadow-sm" />
-          </div>
-        </div>
 
-        {/* 2. ສ່ວນເມນູເງື່ອນໄຂ & ຊ່ອງທາງຕິດຕໍ່ (Links & Socials) */}
+        {/* 1. ສ່ວນເມນູເງື່ອນໄຂ & ຊ່ອງທາງຕິດຕໍ່ (Links & Socials) */}
         <div className="flex flex-col lg:flex-row justify-between items-center gap-8 mb-10">
           
           {/* ລິ້ງເງື່ອນໄຂຕ່າງໆ */}
@@ -46,7 +32,7 @@ export default function Footer() {
             </Link>
           </div>
 
-          {/* Social Media Icons (ໃຊ້ສີບົວອ່ອນຕາມຕົ້ນສະບັບ) */}
+          {/* Social Media Icons (ໃຊ້ສີບົວອ່ອນ) */}
           <div className="flex items-center gap-3">
             {/* Instagram */}
             <a href="#" className="w-12 h-12 bg-pink-300 hover:bg-teal-600 text-gray-900 hover:text-white rounded-full flex items-center justify-center transition-all transform hover:scale-110">
@@ -68,7 +54,7 @@ export default function Footer() {
           
         </div>
 
-        {/* 3. ສ່ວນ Copyright */}
+        {/* 2. ສ່ວນ Copyright */}
         <div className="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-bold text-gray-400 uppercase tracking-widest">
           <p>© {new Date().getFullYear()} BEAST.LAO. {locale === 'lo' ? 'ສະຫງວນລິຂະສິດ.' : 'ALL RIGHTS RESERVED.'}</p>
           <p>WEB DEVELOPMENT BY BEAST.LAO</p>
