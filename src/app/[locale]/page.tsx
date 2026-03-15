@@ -2,9 +2,33 @@
 
 import { useLocale } from 'next-intl';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function HomePage() {
   const locale = useLocale();
+
+  // State ສຳລັບເກັບລິ້ງວິດີໂອຈາກ Firebase (ຕັ້ງຄ່າ Default ໄວ້ກໍລະນີຍັງບໍ່ມີຂໍ້ມູນ)
+  const [videoUrl, setVideoUrl] = useState('https://assets.mixkit.co/videos/preview/mixkit-working-together-to-clean-the-city-40019-large.mp4');
+
+  // ດຶງຂໍ້ມູນ Settings ຈາກ Firebase ເມື່ອໂຫຼດໜ້າເວັບ
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const docRef = doc(db, 'settings', 'homepage');
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists() && docSnap.data().hero_video_url) {
+          // ຖ້າມີລິ້ງວິດີໂອທີ່ຕັ້ງຄ່າໄວ້ໃນແອັດມິນ ໃຫ້ເອົາມາໃຊ້ແທນ Default
+          setVideoUrl(docSnap.data().hero_video_url);
+        }
+      } catch (error) {
+        console.error("Error fetching video settings:", error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   // ຂໍ້ມູນຈຳລອງ: ໂຄງການໄຮໄລທ໌ (Featured Campaigns)
   const featuredCampaigns = [
@@ -38,22 +62,21 @@ export default function HomePage() {
     <div className="bg-white min-h-screen">
       
       {/* 1. ສ່ວນ Hero: ວິດີໂອຫຼັງບ້ານ ແລະ ຂໍ້ຄວາມ */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* ວິດີໂອຫຼັງບ້ານ */}
+      <section className="relative h-screen flex items-center justify-center overflow-hidden bg-gray-900">
+        {/* ວິດີໂອຫຼັງບ້ານ (ດຶງຈາກ State ທີ່ເຊື່ອມຕໍ່ກັບ Firebase ແລ້ວ) */}
         <video 
+          key={videoUrl} // ເພີ່ມ key ເພື່ອໃຫ້ video element ໂຫຼດໃໝ່ເວລາ url ປ່ຽນ
           autoPlay 
           loop 
           muted 
+          playsInline
           className="absolute z-0 w-auto min-w-full min-h-full max-w-none object-cover"
         >
-          <source 
-            src="https://assets.mixkit.co/videos/preview/mixkit-working-together-to-clean-the-city-40019-large.mp4" 
-            type="video/mp4" 
-          />
+          <source src={videoUrl} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         
-        {/* 👇👇👇 ຊັ້ນສີເທົາບັງວິດີໂອ: ປ່ຽນຈາກ bg-black/70 ມາເປັນ bg-black/40 👇👇👇 */}
+        {/* ຊັ້ນສີເທົາບັງວິດີໂອ */}
         <div className="absolute inset-0 bg-black/40 z-10"></div>
         
         {/* ເນື້ອຫາ */}
@@ -61,7 +84,7 @@ export default function HomePage() {
           <h1 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter">
             {locale === 'lo' ? 'ຍິນດີຕ້ອນຮັບສູ່ ໂຄງການຊ່ວຍເຫຼືອສັງຄົມ' : 'WELCOME TO OUR SOCIETY PROJECT'}
           </h1>
-          <p className="text-xl md:text-2xl font-medium mb-12 max-w-3xl mx-auto">
+          <p className="text-xl md:text-2xl font-medium mb-12 max-w-3xl mx-auto drop-shadow-md">
             {locale === 'lo' 
               ? 'ພວກເຮົາມີພາລະກິດໃນການປ່ຽນແປງຊີວິດ ແລະ ສ້າງສັງຄົມທີ່ໜ້າຢູ່ໄປພ້ອມໆກັນ.' 
               : 'Our mission is to transform lives and build a better society together.'}
