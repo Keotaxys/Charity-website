@@ -1,130 +1,159 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import Link from 'next/link';
-import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
-
-// Import Components ທັງໝົດທີ່ເຮົາສ້າງແຍກໄວ້
-import HomeCampaigns from '@/components/HomeCampaigns';
-import HomeAbout from '@/components/HomeAbout';
-import HomeSupporters from '@/components/HomeSupporters';
-import HomeVideos from '@/components/HomeVideos';
 
 export default function HomePage() {
   const locale = useLocale();
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  // ດຶງຂໍ້ມູນລິ້ງວິດີໂອຈາກ Firebase ຕອນໂຫຼດໜ້າເວັບ
-  useEffect(() => {
-    const fetchVideoUrl = async () => {
-      try {
-        const docRef = doc(db, 'settings', 'homepage');
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists() && docSnap.data().hero_video_url) {
-          setVideoUrl(docSnap.data().hero_video_url);
-        } else {
-          setVideoUrl('https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4');
-        }
-      } catch (error) {
-        console.error("Error fetching video:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchVideoUrl();
-  }, []);
+  // ຂໍ້ມູນຈຳລອງ: ໂຄງການໄຮໄລທ໌ (Featured Campaigns)
+  const featuredCampaigns = [
+    {
+      id: 1,
+      title_lo: 'ພາລະກິດສ້າງຮອຍຍິ້ມໃຫ້ນ້ອງໆຊົນນະບົດ',
+      title_en: 'Mission: Smiles for Rural Children',
+      desc_lo: 'ຕິດຕາມການລົງພື້ນທີ່ແຈກຢາຍອາຫານ ແລະ ເຄື່ອງນຸ່ງຫົ່ມ ທີ່ປ່ຽນແປງຊີວິດ.',
+      desc_en: 'Follow our team distributing food and clothes, transforming lives.',
+      thumbnail: 'https://images.unsplash.com/photo-1593113589914-07553e6c7800?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      id: 2,
+      title_lo: 'ສ້າງລະບົບນ້ຳສະອາດໃຫ້ 5 ໝູ່ບ້ານ',
+      title_en: 'Clean Water System for 5 Villages',
+      desc_lo: 'ໂຄງການພັດທະນາແຫຼ່ງນ້ຳ ແລະ ສຸຂະອະນາໄມ ທີ່ຍືນຍົງ.',
+      desc_en: 'Sustainable water and sanitation development project.',
+      thumbnail: 'https://images.unsplash.com/photo-1581093588401-fbb62a02f120?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      id: 3,
+      title_lo: 'ມອບທຶນການສຶກສາ ປະຈຳປີ 2025',
+      title_en: 'Annual Scholarship Handover 2025',
+      desc_lo: 'ສະໜັບສະໜູນການສຶກສາ ແລະ ອະນາຄົດຂອງເດັກນ້ອຍລາວ.',
+      desc_en: 'Supporting the education and future of Lao children.',
+      thumbnail: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    },
+  ];
 
   return (
-    <div className="bg-white min-h-screen flex flex-col">
+    <div className="bg-white min-h-screen">
       
-      {/* 1. ສ່ວນ Hero (ວິດີໂອພື້ນຫຼັງເຕັມຈໍ) */}
-      <section className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden bg-gray-900">
-        {loading && (
-          <div className="absolute inset-0 flex items-center justify-center z-10 text-teal-500 font-bold">
-            ກຳລັງໂຫຼດວິດີໂອ...
-          </div>
-        )}
-
-        {!loading && videoUrl && (
-          <video
-            key={videoUrl}
-            autoPlay loop muted playsInline
-            className="absolute top-0 left-0 w-full h-full object-cover z-0"
-          >
-            <source src={videoUrl} type="video/mp4" />
-          </video>
-        )}
-
-        <div className="absolute top-0 left-0 w-full h-full bg-black/60 z-10"></div>
-
-        <div className="relative z-20 text-center px-6 max-w-4xl mx-auto flex flex-col items-center mt-16">
-          <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight leading-tight drop-shadow-lg">
-            {locale === 'lo' ? 'ຍິນດີຕ້ອນຮັບສູ່ ໂຄງການຊ່ວຍເຫຼືອສັງຄົມ' : 'WELCOME TO BEAST PHILANTHROPY LAO'}
+      {/* 1. ສ່ວນ Hero: ວິດີໂອຫຼັງບ້ານ ແລະ ຂໍ້ຄວາມ */}
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        {/* ວິດີໂອຫຼັງບ້ານ */}
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          className="absolute z-0 w-auto min-w-full min-h-full max-w-none object-cover"
+        >
+          <source 
+            src="https://assets.mixkit.co/videos/preview/mixkit-working-together-to-clean-the-city-40019-large.mp4" 
+            type="video/mp4" 
+          />
+          Your browser does not support the video tag.
+        </video>
+        
+        {/* 👇👇👇 ຊັ້ນສີເທົາບັງວິດີໂອ: ປ່ຽນຈາກ bg-black/70 ມາເປັນ bg-black/40 👇👇👇 */}
+        <div className="absolute inset-0 bg-black/40 z-10"></div>
+        
+        {/* ເນື້ອຫາ */}
+        <div className="relative z-20 text-center text-white px-6">
+          <h1 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter">
+            {locale === 'lo' ? 'ຍິນດີຕ້ອນຮັບສູ່ ໂຄງການຊ່ວຍເຫຼືອສັງຄົມ' : 'WELCOME TO OUR SOCIETY PROJECT'}
           </h1>
-          <p className="text-xl md:text-2xl text-gray-200 mb-10 font-medium drop-shadow-md">
+          <p className="text-xl md:text-2xl font-medium mb-12 max-w-3xl mx-auto">
             {locale === 'lo' 
-              ? 'ພວກເຮົາຮ່ວມມືກັນເພື່ອປ່ຽນແປງໂລກໃຫ້ດີຂຶ້ນ.' 
-              : 'Together we are changing the world for the better.'}
+              ? 'ພວກເຮົາມີພາລະກິດໃນການປ່ຽນແປງຊີວິດ ແລະ ສ້າງສັງຄົມທີ່ໜ້າຢູ່ໄປພ້ອມໆກັນ.' 
+              : 'Our mission is to transform lives and build a better society together.'}
           </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <Link 
-              href={`/${locale}/campaigns`}
-              className="bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-teal-600/50 uppercase tracking-wider text-lg transform hover:-translate-y-1"
-            >
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <Link href={`/${locale}/campaigns`} className="bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-teal-600/50 uppercase tracking-widest text-lg">
               {locale === 'lo' ? 'ຊ່ວຍເຫຼືອດຽວນີ້' : 'HELP NOW'}
             </Link>
-            <Link 
-              href={`/${locale}/about`}
-              className="bg-transparent border-2 border-pink-300 text-pink-300 hover:bg-pink-300 hover:text-gray-900 font-black py-4 px-10 rounded-full transition-all uppercase tracking-wider text-lg"
-            >
+            <Link href={`/${locale}/about`} className="bg-white hover:bg-gray-100 text-gray-900 font-black py-4 px-10 rounded-full transition-all uppercase tracking-widest text-lg shadow-lg">
               {locale === 'lo' ? 'ຮຽນຮູ້ເພີ່ມເຕີມ' : 'LEARN MORE'}
             </Link>
           </div>
         </div>
       </section>
 
-      {/* 2. ສ່ວນຕົວເລກສະຖິຕິແຫ່ງຄວາມໂປ່ງໃສ (Impact Stats) */}
-      <section className="bg-white py-20 px-6 relative z-30 -mt-10">
+      {/* 2. ສ່ວນພາລະກິດ (Mission Summary) */}
+      <section className="bg-gray-50 py-24 px-6 border-t border-gray-100">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-8 uppercase tracking-tight">
+            {locale === 'lo' ? 'ພາລະກິດຂອງພວກເຮົາ' : 'OUR MISSION'}
+          </h2>
+          <div className="w-16 h-1 bg-pink-300 rounded-full mx-auto mb-12"></div>
+          <p className="text-2xl text-gray-700 leading-relaxed max-w-4xl mx-auto">
+            {locale === 'lo' 
+              ? 'ເພື່ອສ້າງອະນາຄົດທີ່ດີກວ່າສຳລັບເດັກນ້ອຍ ແລະ ປະຊາຊົນລາວ ຜ່ານການສຶກສາ, ສຸຂະພາບ ແລະ ການພັດທະນາແບບຍືນຍົງ. ເງິນທຸກກີບຈະຖືກນຳໄປໃຊ້ຢ່າງໂປ່ງໃສ ແລະ ມີປະສິດທິພາບສູງສຸດ.' 
+              : 'To create a better future for Lao children and people through education, health, and sustainable development. Every cent is used transparently and with maximum efficiency.'}
+          </p>
+        </div>
+      </section>
+
+      {/* 3. ໂຄງການໄຮໄລທ໌ (Featured Campaigns Grid) */}
+      <section className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white border border-gray-100 rounded-3xl p-10 text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2">
-              <h2 className="text-6xl font-black text-teal-600 mb-4">100%</h2>
-              <p className="text-gray-600 font-bold uppercase tracking-wide">
-                {locale === 'lo' ? 'ໄປເຖິງຜູ້ຮັບໂດຍກົງ' : 'GOES DIRECTLY TO CAUSE'}
-              </p>
-            </div>
-            <div className="bg-white border border-gray-100 rounded-3xl p-10 text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2">
-              <h2 className="text-6xl font-black text-teal-600 mb-4">50+</h2>
-              <p className="text-gray-600 font-bold uppercase tracking-wide">
-                {locale === 'lo' ? 'ໂຄງການທີ່ສຳເລັດ' : 'COMPLETED CAMPAIGNS'}
-              </p>
-            </div>
-            <div className="bg-white border border-pink-100 rounded-3xl p-10 text-center shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2">
-              <h2 className="text-6xl font-black text-pink-400 mb-4">$0</h2>
-              <p className="text-gray-600 font-bold uppercase tracking-wide">
-                {locale === 'lo' ? 'ຫັກຄ່າທຳນຽມແພລດຟອມ' : 'PLATFORM FEES'}
-              </p>
-            </div>
+          <div className="flex justify-between items-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-gray-900 uppercase tracking-tight">
+              {locale === 'lo' ? 'ໂຄງການໄຮໄລທ໌' : 'FEATURED MISSIONS'}
+            </h2>
+            <Link href={`/${locale}/campaigns`} className="bg-pink-50 text-pink-500 hover:bg-pink-100 font-black py-3 px-6 rounded-full transition-all uppercase tracking-wider text-sm flex items-center gap-2">
+              {locale === 'lo' ? 'ເບິ່ງທັງໝົດ' : 'VIEW ALL'}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {featuredCampaigns.map((camp) => (
+              <div key={camp.id} className="group bg-white rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <img 
+                    src={camp.thumbnail} 
+                    alt={camp.title_en} 
+                    className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute top-4 left-4">
+                    <span className="bg-pink-400 text-white px-4 py-1.5 rounded-full text-xs font-black uppercase shadow-sm tracking-widest">
+                      {locale === 'lo' ? 'ໂຄງການໃໝ່' : 'NEW PROJECT'}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-8">
+                  <h3 className="text-2xl font-black text-gray-900 group-hover:text-teal-600 transition-colors mb-3 leading-tight">
+                    {locale === 'lo' ? camp.title_lo : camp.title_en}
+                  </h3>
+                  <p className="text-gray-500 mb-8 line-clamp-2">
+                    {locale === 'lo' ? camp.desc_lo : camp.desc_en}
+                  </p>
+                  <Link href={`/${locale}/campaigns/${camp.id}`} className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-black py-3 px-6 rounded-full transition-all shadow-md hover:shadow-teal-600/30 uppercase tracking-wider text-sm">
+                    {locale === 'lo' ? 'ເບິ່ງລາຍລະອຽດ' : 'VIEW DETAILS'}
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  </Link>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* 3. ສ່ວນສະແດງໂຄງການລ່າສຸດ (HomeCampaigns.tsx) */}
-      <HomeCampaigns />
-
-      {/* 4. ສ່ວນກ່ຽວກັບພວກເຮົາ (HomeAbout.tsx) */}
-      <HomeAbout />
-
-      {/* 5. ສ່ວນຜູ້ສະໜັບສະໜູນ (HomeSupporters.tsx) */}
-      <HomeSupporters />
-
-      {/* 6. ສ່ວນວິດີໂອລ່າສຸດ (HomeVideos.tsx) */}
-      <HomeVideos />
+      {/* 4. ສ່ວນ Call to Action (ຊວນມາບໍລິຈາກ) */}
+      <section className="bg-teal-600 py-24 px-6 text-white text-center">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-black mb-8 uppercase tracking-tighter">
+            {locale === 'lo' ? 'ຮ່ວມເປັນສ່ວນໜຶ່ງໃນການປ່ຽນແປງ' : 'JOIN THE MOVEMENT FOR CHANGE'}
+          </h2>
+          <p className="text-xl md:text-2xl font-medium mb-12 max-w-2xl mx-auto leading-relaxed">
+            {locale === 'lo' 
+              ? 'ທຸກໆການໃຫ້ຂອງທ່ານ ຄືພະລັງອັນຍິ່ງໃຫຍ່. ມາຮ່ວມສ້າງສັງຄົມທີ່ດີຂຶ້ນຮ່ວມກັບພວກເຮົາ.' 
+              : 'Every contribution you make is a powerful force. Let’s build a better society together.'}
+          </p>
+          <Link href={`/${locale}/donate`} className="bg-white hover:bg-gray-100 text-gray-900 font-black py-5 px-12 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 uppercase tracking-widest text-lg">
+            {locale === 'lo' ? 'ບໍລິຈາກດຽວນີ້' : 'DONATE NOW'}
+          </Link>
+        </div>
+      </section>
 
     </div>
   );
