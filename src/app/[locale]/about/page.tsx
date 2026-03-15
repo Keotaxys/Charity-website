@@ -9,17 +9,17 @@ export default function AboutPage() {
   return (
     <div className="bg-white min-h-screen">
       
-      {/* 1. ສ່ວນຫົວ (Hero Section) */}
-      <section className="bg-gray-900 text-white py-32 px-6 relative overflow-hidden">
+      {/* 1. ສ່ວນຫົວ (Header) - ປ່ຽນເປັນ bg-gray-100 ແລະ ປັບຄວາມສູງເປັນ py-20 */}
+      <section className="bg-gray-100 py-20 px-6 border-b border-gray-200 relative overflow-hidden">
         {/* ຕົກແຕ່ງພື້ນຫຼັງ */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-600/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
-        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-pink-500/10 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/3"></div>
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-500/15 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-400/15 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4"></div>
         
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter uppercase">
+          <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tighter uppercase drop-shadow-sm">
             {locale === 'lo' ? 'ກ່ຽວກັບພວກເຮົາ' : 'WHO WE ARE'}
           </h1>
-          <p className="text-xl md:text-2xl text-gray-400 font-medium">
+          <p className="text-lg md:text-xl text-gray-600 font-medium">
             {locale === 'lo' 
               ? 'ພວກເຮົາສ້າງການປ່ຽນແປງທີ່ຍິ່ງໃຫຍ່ ດ້ວຍການລົງມືເຮັດຕົວຈິງ.' 
               : 'We create massive impact through real action.'}
