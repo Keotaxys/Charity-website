@@ -24,62 +24,59 @@ export default function Navbar() {
     },
     { name: locale === 'lo' ? 'ຜູ້ສະໜັບສະໜູນ' : 'SUPPORTERS', path: `/${locale}/supporters` },
     { name: locale === 'lo' ? 'ວິດີໂອ' : 'VIDEOS', path: `/${locale}/videos` },
-    
-    // ເພີ່ມ isExternal: true ເພື່ອບອກລະບົບວ່ານີ້ຄືລິ້ງໄປເວັບອື່ນ
     { 
       name: locale === 'lo' ? 'ຮ້ານຄ້າ' : 'STORE', 
       path: 'https://your-store-website.com', // 👈 ຢ່າລືມເອົາລິ້ງເວັບຮ້ານຄ້າຕົວຈິງຂອງເຈົ້າມາປ່ຽນໃສ່ບ່ອນນີ້ເດີ
       isExternal: true 
     }, 
-    
     { name: locale === 'lo' ? 'ແອັດມິນ' : 'ADMIN', path: `/${locale}/admin/login` },
   ];
 
   return (
     <header className="fixed top-0 w-full z-50 bg-white border-b border-gray-100 shadow-sm h-20 flex items-center transition-all">
-      <div className="max-w-7xl mx-auto px-6 w-full flex justify-between items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full flex justify-between items-center">
         
         {/* ໂລໂກ້ */}
-        <div className="w-1/4">
+        <div className="w-auto lg:w-1/4">
           <Link href={`/${locale}`} className="flex items-center gap-2">
-            <span className="text-3xl font-black text-teal-600 tracking-tighter uppercase">
+            <span className="text-2xl xl:text-3xl font-black text-teal-600 tracking-tighter uppercase">
               BEAST<span className="text-gray-900">.LAO</span>
             </span>
           </Link>
         </div>
 
-        {/* ເມນູຫຼັກ */}
-        <nav className="hidden lg:flex flex-1 justify-center items-center space-x-6">
+        {/* ເມນູຫຼັກ (ປັບ space ແລະ font size ບໍ່ໃຫ້ຕົກແຖວ) */}
+        <nav className="hidden lg:flex flex-1 justify-center items-center space-x-4 xl:space-x-6">
           {navLinks.map((link) => {
-            // ຖ້າເປັນລິ້ງພາຍນອກ ຈະບໍ່ມີເອັບເຟັກ Active (ຂີດກ້ອງ)
             const isActive = !link.isExternal && (pathname === link.path || (link.path !== `/${locale}` && pathname.startsWith(link.path)));
 
             return (
-              <div key={link.name} className="relative group">
+              <div key={link.name} className="relative group flex items-center h-20">
                 <Link 
                   href={link.path}
-                  // ຖ້າເປັນຮ້ານຄ້າ ໃຫ້ເປີດໜ້າຕ່າງໃໝ່ (target="_blank")
                   target={link.isExternal ? "_blank" : "_self"}
                   rel={link.isExternal ? "noopener noreferrer" : ""}
-                  className={`font-black text-xs xl:text-sm tracking-wide uppercase transition-all duration-300 py-6 block
+                  // ໃຊ້ whitespace-nowrap ບັງຄັບບໍ່ໃຫ້ຂໍ້ຄວາມຕົກແຖວ
+                  className={`font-black text-[11px] xl:text-[13px] tracking-widest uppercase transition-all duration-300 flex items-center h-full whitespace-nowrap
                     ${isActive ? 'text-teal-600' : 'text-gray-900 hover:text-teal-600'}
                   `}
                 >
                   {link.name}
                   
+                  {/* ເສັ້ນຂີດກ້ອງບອກສະຖານະ Active */}
                   {isActive && (
-                    <span className="absolute bottom-4 left-0 w-full h-1 bg-pink-300 rounded-full"></span>
+                    <span className="absolute bottom-[22px] left-0 w-full h-1 bg-pink-300 rounded-full"></span>
                   )}
                 </Link>
 
                 {/* ລະບົບ Dropdown */}
                 {link.dropdown && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 bg-white border border-gray-100 shadow-xl rounded-2xl w-48 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 bg-white border border-gray-100 shadow-xl rounded-2xl w-48 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 before:absolute before:content-[''] before:-top-4 before:left-0 before:w-full before:h-4">
                     {link.dropdown.map((subLink) => (
                       <Link
                         key={subLink.name}
                         href={subLink.path}
-                        className="block px-5 py-3 text-sm font-bold text-gray-700 hover:text-teal-600 hover:bg-teal-50 transition-colors uppercase tracking-wider"
+                        className="block px-5 py-3 text-xs xl:text-sm font-bold text-gray-700 hover:text-teal-600 hover:bg-teal-50 transition-colors uppercase tracking-wider whitespace-nowrap"
                       >
                         {subLink.name}
                       </Link>
@@ -92,13 +89,13 @@ export default function Navbar() {
         </nav>
 
         {/* ປຸ່ມບໍລິຈາກ ແລະ ປ່ຽນພາສາ */}
-        <div className="w-1/4 flex justify-end items-center gap-4">
+        <div className="w-auto lg:w-1/4 flex justify-end items-center gap-3 xl:gap-4">
           <div className="hidden sm:block">
             <LanguageSwitcher />
           </div>
           <Link 
             href={`/${locale}/donate`} 
-            className="bg-teal-600 hover:bg-teal-700 text-white font-black py-3 px-6 xl:px-8 rounded-full transition-all shadow-md hover:shadow-teal-600/30 uppercase tracking-wide text-sm transform hover:-translate-y-0.5 whitespace-nowrap"
+            className="bg-teal-600 hover:bg-teal-700 text-white font-black py-2.5 px-6 xl:py-3 xl:px-8 rounded-full transition-all shadow-md hover:shadow-teal-600/30 uppercase tracking-wide text-xs xl:text-sm transform hover:-translate-y-0.5 whitespace-nowrap"
           >
             {locale === 'lo' ? 'ບໍລິຈາກ' : 'DONATE'}
           </Link>
