@@ -72,15 +72,17 @@ export default function VideosPage() {
   return (
     <div className="bg-white min-h-screen pb-24">
       
-      {/* 1. ສ່ວນຫົວ (Header) */}
-      <section className="bg-gray-900 text-white py-24 px-6 relative overflow-hidden">
+      {/* 1. ສ່ວນຫົວ (Header) - ປ່ຽນເປັນ bg-gray-100 ພ້ອມແສງສີ Teal/Pink */}
+      <section className="bg-gray-100 py-20 px-6 border-b border-gray-200 relative overflow-hidden">
         {/* ຕົກແຕ່ງພື້ນຫຼັງ */}
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-teal-600/20 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-500/15 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-400/15 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4"></div>
+
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h1 className="text-5xl md:text-6xl font-black mb-6 tracking-tighter uppercase">
+          <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tighter uppercase drop-shadow-sm">
             {locale === 'lo' ? 'ວິດີໂອການລົງພື້ນທີ່' : 'OUR MISSIONS ON VIDEO'}
           </h1>
-          <p className="text-xl text-gray-400 font-medium">
+          <p className="text-lg md:text-xl text-gray-600 font-medium max-w-2xl mx-auto leading-relaxed">
             {locale === 'lo' 
               ? 'ທຸກໆຄລິບຄືຫຼັກຖານແຫ່ງຄວາມໂປ່ງໃສ ແລະ ຜົນງານທີ່ເກີດຈາກການສະໜັບສະໜູນຂອງທ່ານ.' 
               : 'Every video is a testament to our transparency and the impact of your support.'}
