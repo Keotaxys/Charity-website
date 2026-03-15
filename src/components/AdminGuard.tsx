@@ -1,34 +1,37 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { useLocale } from 'next-intl';
 
 export default function AdminGuard({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true); // ຕັ້ງຄ່າໃຫ້ Loading ກ່ອນສະເໝີ
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const locale = useLocale();
+  const pathname = usePathname();
 
   useEffect(() => {
-    // onAuthStateChanged ຈະຄອຍຟັງວ່າ User ຍັງລັອກອິນຢູ່ຫຼືບໍ່ (ເຖິງຈະປ່ຽນໜ້າກໍຍັງຈື່ໄວ້)
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        setLoading(false); // ຖ້າລັອກອິນແລ້ວ ໃຫ້ຢຸດ Loading ແລ້ວສະແດງໜ້າເວັບ
+        setLoading(false);
       } else {
-        // ຖ້າຍັງບໍ່ລັອກອິນ ຫຼື ໝົດອາຍຸ ໃຫ້ສົ່ງກັບໄປໜ້າ Login
-        router.push(`/${locale}/admin/login`);
+        // ຖ້າບໍ່ມີ User ໃຫ້ເຕະໄປໜ້າ Login
+        setLoading(false);
+        // ກວດສອບກ່ອນວ່າຖ້າຢູ່ໜ້າ login ແລ້ວ ບໍ່ຕ້ອງ redirect ຊ້ຳ
+        if (!pathname.includes('/admin/login')) {
+          router.push(`/${locale}/admin/login`);
+        }
       }
     });
 
-    // Cleanup ຟັງຊັນເມື່ອ Component ຖືກທຳລາຍ
     return () => unsubscribe();
-  }, [router, locale]);
+  }, [router, locale, pathname]);
 
-  // ລະຫວ່າງທີ່ລໍຖ້າ Firebase ກວດສອບ (Loading) ໃຫ້ສະແດງອະນິເມຊັນໝຸນໆ ເພື່ອບໍ່ໃຫ້ມັນເດັ້ງໄປໜ້າ Login
+  // ລະຫວ່າງລໍຖ້າການຢືນຢັນຈາກ Firebase ໃຫ້ສະແດງອະນິເມຊັນໂຫຼດ
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -37,6 +40,8 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     );
   }
 
-  // ຖ້າຜ່ານການກວດສອບແລ້ວ ໃຫ້ສະແດງເນື້ອຫາໜ້າແອັດມິນໄດ້ເລີຍ
+  // ຖ້າບໍ່ມີ User ແທ້ໆ ບໍ່ໃຫ້ Render ຫຍັງເລີຍ (ປ້ອງກັນການເຫັນໜ້າແອັດມິນກ່ອນເດັ້ງອອກ)
+  if (!user) return null;
+
   return <>{children}</>;
 }
