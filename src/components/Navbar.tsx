@@ -9,7 +9,6 @@ export default function Navbar() {
   const locale = useLocale();
   const pathname = usePathname();
 
-  // ຈັດລຽງລຳດັບໃໝ່ຕາມທີ່ເຈົ້າຕ້ອງການ
   const navLinks = [
     { name: locale === 'lo' ? 'ໜ້າຫຼັກ' : 'HOME', path: `/${locale}` },
     { name: locale === 'lo' ? 'ໂຄງການ' : 'CAMPAIGNS', path: `/${locale}/campaigns` },
@@ -26,7 +25,7 @@ export default function Navbar() {
     { name: locale === 'lo' ? 'ວິດີໂອ' : 'VIDEOS', path: `/${locale}/videos` },
     { 
       name: locale === 'lo' ? 'ຮ້ານຄ້າ' : 'STORE', 
-      path: 'https://your-store-website.com', // 👈 ຢ່າລືມເອົາລິ້ງເວັບຮ້ານຄ້າຕົວຈິງຂອງເຈົ້າມາປ່ຽນໃສ່ບ່ອນນີ້ເດີ
+      path: 'https://your-store-website.com', 
       isExternal: true 
     }, 
     { name: locale === 'lo' ? 'ແອັດມິນ' : 'ADMIN', path: `/${locale}/admin/dashboard` },
@@ -45,8 +44,8 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* ເມນູຫຼັກ (ປັບ space ແລະ font size ບໍ່ໃຫ້ຕົກແຖວ) */}
-        <nav className="hidden lg:flex flex-1 justify-center items-center space-x-4 xl:space-x-6">
+        {/* ເມນູຫຼັກ (ປັບຂະໜາດ font, ຄວາມໜາ ແລະ tracking ໃໝ່) */}
+        <nav className="hidden lg:flex flex-1 justify-center items-center space-x-5 xl:space-x-8">
           {navLinks.map((link) => {
             const isActive = !link.isExternal && (pathname === link.path || (link.path !== `/${locale}` && pathname.startsWith(link.path)));
 
@@ -56,9 +55,9 @@ export default function Navbar() {
                   href={link.path}
                   target={link.isExternal ? "_blank" : "_self"}
                   rel={link.isExternal ? "noopener noreferrer" : ""}
-                  // ໃຊ້ whitespace-nowrap ບັງຄັບບໍ່ໃຫ້ຂໍ້ຄວາມຕົກແຖວ
-                  className={`font-black text-[11px] xl:text-[13px] tracking-widest uppercase transition-all duration-300 flex items-center h-full whitespace-nowrap
-                    ${isActive ? 'text-teal-600' : 'text-gray-900 hover:text-teal-600'}
+                  // ປ່ຽນ text-[11px] ເປັນ text-[14px] ຫຼື text-base ແລະ ໃຊ້ font-bold ແທນ font-black ເພື່ອຄວາມໂປ່ງສະບາຍຕາ
+                  className={`font-bold text-[14px] xl:text-[15px] tracking-wider uppercase transition-all duration-300 flex items-center h-full whitespace-nowrap
+                    ${isActive ? 'text-teal-600' : 'text-gray-700 hover:text-teal-600'}
                   `}
                 >
                   {link.name}
@@ -76,7 +75,7 @@ export default function Navbar() {
                       <Link
                         key={subLink.name}
                         href={subLink.path}
-                        className="block px-5 py-3 text-xs xl:text-sm font-bold text-gray-700 hover:text-teal-600 hover:bg-teal-50 transition-colors uppercase tracking-wider whitespace-nowrap"
+                        className="block px-5 py-3 text-sm xl:text-[15px] font-bold text-gray-700 hover:text-teal-600 hover:bg-teal-50 transition-colors uppercase tracking-wider whitespace-nowrap"
                       >
                         {subLink.name}
                       </Link>
