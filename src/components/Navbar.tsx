@@ -33,10 +33,11 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 w-full z-50 bg-white border-b border-gray-100 shadow-sm h-20 flex items-center transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full flex justify-between items-center">
+      {/* ປັບໂຄງສ້າງການຍະຫວ່າງ (Gap) ຂອງກ່ອງຫຼັກ */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full flex justify-between items-center gap-4 xl:gap-8">
         
-        {/* ໂລໂກ້ */}
-        <div className="w-auto lg:w-1/4">
+        {/* ໂລໂກ້ (ໃຊ້ flex-shrink-0 ເພື່ອບໍ່ໃຫ້ກ່ອງຫົດຕົວ) */}
+        <div className="flex-shrink-0">
           <Link href={`/${locale}`} className="flex items-center gap-2">
             <span className="text-2xl xl:text-3xl font-black text-teal-600 tracking-tighter uppercase">
               BEAST<span className="text-gray-900">.LAO</span>
@@ -44,8 +45,8 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* ເມນູຫຼັກ (ປັບຂະໜາດ font, ຄວາມໜາ ແລະ tracking ໃໝ່) */}
-        <nav className="hidden lg:flex flex-1 justify-center items-center space-x-5 xl:space-x-8">
+        {/* ເມນູຫຼັກ (ເພີ່ມ px-4 ເພື່ອສ້າງຊ່ອງຫວ່າງຊ້າຍ-ຂວາ ບໍ່ໃຫ້ໄປຕຳກັບພາກສ່ວນອື່ນ) */}
+        <nav className="hidden lg:flex flex-1 justify-center items-center space-x-5 xl:space-x-8 px-4">
           {navLinks.map((link) => {
             const isActive = !link.isExternal && (pathname === link.path || (link.path !== `/${locale}` && pathname.startsWith(link.path)));
 
@@ -55,20 +56,17 @@ export default function Navbar() {
                   href={link.path}
                   target={link.isExternal ? "_blank" : "_self"}
                   rel={link.isExternal ? "noopener noreferrer" : ""}
-                  // ປ່ຽນ text-[11px] ເປັນ text-[14px] ຫຼື text-base ແລະ ໃຊ້ font-bold ແທນ font-black ເພື່ອຄວາມໂປ່ງສະບາຍຕາ
                   className={`font-bold text-[14px] xl:text-[15px] tracking-wider uppercase transition-all duration-300 flex items-center h-full whitespace-nowrap
                     ${isActive ? 'text-teal-600' : 'text-gray-700 hover:text-teal-600'}
                   `}
                 >
                   {link.name}
                   
-                  {/* ເສັ້ນຂີດກ້ອງບອກສະຖານະ Active */}
                   {isActive && (
                     <span className="absolute bottom-[22px] left-0 w-full h-1 bg-pink-300 rounded-full"></span>
                   )}
                 </Link>
 
-                {/* ລະບົບ Dropdown */}
                 {link.dropdown && (
                   <div className="absolute top-full left-1/2 -translate-x-1/2 bg-white border border-gray-100 shadow-xl rounded-2xl w-48 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 before:absolute before:content-[''] before:-top-4 before:left-0 before:w-full before:h-4">
                     {link.dropdown.map((subLink) => (
@@ -87,8 +85,8 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* ປຸ່ມບໍລິຈາກ ແລະ ປ່ຽນພາສາ */}
-        <div className="w-auto lg:w-1/4 flex justify-end items-center gap-3 xl:gap-4">
+        {/* ປຸ່ມບໍລິຈາກ ແລະ ປ່ຽນພາສາ (ເອົາ w-1/4 ອອກ ແລ້ວໃຊ້ flex-shrink-0 + gap ທີ່ກວ້າງຂຶ້ນ) */}
+        <div className="flex-shrink-0 flex items-center gap-5 xl:gap-6 ml-auto">
           <div className="hidden sm:block">
             <LanguageSwitcher />
           </div>
