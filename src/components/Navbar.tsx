@@ -29,7 +29,7 @@ export default function Navbar() {
       path: 'https://your-store-website.com', // 👈 ຢ່າລືມເອົາລິ້ງເວັບຮ້ານຄ້າຕົວຈິງຂອງເຈົ້າມາປ່ຽນໃສ່ບ່ອນນີ້ເດີ
       isExternal: true 
     }, 
-    { name: locale === 'lo' ? 'ແອັດມິນ' : 'ADMIN', path: `/${locale}/admin/login` },
+    { name: locale === 'lo' ? 'ແອັດມິນ' : 'ADMIN', path: `/${locale}/admin/dashboard` },
   ];
 
   return (
