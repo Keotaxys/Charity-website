@@ -6,7 +6,7 @@ import Link from 'next/link';
 export default function HistoryPage() {
   const locale = useLocale();
 
-  // ຂໍ້ມູນຈຳລອງສຳລັບ Timeline (ສາມາດປ່ຽນປີ, ຮູບພາບ ແລະ ເນື້ອຫາຕົວຈິງໄດ້)
+  // ຂໍ້ມູນຈຳລອງສຳລັບ Timeline
   const milestones = [
     {
       id: 1,
@@ -40,9 +40,8 @@ export default function HistoryPage() {
   return (
     <div className="bg-white min-h-screen pb-24">
       
-      {/* 1. ສ່ວນຫົວ (Header) - ປ່ຽນເປັນ bg-gray-100 ແລະ ປັບຄວາມສູງເປັນ py-20 */}
+      {/* 1. ສ່ວນຫົວ (Header) */}
       <section className="bg-gray-100 py-20 px-6 border-b border-gray-200 relative overflow-hidden">
-        {/* ຕົກແຕ່ງພື້ນຫຼັງດ້ວຍແສງສີ Teal ແລະ ສີບົວ */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-500/15 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-400/15 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4"></div>
 
@@ -62,15 +61,12 @@ export default function HistoryPage() {
       <section className="max-w-5xl mx-auto px-6 py-20">
         <div className="space-y-24">
           {milestones.map((item, index) => {
-            // ສະລັບຊ້າຍ-ຂວາ ໂດຍເຊັກຈາກ index ວ່າເປັນເລກຄູ່ ຫຼື ເລກຄີກ
             const isEven = index % 2 === 0;
 
             return (
               <div key={item.id} className={`flex flex-col md:flex-row items-center gap-10 md:gap-16 ${isEven ? '' : 'md:flex-row-reverse'}`}>
                 
-                {/* ພາກສ່ວນຮູບພາບ */}
                 <div className="w-full md:w-1/2 relative group">
-                  {/* ກ່ອງສີຕົກແຕ່ງດ້ານຫຼັງ (ສະລັບສີ Teal ແລະ Pink ຕາມລຳດັບ) */}
                   <div className={`absolute inset-0 rounded-[2.5rem] transform ${isEven ? 'translate-x-4 translate-y-4 bg-teal-100' : '-translate-x-4 translate-y-4 bg-pink-100'} z-0 transition-transform duration-500 group-hover:translate-x-0 group-hover:translate-y-0`}></div>
                   
                   <div className="relative z-10 overflow-hidden rounded-[2.5rem] shadow-xl aspect-[4/3]">
@@ -79,14 +75,12 @@ export default function HistoryPage() {
                       alt={item.title_en} 
                       className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
                     />
-                    {/* ປ້າຍບອກປີ (Year Badge) */}
                     <div className="absolute top-6 left-6 bg-white text-gray-900 font-black text-2xl py-2 px-6 rounded-2xl shadow-lg">
                       {item.year}
                     </div>
                   </div>
                 </div>
 
-                {/* ພາກສ່ວນເນື້ອຫາ */}
                 <div className="w-full md:w-1/2 space-y-4 text-center md:text-left">
                   <h3 className="text-3xl font-black text-gray-900 tracking-tight uppercase">
                     {locale === 'lo' ? item.title_lo : item.title_en}
@@ -103,27 +97,36 @@ export default function HistoryPage() {
         </div>
       </section>
 
-      {/* 3. ສ່ວນອະນາຄົດ (The Future) */}
-      <section className="max-w-4xl mx-auto px-6 mt-10">
-        <div className="bg-gray-900 rounded-[2.5rem] p-10 md:p-16 text-center text-white relative overflow-hidden shadow-2xl">
+      {/* 3. ສ່ວນອະນາຄົດ (The Future) - ອັບເດດພື້ນຫຼັງຕາມຮູບທີ 1 */}
+      <section className="max-w-5xl mx-auto px-6 mt-10">
+        {/* ປ່ຽນພື້ນຫຼັງໃຫ້ເປັນສີເທົາເຂັ້ມ (#111827) ແລະ ເພີ່ມ Gradient */}
+        <div className="bg-gray-900 rounded-[2.5rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
+          
+          {/* ແສງຕົກແຕ່ງພື້ນຫຼັງ (Teal ແລະ Pink) */}
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-teal-500/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-pink-500/20 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4"></div>
+
           <div className="relative z-10">
-            <h2 className="text-teal-400 font-bold tracking-widest uppercase text-sm mb-3">
+            <h2 className="text-teal-400 font-bold tracking-widest uppercase text-sm mb-4">
               {locale === 'lo' ? 'ກ້າວຕໍ່ໄປຂອງພວກເຮົາ' : 'LOOKING FORWARD'}
             </h2>
-            <h3 className="text-3xl md:text-5xl font-black mb-8 uppercase tracking-tight">
+            <h3 className="text-4xl md:text-6xl font-black mb-8 tracking-tighter drop-shadow-md">
               {locale === 'lo' ? 'ອະນາຄົດເລີ່ມຕົ້ນທີ່ມື້ນີ້' : 'THE FUTURE STARTS TODAY'}
             </h3>
-            <p className="text-lg text-gray-400 mb-10 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
               {locale === 'lo' 
                 ? 'ປະຫວັດສາດໜ້າຕໍ່ໄປຂອງ BEAST.LAO ກຳລັງຈະຖືກຂຽນຂຶ້ນ ດ້ວຍການຮ່ວມມືຈາກທ່ານ. ມາຮ່ວມສ້າງສັງຄົມທີ່ໜ້າຢູ່ໄປພ້ອມໆກັນ.' 
                 : 'The next chapter of our history is being written with your support. Let’s build a better society together.'}
             </p>
-            <Link 
-              href={`/${locale}/campaigns`}
-              className="inline-block bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-10 rounded-full transition-all uppercase tracking-wider text-lg shadow-lg hover:shadow-teal-600/30 transform hover:-translate-y-1"
-            >
-              {locale === 'lo' ? 'ຮ່ວມສ້າງປະຫວັດສາດນຳກັນ' : 'JOIN OUR CAUSE'}
-            </Link>
+            
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link 
+                href={`/${locale}/campaigns`}
+                className="bg-teal-600 hover:bg-teal-500 text-white font-black py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-teal-500/50 uppercase tracking-wider text-lg"
+              >
+                {locale === 'lo' ? 'ຮ່ວມສ້າງປະຫວັດສາດນຳກັນ' : 'JOIN OUR CAUSE'}
+              </Link>
+            </div>
           </div>
         </div>
       </section>
