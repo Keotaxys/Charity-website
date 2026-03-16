@@ -7,11 +7,12 @@ import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import AdminGuard from '@/components/AdminGuard';
 
-// ນຳເຂົ້າ (Import) Components ທີ່ເຮົາແຍກໄຟລ໌ໄວ້
+// ນຳເຂົ້າ (Import) Components ແຕ່ລະແຖບ
 import TabHome from '@/components/admin/TabHome';
 import TabCampaigns from '@/components/admin/TabCampaigns';
 import TabVideos from '@/components/admin/TabVideos';
-import TabAbout from '@/components/admin/TabAbout'; // 👈 Import TabAbout ເຂົ້າມາແລ້ວ
+import TabAbout from '@/components/admin/TabAbout';
+import TabDonations from '@/components/admin/TabDonations'; // 👈 Import ເພີ່ມໃໝ່
 
 export default function AdminDashboard() {
   const locale = useLocale();
@@ -57,7 +58,6 @@ export default function AdminDashboard() {
     <AdminGuard>
       <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
         
-        {/* Sidebar */}
         <aside className="w-full md:w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
           <div className="p-6 border-b border-gray-100">
             <h1 className="text-2xl font-black text-teal-600 tracking-tighter uppercase">Admin Panel</h1>
@@ -88,7 +88,6 @@ export default function AdminDashboard() {
           </div>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 p-6 md:p-10 overflow-y-auto h-screen">
           <div className="max-w-5xl mx-auto">
             
@@ -100,18 +99,16 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {/* --- ແຖບທີ່ພັດທະນາສຳເລັດແລ້ວ --- */}
             {activeTab === 'home' && <TabHome showMessage={showMessage} />}
             {activeTab === 'campaigns' && <TabCampaigns showMessage={showMessage} />}
             {activeTab === 'videos' && <TabVideos showMessage={showMessage} />}
-            {activeTab === 'about' && <TabAbout showMessage={showMessage} />}  {/* 👈 ເອີ້ນໃຊ້ TabAbout ຢູ່ບ່ອນນີ້ */}
+            {activeTab === 'about' && <TabAbout showMessage={showMessage} />}
+            {activeTab === 'donations' && <TabDonations showMessage={showMessage} />} {/* 👈 Render TabDonations ຢູ່ບ່ອນນີ້ */}
 
-            {/* --- ແຖບທີ່ຍັງລໍຖ້າການພັດທະນາ (Placeholder) --- */}
-            {['donations', 'team', 'contact', 'supporters'].includes(activeTab) && (
+            {['team', 'contact', 'supporters'].includes(activeTab) && (
               <div className="bg-white p-12 rounded-[2.5rem] shadow-sm border border-gray-100 text-center animate-fade-in-up">
                 <div className="text-teal-600 flex justify-center mb-6">
                   <div className="p-6 bg-teal-50 rounded-full">
-                    {activeTab === 'donations' && <span className="w-12 h-12 block">{Icons.donations}</span>}
                     {activeTab === 'team' && <span className="w-12 h-12 block">{Icons.team}</span>}
                     {activeTab === 'contact' && <span className="w-12 h-12 block">{Icons.contact}</span>}
                     {activeTab === 'supporters' && <span className="w-12 h-12 block">{Icons.supporters}</span>}
