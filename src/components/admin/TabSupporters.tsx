@@ -2,115 +2,256 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 
 export default function TabSupporters({ showMessage }: { showMessage: (text: string, type: string) => void }) {
-  const [supporters, setSupporters] = useState<any[]>([]);
+  // 1. State ສຳລັບການຕັ້ງຄ່າໜ້າ Header ແລະ CTA
+  const [pageSettings, setPageSettings] = useState({
+    header_title_lo: 'ຜູ້ສະໜັບສະໜູນຫຼັກ', header_title_en: 'OUR SUPPORTERS',
+    header_subtitle_lo: 'ຂໍຂອບໃຈທຸກພາກສ່ວນ ທີ່ຮ່ວມເປັນກຳລັງສຳຄັນໃນການຂັບເຄື່ອນທຸກໆໂຄງການຂອງພວກເຮົາ ໃຫ້ເກີດຂຶ້ນຈິງ.', 
+    header_subtitle_en: 'Thank you to all our amazing partners who make our missions possible every single day.',
+    
+    cta_title_lo: 'ຮ່ວມເປັນຜູ້ສະໜັບສະໜູນ', cta_title_en: 'PARTNER WITH US',
+    cta_btn_lo: 'ຕິດຕໍ່ເພື່ອສະໜັບສະໜູນ', cta_btn_en: 'BECOME A PARTNER'
+  });
+  const [loadingSettings, setLoadingSettings] = useState(false);
+
+  // 2. State ສຳລັບການຈັດການ Sponsor Logos
+  const [sponsors, setSponsors] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
+  
   const [formData, setFormData] = useState({
-    name_lo: '',
-    name_en: '',
-    logo_url: '',
-    total_donation: '0'
+    name: '', logo_url: '', type: 'general', order_index: '0'
   });
+  const [loadingSponsor, setLoadingSponsor] = useState(false);
 
   useEffect(() => {
-    fetchSupporters();
+    fetchData();
   }, []);
 
-  const fetchSupporters = async () => {
+  const fetchData = async () => {
+    // ໂຫຼດ Page Settings
     try {
-      const q = query(collection(db, 'supporters'), orderBy('total_donation', 'desc'));
-      const snapshot = await getDocs(q);
-      setSupporters(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      const docRef = doc(db, 'settings', 'supporters_page');
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) setPageSettings(docSnap.data() as any);
     } catch (error) {
-      console.error("Error fetching supporters:", error);
+      console.error("Error fetching settings:", error);
+    }
+
+    // ໂຫຼດລາຍຊື່ Sponsors
+    try {
+      const q = query(collection(db, 'sponsors'), orderBy('order_index', 'asc'));
+      const snapshot = await getDocs(q);
+      setSponsors(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    } catch (error) {
+      console.error("Error fetching sponsors:", error);
     }
   };
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setLoadingSettings(true);
     try {
-      const data = { ...formData, total_donation: Number(formData.total_donation) };
+      await setDoc(doc(db, 'settings', 'supporters_page'), pageSettings, { merge: true });
+      showMessage('ບັນທຶກການຕັ້ງຄ່າໜ້າຜູ້ສະໜັບສະໜູນສຳເລັດແລ້ວ!', 'success');
+    } catch (error) {
+      showMessage('ເກີດຂໍ້ຜິດພາດໃນການບັນທຶກ', 'error');
+    }
+    setLoadingSettings(false);
+  };
+
+  const handleSettingsChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setPageSettings({ ...pageSettings, [e.target.name]: e.target.value });
+  };
+
+  const handleSaveSponsor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoadingSponsor(true);
+    try {
+      const data = { ...formData, order_index: Number(formData.order_index) };
       if (isEditing && editId) {
-        await updateDoc(doc(db, 'supporters', editId), data);
-        showMessage('ແກ້ໄຂຜູ້ສະໜັບສະໜູນສຳເລັດ!', 'success');
+        await updateDoc(doc(db, 'sponsors', editId), data);
+        showMessage('ແກ້ໄຂຂໍ້ມູນສະໜັບສະໜູນສຳເລັດ!', 'success');
       } else {
-        await addDoc(collection(db, 'supporters'), { ...data, created_at: new Date() });
+        await addDoc(collection(db, 'sponsors'), { ...data, created_at: new Date() });
         showMessage('ເພີ່ມຜູ້ສະໜັບສະໜູນໃໝ່ສຳເລັດ!', 'success');
       }
-      setFormData({ name_lo: '', name_en: '', logo_url: '', total_donation: '0' });
+      setFormData({ name: '', logo_url: '', type: 'general', order_index: '0' });
       setIsEditing(false);
       setEditId(null);
-      fetchSupporters();
+      fetchData();
     } catch (error) {
       showMessage('ເກີດຂໍ້ຜິດພາດ', 'error');
     }
-    setLoading(false);
+    setLoadingSponsor(false);
   };
 
-  const handleEdit = (item: any) => {
+  const handleEditClick = (item: any) => {
     setFormData({
-      name_lo: item.name_lo, name_en: item.name_en,
-      logo_url: item.logo_url, total_donation: item.total_donation.toString()
+      name: item.name, logo_url: item.logo_url, 
+      type: item.type || 'general', order_index: item.order_index?.toString() || '0'
     });
     setIsEditing(true);
     setEditId(item.id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('ລຶບຜູ້ສະໜັບສະໜູນນີ້?')) {
-      await deleteDoc(doc(db, 'supporters', id));
+  const handleDeleteClick = async (id: string) => {
+    if (confirm('ລຶບ Logo ຜູ້ສະໜັບສະໜູນນີ້ແທ້ບໍ່?')) {
+      await deleteDoc(doc(db, 'sponsors', id));
       showMessage('ລຶບສຳເລັດ!', 'success');
-      fetchSupporters();
+      fetchData();
     }
   };
 
+  const inputClass = "w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium transition-all";
+
+  // ແຍກ Sponsors ຕາມປະເພດ
+  const platinumSponsors = sponsors.filter(s => s.type === 'platinum');
+  const generalSponsors = sponsors.filter(s => s.type === 'general');
+
   return (
     <div className="space-y-8 animate-fade-in-up">
-      {/* ຟອມເພີ່ມ/ແກ້ໄຂ */}
+      {/* Main Header */}
+      <div className="flex items-center gap-3 border-b border-gray-100 pb-6 bg-white p-8 rounded-3xl shadow-sm">
+        <div className="text-teal-600 bg-teal-50 p-3 rounded-full">
+          <svg className="w-8 h-8 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z" /></svg>
+        </div>
+        <div>
+          <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">ຈັດການ "ຜູ້ສະໜັບສະໜູນ"</h2>
+          <p className="text-gray-500 text-sm mt-1 font-bold">SUPPORTERS & PARTNERS MANAGEMENT</p>
+        </div>
+      </div>
+
+      {/* --- 1. Page Settings (Header & CTA) --- */}
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-4">
+          <svg className="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" /><path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z" /></svg>
+          1. ຕັ້ງຄ່າຂໍ້ຄວາມ (Page Settings)
+        </h3>
+        <form onSubmit={handleSaveSettings} className="space-y-8">
+          <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
+            <h4 className="font-black text-teal-700 mb-4 text-sm uppercase">» ສ່ວນຫົວ (Header Section)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <input type="text" name="header_title_lo" placeholder="ຫົວຂໍ້ (ລາວ)" className={inputClass} value={pageSettings.header_title_lo} onChange={handleSettingsChange} required />
+              <input type="text" name="header_title_en" placeholder="ຫົວຂໍ້ (EN)" className={inputClass} value={pageSettings.header_title_en} onChange={handleSettingsChange} required />
+              <textarea name="header_subtitle_lo" placeholder="ຄຳອະທິບາຍ (ລາວ)" rows={2} className={`${inputClass} resize-none`} value={pageSettings.header_subtitle_lo} onChange={handleSettingsChange} required></textarea>
+              <textarea name="header_subtitle_en" placeholder="ຄຳອະທິບາຍ (EN)" rows={2} className={`${inputClass} resize-none`} value={pageSettings.header_subtitle_en} onChange={handleSettingsChange} required></textarea>
+            </div>
+          </div>
+          
+          <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
+            <h4 className="font-black text-pink-600 mb-4 text-sm uppercase">» ສ່ວນຊັກຊວນທ້າຍໜ້າ (Call to Action)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <input type="text" name="cta_title_lo" placeholder="ຫົວຂໍ້ຊັກຊວນ (ລາວ)" className={inputClass} value={pageSettings.cta_title_lo} onChange={handleSettingsChange} required />
+              <input type="text" name="cta_title_en" placeholder="CTA Title (EN)" className={inputClass} value={pageSettings.cta_title_en} onChange={handleSettingsChange} required />
+              <input type="text" name="cta_btn_lo" placeholder="ປຸ່ມກົດ (ລາວ)" className={inputClass} value={pageSettings.cta_btn_lo} onChange={handleSettingsChange} required />
+              <input type="text" name="cta_btn_en" placeholder="Button Text (EN)" className={inputClass} value={pageSettings.cta_btn_en} onChange={handleSettingsChange} required />
+            </div>
+          </div>
+          
+          <button type="submit" disabled={loadingSettings} className="w-full md:w-auto bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-12 rounded-xl transition-all shadow-md hover:shadow-teal-600/30 uppercase tracking-widest">
+            {loadingSettings ? 'ກຳລັງບັນທຶກ...' : 'ບັນທຶກການຕັ້ງຄ່າ'}
+          </button>
+        </form>
+      </div>
+
+      {/* --- 2. Sponsor Logo Form --- */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-teal-100">
-        <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
-          <svg className="w-8 h-8 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z" /></svg>
-          {isEditing ? 'ແກ້ໄຂຜູ້ສະໜັບສະໜູນ' : 'ເພີ່ມຜູ້ສະໜັບສະໜູນໃໝ່'}
-        </h2>
-        <form onSubmit={handleSave} className="space-y-6">
+        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-4">
+          <svg className="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" /></svg>
+          {isEditing ? 'ແກ້ໄຂ Logo ຜູ້ສະໜັບສະໜູນ' : 'ເພີ່ມ Logo ຜູ້ສະໜັບສະໜູນໃໝ່'}
+        </h3>
+        <form onSubmit={handleSaveSponsor} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input type="text" placeholder="ຊື່ (ລາວ)" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none" value={formData.name_lo} onChange={(e) => setFormData({...formData, name_lo: e.target.value})} />
-            <input type="text" placeholder="Name (EN)" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none" value={formData.name_en} onChange={(e) => setFormData({...formData, name_en: e.target.value})} />
+            <div>
+              <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">ຊື່ອົງກອນ/ບໍລິສັດ</label>
+              <input type="text" required className={inputClass} placeholder="Company Name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+            </div>
+            <div>
+              <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">ລິ້ງຮູບ Logo (Image URL)</label>
+              <input type="url" required className={inputClass} placeholder="https://..." value={formData.logo_url} onChange={(e) => setFormData({...formData, logo_url: e.target.value})} />
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input type="url" placeholder="Logo URL (Link ຮູບພາບ)" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none" value={formData.logo_url} onChange={(e) => setFormData({...formData, logo_url: e.target.value})} />
-            <input type="number" placeholder="ຍອດເງິນສະໜັບສະໜູນລວມ" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none" value={formData.total_donation} onChange={(e) => setFormData({...formData, total_donation: e.target.value})} />
+            <div>
+              <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">ປະເພດຜູ້ສະໜັບສະໜູນ (Level)</label>
+              <select className={inputClass} value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})}>
+                <option value="general">ທົ່ວໄປ (General - ຮູບນ້ອຍ)</option>
+                <option value="platinum">ແພລັດຕິນຳ (Platinum - ຮູບໃຫຍ່)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">ລຳດັບການສະແດງຜົນ (Order)</label>
+              <input type="number" required className={`${inputClass} text-center`} placeholder="1, 2, 3..." value={formData.order_index} onChange={(e) => setFormData({...formData, order_index: e.target.value})} />
+            </div>
           </div>
           <div className="flex gap-4">
-            <button type="submit" disabled={loading} className="flex-1 bg-teal-600 text-white font-black py-4 rounded-xl hover:bg-teal-700 transition-all uppercase">{loading ? 'ກຳລັງບັນທຶກ...' : 'ບັນທຶກ'}</button>
-            {isEditing && <button type="button" onClick={() => { setIsEditing(false); setFormData({name_lo: '', name_en: '', logo_url: '', total_donation: '0'}); }} className="flex-1 bg-gray-100 text-gray-600 py-4 rounded-xl uppercase font-bold">ຍົກເລີກ</button>}
+            <button type="submit" disabled={loadingSponsor} className="flex-1 bg-teal-600 text-white font-black py-4 rounded-xl hover:bg-teal-700 transition-all shadow-md uppercase tracking-widest">
+              {loadingSponsor ? 'ກຳລັງປະມວນຜົນ...' : (isEditing ? 'ບັນທຶກການແກ້ໄຂ' : 'ເພີ່ມ Logo ເຂົ້າລະບົບ')}
+            </button>
+            {isEditing && (
+              <button type="button" onClick={() => { setIsEditing(false); setEditId(null); setFormData({name:'', logo_url:'', type:'general', order_index:'0'}); }} className="flex-1 bg-gray-100 text-gray-500 hover:bg-gray-200 font-black py-4 rounded-xl transition-all uppercase tracking-widest">
+                ຍົກເລີກ
+              </button>
+            )}
           </div>
         </form>
       </div>
 
-      {/* ລາຍຊື່ */}
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-        <h3 className="text-xl font-black text-gray-900 mb-6">ລາຍຊື່ຜູ້ສະໜັບສະໜູນທັງໝົດ</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {supporters.map((item) => (
-            <div key={item.id} className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col items-center text-center">
-              <img src={item.logo_url} alt={item.name_lo} className="h-16 object-contain mb-4" />
-              <h4 className="font-bold text-gray-900">{item.name_lo}</h4>
-              <p className="text-teal-600 font-bold text-sm mb-4">{item.total_donation.toLocaleString()} LAK</p>
-              <div className="flex gap-2 w-full pt-4 border-t border-gray-100">
-                <button onClick={() => handleEdit(item)} className="flex-1 text-teal-600 text-sm font-bold">ແກ້ໄຂ</button>
-                <button onClick={() => handleDelete(item.id)} className="flex-1 text-pink-500 text-sm font-bold">ລຶບ</button>
-              </div>
+      {/* --- 3. Sponsor Logo Lists --- */}
+      <div className="space-y-8">
+        
+        {/* Platinum Category */}
+        <div className="bg-white p-8 rounded-3xl shadow-sm border border-pink-100">
+          <h3 className="text-xl font-black text-pink-500 mb-6 flex items-center gap-2">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" /></svg>
+            ລາຍການລະດັບແພລັດຕິນຳ (Platinum)
+          </h3>
+          {platinumSponsors.length === 0 ? (
+            <p className="text-gray-400 text-center py-6 font-bold bg-gray-50 rounded-2xl border border-dashed border-gray-200">ຍັງບໍ່ມີ Logo ແພລັດຕິນຳ</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {platinumSponsors.map((item) => (
+                <div key={item.id} className="group relative bg-white border-2 border-gray-100 hover:border-pink-200 rounded-[2rem] p-8 flex flex-col items-center justify-center transition-all">
+                  <img src={item.logo_url} alt={item.name} className="h-20 object-contain mb-4" />
+                  <p className="font-bold text-gray-500 text-sm">{item.name}</p>
+                  <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => handleEditClick(item)} className="bg-teal-500 text-white p-2 rounded-lg shadow-sm"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                    <button onClick={() => handleDeleteClick(item.id)} className="bg-pink-500 text-white p-2 rounded-lg shadow-sm"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
+
+        {/* General Category */}
+        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+          <h3 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
+            <svg className="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M2.625 6.75a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875 0A.75.75 0 018.25 6h12a.75.75 0 010 1.5h-12a.75.75 0 01-.75-.75zM2.625 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zM8.25 11.25a.75.75 0 000 1.5h12a.75.75 0 000-1.5h-12zm-5.625 5.25a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875 0a.75.75 0 01.75-.75h12a.75.75 0 010 1.5h-12a.75.75 0 01-.75-.75z" clipRule="evenodd" /></svg>
+            ລາຍການທົ່ວໄປ (General Partners)
+          </h3>
+          {generalSponsors.length === 0 ? (
+            <p className="text-gray-400 text-center py-6 font-bold bg-gray-50 rounded-2xl border border-dashed border-gray-200">ຍັງບໍ່ມີ Logo ທົ່ວໄປ</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {generalSponsors.map((item) => (
+                <div key={item.id} className="group relative bg-white border border-gray-200 hover:border-teal-200 rounded-[1.5rem] p-6 flex flex-col items-center justify-center transition-all">
+                  <img src={item.logo_url} alt={item.name} className="h-12 object-contain mb-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+                  <p className="font-bold text-gray-400 text-xs text-center">{item.name}</p>
+                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => handleEditClick(item)} className="bg-teal-50 text-teal-600 p-1.5 rounded-md hover:bg-teal-500 hover:text-white"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                    <button onClick={() => handleDeleteClick(item.id)} className="bg-pink-50 text-pink-500 p-1.5 rounded-md hover:bg-pink-500 hover:text-white"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );
