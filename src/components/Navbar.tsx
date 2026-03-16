@@ -29,7 +29,7 @@ export default function Navbar() {
       isExternal: true 
     }, 
     // ປ່ຽນກັບມາເປັນລິ້ງ login ຄືເກົ່າເພື່ອໃຫ້ມັນກວດສອບສິດກ່ອນ
-    { name: locale === 'lo' ? 'ແອັດມິນ' : 'ADMIN', path: `/${locale}/admin/login` },
+    { name: locale === 'lo' ? 'ແອັດມິນ' : 'ADMIN', path: `/${locale}/admin/dashboard` },
   ];
 
   return (
