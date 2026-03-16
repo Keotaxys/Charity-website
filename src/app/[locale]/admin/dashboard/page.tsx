@@ -12,7 +12,7 @@ import TabHome from '@/components/admin/TabHome';
 import TabCampaigns from '@/components/admin/TabCampaigns';
 import TabVideos from '@/components/admin/TabVideos';
 import TabAbout from '@/components/admin/TabAbout';
-import TabDonations from '@/components/admin/TabDonations'; // 👈 Import ເພີ່ມໃໝ່
+import TabDonations from '@/components/admin/TabDonations';
 
 export default function AdminDashboard() {
   const locale = useLocale();
@@ -36,6 +36,7 @@ export default function AdminDashboard() {
     campaigns: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M3 2.25a.75.75 0 01.75.75v.54l1.838-.46a9.75 9.75 0 016.725.738l.108.054a8.25 8.25 0 005.58.652l3.109-.732a.75.75 0 01.917.81 47.784 47.784 0 00-.479 4.024m-18.068 4.253l2.8-.7a8.25 8.25 0 015.58.652l.108.054a9.75 9.75 0 006.725.738l1.838-.46V10.5a.75.75 0 01-.75.75h-.02a9.75 9.75 0 01-6.725-.738l-.108-.054a8.25 8.25 0 00-5.58-.652l-2.8.7V21a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75z" /></svg>,
     donations: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 7.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" /><path fillRule="evenodd" d="M1.5 4.875C1.5 3.839 2.34 3 3.375 3h17.25c1.035 0 1.875.84 1.875 1.875v14.25c0 1.036-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 011.5 19.125V4.875zm8.75 4.875c0-1.518 1.232-2.75 2.75-2.75s2.75 1.232 2.75 2.75-1.232 2.75-2.75 2.75-2.75-1.232-2.75-2.75z" clipRule="evenodd" /></svg>,
     about: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M3 2.25a.75.75 0 01.75-.75h16.5a.75.75 0 01.75.75v19.5a.75.75 0 01-.75.75H3.75a.75.75 0 01-.75-.75V2.25zM5.25 3v18h13.5V3H5.25zm2.25 3a.75.75 0 01.75-.75h2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-.75.75H8.25a.75.75 0 01-.75-.75V6zm5.25 0a.75.75 0 01.75-.75h2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-.75.75h-2.25a.75.75 0 01-.75-.75V6zm-5.25 5.25a.75.75 0 01.75-.75h2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-.75.75H8.25a.75.75 0 01-.75-.75v-2.25zm5.25 0a.75.75 0 01.75-.75h2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-.75.75h-2.25a.75.75 0 01-.75-.75v-2.25zm-5.25 5.25a.75.75 0 01.75-.75h2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-.75.75H8.25a.75.75 0 01-.75-.75v-2.25z" clipRule="evenodd" /></svg>,
+    history: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" /></svg>,
     team: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-4.38z" clipRule="evenodd" /><path d="M5.082 14.254a8.287 8.287 0 00-1.308 5.135 9.687 9.687 0 01-1.764-.44l-.115-.04a.563.563 0 01-.373-.487l-.01-.121a3.75 3.75 0 016.576-3.036c.32.491.565 1.042.721 1.629a8.258 8.258 0 00-3.727-2.64z" /><path d="M18.918 14.254a8.287 8.287 0 011.308 5.135 9.687 9.687 0 001.764-.44l.115-.04a.563.563 0 00.373-.487l.01-.121a3.75 3.75 0 00-6.576-3.036c-.32.491-.565 1.042-.721 1.629a8.258 8.258 0 013.727-2.64z" /></svg>,
     contact: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" /><path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" /></svg>,
     supporters: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z" /></svg>,
@@ -48,6 +49,7 @@ export default function AdminDashboard() {
     { id: 'campaigns', icon: Icons.campaigns, label: locale === 'lo' ? 'ໂຄງການ' : 'Campaigns' },
     { id: 'donations', icon: Icons.donations, label: locale === 'lo' ? 'ອະນຸມັດຍອດບໍລິຈາກ' : 'Approve Donations' },
     { id: 'about', icon: Icons.about, label: locale === 'lo' ? 'ກ່ຽວກັບພວກເຮົາ' : 'About Us' },
+    { id: 'history', icon: Icons.history, label: locale === 'lo' ? 'ປະຫວັດຂອງເຮົາ' : 'Our History' }, // 👈 ເພີ່ມໃໝ່
     { id: 'team', icon: Icons.team, label: locale === 'lo' ? 'ທີມງານ' : 'Our Team' },
     { id: 'contact', icon: Icons.contact, label: locale === 'lo' ? 'ຕິດຕໍ່ພວກເຮົາ' : 'Contact Us' },
     { id: 'supporters', icon: Icons.supporters, label: locale === 'lo' ? 'ຜູ້ສະໜັບສະໜູນ' : 'Supporters' },
@@ -99,16 +101,19 @@ export default function AdminDashboard() {
               </div>
             )}
 
+            {/* Render ແຖບທີ່ໃຊ້ງານແລ້ວ */}
             {activeTab === 'home' && <TabHome showMessage={showMessage} />}
             {activeTab === 'campaigns' && <TabCampaigns showMessage={showMessage} />}
             {activeTab === 'videos' && <TabVideos showMessage={showMessage} />}
             {activeTab === 'about' && <TabAbout showMessage={showMessage} />}
-            {activeTab === 'donations' && <TabDonations showMessage={showMessage} />} {/* 👈 Render TabDonations ຢູ່ບ່ອນນີ້ */}
+            {activeTab === 'donations' && <TabDonations showMessage={showMessage} />}
 
-            {['team', 'contact', 'supporters'].includes(activeTab) && (
+            {/* ແຖບທີ່ຍັງລໍຖ້າການພັດທະນາ (Placeholder) */}
+            {['history', 'team', 'contact', 'supporters'].includes(activeTab) && (
               <div className="bg-white p-12 rounded-[2.5rem] shadow-sm border border-gray-100 text-center animate-fade-in-up">
                 <div className="text-teal-600 flex justify-center mb-6">
                   <div className="p-6 bg-teal-50 rounded-full">
+                    {activeTab === 'history' && <span className="w-12 h-12 block">{Icons.history}</span>}
                     {activeTab === 'team' && <span className="w-12 h-12 block">{Icons.team}</span>}
                     {activeTab === 'contact' && <span className="w-12 h-12 block">{Icons.contact}</span>}
                     {activeTab === 'supporters' && <span className="w-12 h-12 block">{Icons.supporters}</span>}
