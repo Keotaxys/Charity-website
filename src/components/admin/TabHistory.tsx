@@ -26,13 +26,11 @@ export default function TabHistory({ showMessage }: { showMessage: (text: string
   });
   const [loadingMilestone, setLoadingMilestone] = useState(false);
 
-  // ໂຫຼດຂໍ້ມູນທັງໝົດເມື່ອເປີດໜ້າ
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
-    // ໂຫຼດ Page Settings
     try {
       const docRef = doc(db, 'settings', 'history_page');
       const docSnap = await getDoc(docRef);
@@ -41,7 +39,6 @@ export default function TabHistory({ showMessage }: { showMessage: (text: string
       console.error("Error fetching settings:", error);
     }
 
-    // ໂຫຼດ Milestones
     try {
       const q = query(collection(db, 'history_milestones'), orderBy('year', 'asc'));
       const snapshot = await getDocs(q);
@@ -51,7 +48,6 @@ export default function TabHistory({ showMessage }: { showMessage: (text: string
     }
   };
 
-  // ຟັງຊັນບັນທຶກ Page Settings
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoadingSettings(true);
@@ -68,7 +64,6 @@ export default function TabHistory({ showMessage }: { showMessage: (text: string
     setPageSettings({ ...pageSettings, [e.target.name]: e.target.value });
   };
 
-  // ຟັງຊັນບັນທຶກ / ແກ້ໄຂ Milestone
   const handleSaveMilestone = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoadingMilestone(true);
@@ -94,7 +89,6 @@ export default function TabHistory({ showMessage }: { showMessage: (text: string
     setLoadingMilestone(false);
   };
 
-  // ຟັງຊັນກົດປຸ່ມແກ້ໄຂ
   const handleEditClick = (item: any) => {
     setFormData({
       year: item.year, title_lo: item.title_lo, title_en: item.title_en,
@@ -104,7 +98,6 @@ export default function TabHistory({ showMessage }: { showMessage: (text: string
     setEditId(item.id);
   };
 
-  // ຟັງຊັນລຶບ
   const handleDeleteClick = async (id: string) => {
     if (confirm('ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລຶບປະຫວັດປີນີ້?')) {
       try {
@@ -117,95 +110,101 @@ export default function TabHistory({ showMessage }: { showMessage: (text: string
     }
   };
 
+  const inputClass = "w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium transition-all";
+
   return (
     <div className="space-y-8 animate-fade-in-up">
+      {/* Main Header */}
       <div className="flex items-center gap-3 border-b border-gray-100 pb-6 bg-white p-8 rounded-3xl shadow-sm">
         <div className="text-teal-600 bg-teal-50 p-3 rounded-full">
           <svg className="w-8 h-8 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" /></svg>
         </div>
         <div>
-          <h2 className="text-2xl font-black text-gray-900">ຈັດການ "ປະຫວັດຂອງພວກເຮົາ" (Our History)</h2>
-          <p className="text-gray-500 text-sm mt-1">ຕັ້ງຄ່າຂໍ້ຄວາມ ແລະ ເພີ່ມເຫດການສຳຄັນໃນແຕ່ລະປີ</p>
+          <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">ຈັດການ "ປະຫວັດຂອງພວກເຮົາ"</h2>
+          <p className="text-gray-500 text-sm mt-1 font-bold">HISTORY & TIMELINE MANAGEMENT</p>
         </div>
       </div>
 
-      {/* --- 1. ຕັ້ງຄ່າໜ້າ Header & Footer --- */}
+      {/* --- 1. Page Settings (Header & Footer) --- */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-3">
-          <span className="text-xl">1️⃣</span> ຕັ້ງຄ່າຂໍ້ຄວາມ (Page Settings)
+        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-4">
+          <svg className="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" /><path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z" /></svg>
+          1. ຕັ້ງຄ່າຂໍ້ຄວາມ (Page Settings)
         </h3>
-        <form onSubmit={handleSaveSettings} className="space-y-6">
+        <form onSubmit={handleSaveSettings} className="space-y-8">
           <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
-            <h4 className="font-bold text-teal-700 mb-4">» ສ່ວນຫົວ (Header)</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input type="text" name="header_title_lo" placeholder="ຫົວຂໍ້ (ລາວ)" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium" value={pageSettings.header_title_lo} onChange={handleSettingsChange} required />
-              <input type="text" name="header_title_en" placeholder="ຫົວຂໍ້ (ອັງກິດ)" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium" value={pageSettings.header_title_en} onChange={handleSettingsChange} required />
-              <textarea name="header_subtitle_lo" placeholder="ຄຳອະທິບາຍ (ລາວ)" rows={2} className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium resize-none" value={pageSettings.header_subtitle_lo} onChange={handleSettingsChange} required></textarea>
-              <textarea name="header_subtitle_en" placeholder="ຄຳອະທິບາຍ (ອັງກິດ)" rows={2} className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium resize-none" value={pageSettings.header_subtitle_en} onChange={handleSettingsChange} required></textarea>
+            <h4 className="font-black text-teal-700 mb-4 text-sm uppercase">» ສ່ວນຫົວ (Header Section)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <input type="text" name="header_title_lo" placeholder="ຫົວຂໍ້ (ລາວ)" className={inputClass} value={pageSettings.header_title_lo} onChange={handleSettingsChange} required />
+              <input type="text" name="header_title_en" placeholder="ຫົວຂໍ້ (EN)" className={inputClass} value={pageSettings.header_title_en} onChange={handleSettingsChange} required />
+              <textarea name="header_subtitle_lo" placeholder="ຄຳອະທິບາຍ (ລາວ)" rows={2} className={`${inputClass} resize-none`} value={pageSettings.header_subtitle_lo} onChange={handleSettingsChange} required></textarea>
+              <textarea name="header_subtitle_en" placeholder="ຄຳອະທິບາຍ (EN)" rows={2} className={`${inputClass} resize-none`} value={pageSettings.header_subtitle_en} onChange={handleSettingsChange} required></textarea>
             </div>
           </div>
           
           <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
-            <h4 className="font-bold text-pink-600 mb-4">» ສ່ວນທ້າຍ (Footer - The Future)</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input type="text" name="footer_small_lo" placeholder="ຫົວຂໍ້ຍ່ອຍ (ລາວ)" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium" value={pageSettings.footer_small_lo} onChange={handleSettingsChange} required />
-              <input type="text" name="footer_small_en" placeholder="ຫົວຂໍ້ຍ່ອຍ (ອັງກິດ)" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium" value={pageSettings.footer_small_en} onChange={handleSettingsChange} required />
-              <input type="text" name="footer_title_lo" placeholder="ຫົວຂໍ້ໃຫຍ່ (ລາວ)" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium" value={pageSettings.footer_title_lo} onChange={handleSettingsChange} required />
-              <input type="text" name="footer_title_en" placeholder="ຫົວຂໍ້ໃຫຍ່ (ອັງກິດ)" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium" value={pageSettings.footer_title_en} onChange={handleSettingsChange} required />
-              <textarea name="footer_desc_lo" placeholder="ຄຳອະທິບາຍ (ລາວ)" rows={2} className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium resize-none" value={pageSettings.footer_desc_lo} onChange={handleSettingsChange} required></textarea>
-              <textarea name="footer_desc_en" placeholder="ຄຳອະທິບາຍ (ອັງກິດ)" rows={2} className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium resize-none" value={pageSettings.footer_desc_en} onChange={handleSettingsChange} required></textarea>
-              <input type="text" name="footer_btn_lo" placeholder="ຂໍ້ຄວາມປຸ່ມກົດ (ລາວ)" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium" value={pageSettings.footer_btn_lo} onChange={handleSettingsChange} required />
-              <input type="text" name="footer_btn_en" placeholder="ຂໍ້ຄວາມປຸ່ມກົດ (ອັງກິດ)" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium" value={pageSettings.footer_btn_en} onChange={handleSettingsChange} required />
+            <h4 className="font-black text-pink-600 mb-4 text-sm uppercase">» ສ່ວນທ້າຍ (Footer Section)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <input type="text" name="footer_small_lo" placeholder="ຫົວຂໍ້ຍ່ອຍ (ລາວ)" className={inputClass} value={pageSettings.footer_small_lo} onChange={handleSettingsChange} required />
+              <input type="text" name="footer_small_en" placeholder="ຫົວຂໍ້ຍ່ອຍ (EN)" className={inputClass} value={pageSettings.footer_small_en} onChange={handleSettingsChange} required />
+              <input type="text" name="footer_title_lo" placeholder="ຫົວຂໍ້ໃຫຍ່ (ລາວ)" className={inputClass} value={pageSettings.footer_title_lo} onChange={handleSettingsChange} required />
+              <input type="text" name="footer_title_en" placeholder="ຫົວຂໍ້ໃຫຍ່ (EN)" className={inputClass} value={pageSettings.footer_title_en} onChange={handleSettingsChange} required />
+              <textarea name="footer_desc_lo" placeholder="ເນື້ອຫາ (ລາວ)" rows={2} className={`${inputClass} resize-none`} value={pageSettings.footer_desc_lo} onChange={handleSettingsChange} required></textarea>
+              <textarea name="footer_desc_en" placeholder="ເນື້ອຫາ (EN)" rows={2} className={`${inputClass} resize-none`} value={pageSettings.footer_desc_en} onChange={handleSettingsChange} required></textarea>
+              <input type="text" name="footer_btn_lo" placeholder="ປຸ່ມກົດ (ລາວ)" className={inputClass} value={pageSettings.footer_btn_lo} onChange={handleSettingsChange} required />
+              <input type="text" name="footer_btn_en" placeholder="ປຸ່ມກົດ (EN)" className={inputClass} value={pageSettings.footer_btn_en} onChange={handleSettingsChange} required />
             </div>
           </div>
-          <button type="submit" disabled={loadingSettings} className="bg-gray-900 hover:bg-gray-800 text-white font-black py-4 px-8 rounded-xl transition-all disabled:bg-gray-400">
+          
+          <button type="submit" disabled={loadingSettings} className="w-full md:w-auto bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-12 rounded-xl transition-all shadow-md hover:shadow-teal-600/30 uppercase tracking-widest">
             {loadingSettings ? 'ກຳລັງບັນທຶກ...' : 'ບັນທຶກການຕັ້ງຄ່າ'}
           </button>
         </form>
       </div>
 
-      {/* --- 2. ຟອມເພີ່ມ Timeline --- */}
+      {/* --- 2. Timeline Milestone Form --- */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-teal-100">
-        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-3">
-          <span className="text-xl">2️⃣</span> {isEditing ? 'ແກ້ໄຂເຫດການ (Edit Milestone)' : 'ເພີ່ມເຫດການໃໝ່ (Add New Milestone)'}
+        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-4">
+          <svg className="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" /></svg>
+          {isEditing ? 'ແກ້ໄຂເຫດການ (Edit Milestone)' : 'ເພີ່ມເຫດການໃໝ່ (Add Milestone)'}
         </h3>
         <form onSubmit={handleSaveMilestone} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-1">
-              <label className="block text-gray-700 font-bold mb-2 text-sm">ປີ (Year)</label>
-              <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-bold text-xl text-center" placeholder="ຕົວຢ່າງ: 2024" value={formData.year} onChange={(e) => setFormData({...formData, year: e.target.value})} />
+              <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">ປີ (Year)</label>
+              <input type="text" required className={`${inputClass} text-center text-xl font-black`} placeholder="2024" value={formData.year} onChange={(e) => setFormData({...formData, year: e.target.value})} />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-gray-700 font-bold mb-2 text-sm">ລິ້ງຮູບພາບ (Image URL)</label>
-              <input type="url" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" placeholder="https://..." value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} />
+              <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">ລິ້ງຮູບພາບ (Image URL)</label>
+              <input type="url" required className={inputClass} placeholder="https://..." value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-700 font-bold mb-2 text-sm">ຫົວຂໍ້ (ລາວ)</label>
-              <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" value={formData.title_lo} onChange={(e) => setFormData({...formData, title_lo: e.target.value})} />
+              <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">ຫົວຂໍ້ (ລາວ)</label>
+              <input type="text" required className={inputClass} value={formData.title_lo} onChange={(e) => setFormData({...formData, title_lo: e.target.value})} />
             </div>
             <div>
-              <label className="block text-gray-700 font-bold mb-2 text-sm">ຫົວຂໍ້ (ອັງກິດ)</label>
-              <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" value={formData.title_en} onChange={(e) => setFormData({...formData, title_en: e.target.value})} />
+              <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">ຫົວຂໍ້ (EN)</label>
+              <input type="text" required className={inputClass} value={formData.title_en} onChange={(e) => setFormData({...formData, title_en: e.target.value})} />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-700 font-bold mb-2 text-sm">ເນື້ອຫາ (ລາວ)</label>
-              <textarea required rows={4} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium resize-none" value={formData.desc_lo} onChange={(e) => setFormData({...formData, desc_lo: e.target.value})}></textarea>
+              <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">ເນື້ອຫາ (ລາວ)</label>
+              <textarea required rows={4} className={`${inputClass} resize-none`} value={formData.desc_lo} onChange={(e) => setFormData({...formData, desc_lo: e.target.value})}></textarea>
             </div>
             <div>
-              <label className="block text-gray-700 font-bold mb-2 text-sm">ເນື້ອຫາ (ອັງກິດ)</label>
-              <textarea required rows={4} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium resize-none" value={formData.desc_en} onChange={(e) => setFormData({...formData, desc_en: e.target.value})}></textarea>
+              <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">ເນື້ອຫາ (EN)</label>
+              <textarea required rows={4} className={`${inputClass} resize-none`} value={formData.desc_en} onChange={(e) => setFormData({...formData, desc_en: e.target.value})}></textarea>
             </div>
           </div>
           <div className="flex gap-4">
-            <button type="submit" disabled={loadingMilestone} className="flex-1 bg-teal-600 text-white font-black py-4 rounded-xl hover:bg-teal-700 transition-all uppercase tracking-wide">
-              {loadingMilestone ? 'ກຳລັງບັນທຶກ...' : (isEditing ? 'ບັນທຶກການແກ້ໄຂ' : 'ເພີ່ມເຫດການໃໝ່')}
+            <button type="submit" disabled={loadingMilestone} className="flex-1 bg-teal-600 text-white font-black py-4 rounded-xl hover:bg-teal-700 transition-all shadow-md uppercase tracking-widest">
+              {loadingMilestone ? 'ກຳລັງປະມວນຜົນ...' : (isEditing ? 'ບັນທຶກການແກ້ໄຂ' : 'ເພີ່ມເຫດການລົງ Timeline')}
             </button>
             {isEditing && (
-              <button type="button" onClick={() => { setIsEditing(false); setEditId(null); setFormData({year: '', title_lo: '', title_en: '', desc_lo: '', desc_en: '', image: ''}); }} className="flex-1 bg-gray-100 text-gray-600 hover:bg-gray-200 font-black py-4 rounded-xl transition-all uppercase tracking-wide">
+              <button type="button" onClick={() => { setIsEditing(false); setEditId(null); setFormData({year:'', title_lo:'', title_en:'', desc_lo:'', desc_en:'', image:''}); }} className="flex-1 bg-gray-100 text-gray-500 hover:bg-gray-200 font-black py-4 rounded-xl transition-all uppercase tracking-widest">
                 ຍົກເລີກ
               </button>
             )}
@@ -213,27 +212,30 @@ export default function TabHistory({ showMessage }: { showMessage: (text: string
         </form>
       </div>
 
-      {/* --- 3. ລາຍການ Timeline ທີ່ເພີ່ມແລ້ວ --- */}
+      {/* --- 3. Milestone List --- */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-        <h3 className="text-xl font-black text-gray-900 mb-6 border-b border-gray-100 pb-3">ລາຍການປະຫວັດທັງໝົດ</h3>
+        <h3 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
+          <svg className="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M2.625 6.75a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875 0A.75.75 0 018.25 6h12a.75.75 0 010 1.5h-12a.75.75 0 01-.75-.75zM2.625 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zM8.25 11.25a.75.75 0 000 1.5h12a.75.75 0 000-1.5h-12zm-5.625 5.25a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875 0a.75.75 0 01.75-.75h12a.75.75 0 010 1.5h-12a.75.75 0 01-.75-.75z" clipRule="evenodd" /></svg>
+          ລາຍການປະຫວັດທັງໝົດ
+        </h3>
         {milestones.length === 0 ? (
-          <p className="text-gray-500 text-center py-6 bg-gray-50 rounded-xl">ຍັງບໍ່ມີຂໍ້ມູນປະຫວັດໃນລະບົບ.</p>
+          <p className="text-gray-400 text-center py-10 font-bold bg-gray-50 rounded-2xl border border-dashed border-gray-200">ຍັງບໍ່ມີຂໍ້ມູນໃນລະບົບ.</p>
         ) : (
           <div className="space-y-4">
             {milestones.map((item) => (
-              <div key={item.id} className="flex flex-col md:flex-row items-center justify-between p-4 bg-white hover:bg-gray-50 rounded-xl border border-gray-200 gap-4 transition-colors">
+              <div key={item.id} className="group flex flex-col md:flex-row items-center justify-between p-5 bg-white hover:bg-teal-50/30 rounded-[1.5rem] border border-gray-100 transition-all">
                 <div className="flex items-center gap-6 w-full md:w-auto">
-                  <div className="w-16 h-16 bg-teal-50 text-teal-600 font-black text-xl flex items-center justify-center rounded-2xl shrink-0">
+                  <div className="w-16 h-16 bg-teal-600 text-white font-black text-xl flex items-center justify-center rounded-2xl shadow-lg shrink-0">
                     {item.year}
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-900 text-lg line-clamp-1">{item.title_lo}</h4>
-                    <p className="text-sm text-gray-500 line-clamp-1">{item.desc_lo}</p>
+                    <h4 className="font-black text-gray-900 text-lg line-clamp-1">{item.title_lo}</h4>
+                    <p className="text-sm text-gray-500 font-bold line-clamp-1">{item.desc_lo}</p>
                   </div>
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  <button onClick={() => handleEditClick(item)} className="text-teal-600 font-bold bg-teal-50 hover:bg-teal-100 px-4 py-2 rounded-lg transition-colors text-sm">ແກ້ໄຂ</button>
-                  <button onClick={() => handleDeleteClick(item.id)} className="text-pink-500 font-bold bg-pink-50 hover:bg-pink-100 px-4 py-2 rounded-lg transition-colors text-sm">ລຶບ</button>
+                <div className="flex gap-2 mt-4 md:mt-0 w-full md:w-auto shrink-0">
+                  <button onClick={() => handleEditClick(item)} className="flex-1 md:flex-none text-teal-600 font-black bg-teal-50 hover:bg-teal-600 hover:text-white px-5 py-2.5 rounded-xl transition-all text-xs uppercase">ແກ້ໄຂ</button>
+                  <button onClick={() => handleDeleteClick(item.id)} className="flex-1 md:flex-none text-pink-500 font-black bg-pink-50 hover:bg-pink-500 hover:text-white px-5 py-2.5 rounded-xl transition-all text-xs uppercase">ລຶບ</button>
                 </div>
               </div>
             ))}
