@@ -13,7 +13,6 @@ export default function HomeHero() {
   useEffect(() => {
     const fetchHeroSettings = async () => {
       try {
-        // ດຶງຂໍ້ມູນຈາກ Collection 'settings' Document 'homepage'
         const docRef = doc(db, 'settings', 'homepage'); 
         const docSnap = await getDoc(docRef);
         
@@ -27,16 +26,14 @@ export default function HomeHero() {
     fetchHeroSettings();
   }, []);
 
-  // ດຶງຂໍ້ມູນວິດີໂອ (ຮອງຮັບຫຼາຍຊື່ທີ່ອາດຈະຕັ້ງໄວ້ໃນ Admin)
   const videoUrl = data?.hero_video_url || data?.video_url || ''; 
   
-  // ດຶງຂໍ້ມູນຫົວຂໍ້ (ດັກຈັບທຸກຊື່ທີ່ເປັນໄປໄດ້: title_lo, hero_title_lo, header_title_lo)
   const titleLo = data?.title_lo || data?.hero_title_lo || data?.header_title_lo || 'ຍິນດີຕ້ອນຮັບສູ່ ໂຄງການຊ່ວຍເຫຼືອສັງຄົມ';
   const titleEn = data?.title_en || data?.hero_title_en || data?.header_title_en || 'WELCOME TO OUR SOCIETY PROJECT';
   
-  // ດຶງຂໍ້ມູນຄຳອະທິບາຍ (ດັກຈັບທຸກຊື່: subtitle_lo, desc_lo, hero_desc_lo)
-  const descLo = data?.subtitle_lo || data?.desc_lo || data?.hero_desc_lo || data?.header_subtitle_lo || 'ພວກເຮົາມີພາລະກິດໃນການປ່ຽນແປງຊີວິດ ແລະ ສ້າງສັງຄົມທີ່ໜ້າຢູ່ໄປພ້ອມໆກັນ.';
-  const descEn = data?.subtitle_en || data?.desc_en || data?.hero_desc_en || data?.header_subtitle_en || 'Our mission is to transform lives and build a better society together.';
+  // 💡 ອັບເດດ: ເພີ່ມການດັກຈັບ description_lo ແລະ hero_subtitle_lo ເຂົ້າໄປຕື່ມ
+  const descLo = data?.description_lo || data?.hero_subtitle_lo || data?.subtitle_lo || data?.desc_lo || data?.hero_desc_lo || 'ພວກເຮົາມີພາລະກິດໃນການປ່ຽນແປງຊີວິດ ແລະ ສ້າງສັງຄົມທີ່ໜ້າຢູ່ໄປພ້ອມໆກັນ.';
+  const descEn = data?.description_en || data?.hero_subtitle_en || data?.subtitle_en || data?.desc_en || data?.hero_desc_en || 'Our mission is to transform lives and build a better society together.';
 
   const title = locale === 'lo' ? titleLo : titleEn;
   const subtitle = locale === 'lo' ? descLo : descEn;
@@ -49,14 +46,12 @@ export default function HomeHero() {
         <video 
           key={videoUrl}
           autoPlay loop muted playsInline
-          // ປັບ opacity ຈາກ 60 ເປັນ 90 ເພື່ອໃຫ້ວິດີໂອແຈ້ງຂຶ້ນ
           className="absolute z-0 w-auto min-w-full min-h-full max-w-none object-cover opacity-90"
         >
           <source src={videoUrl} type="video/mp4" />
         </video>
       )}
       
-      {/* ເງົາດຳຊ້ອນທັບ: ປັບຈາກ bg-black/40 (ມືດ 40%) ມາເປັນ bg-black/20 (ມືດ 20%) */}
       <div className="absolute inset-0 bg-black/20 z-10"></div>
 
       <div className="relative z-20 text-center text-white px-6 animate-fade-in-up">
