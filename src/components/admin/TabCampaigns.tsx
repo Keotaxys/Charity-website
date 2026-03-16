@@ -223,7 +223,7 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
               {loadingCampaign ? 'ກຳລັງບັນທຶກ...' : (isEditing ? 'ບັນທຶກການແກ້ໄຂ' : 'ສ້າງ ແລະ ເຜີຍແຜ່')}
             </button>
             {isEditing && (
-              <button type="button" onClick={handleCancelEdit} className="flex-1 bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 font-black py-4 rounded-xl transition-all shadow-sm uppercase tracking-wide">
+              <button type="button" onClick={handleCancelEdit} className="flex-1 bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 font-teal py-4 rounded-xl transition-all shadow-sm uppercase tracking-wide">
                 ຍົກເລີກ (Cancel)
               </button>
             )}
