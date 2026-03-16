@@ -2,17 +2,30 @@
 
 import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy } from 'firebase/firestore';
 import { useLocale } from 'next-intl';
 import Link from 'next/link';
 
 export default function CampaignsPage() {
   const locale = useLocale();
   const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [pageSettings, setPageSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCampaigns = async () => {
+    const fetchData = async () => {
+      // 1. ດຶງຂໍ້ມູນການຕັ້ງຄ່າໜ້າ (Header Text)
+      try {
+        const settingsRef = doc(db, 'settings', 'campaigns_page');
+        const settingsSnap = await getDoc(settingsRef);
+        if (settingsSnap.exists()) {
+          setPageSettings(settingsSnap.data());
+        }
+      } catch (error) {
+        console.error("Error fetching campaign page settings:", error);
+      }
+
+      // 2. ດຶງຂໍ້ມູນລາຍການໂຄງການທັງໝົດ
       try {
         const q = query(collection(db, "campaigns"), orderBy("created_at", "desc"));
         const querySnapshot = await getDocs(q);
@@ -24,26 +37,33 @@ export default function CampaignsPage() {
         setLoading(false);
       }
     };
-    fetchCampaigns();
+    
+    fetchData();
   }, []);
+
+  // ກຳນົດຄ່າ Fallback ຖ້າຍັງບໍ່ໄດ້ຕັ້ງຄ່າໃນ Admin
+  const headerTitle = pageSettings 
+    ? (locale === 'lo' ? pageSettings.header_title_lo : pageSettings.header_title_en) 
+    : (locale === 'lo' ? 'ທຸກໆການຊ່ວຍເຫຼືອມີຄວາມໝາຍ' : 'EVERY CONTRIBUTION MATTERS');
+    
+  const headerSubtitle = pageSettings 
+    ? (locale === 'lo' ? pageSettings.header_subtitle_lo : pageSettings.header_subtitle_en) 
+    : (locale === 'lo' ? 'ຮ່ວມເປັນສ່ວນໜຶ່ງໃນການປ່ຽນແປງສັງຄົມ ຜ່ານໂຄງການຕ່າງໆຂອງພວກເຮົາ. ເງິນທຸກກີບຈະຖືກນຳໄປໃຊ້ຢ່າງໂປ່ງໃສ ແລະ ເກີດປະໂຫຍດສູງສຸດ.' : 'Be a part of social change through our various campaigns. Every cent is used transparently for maximum impact.');
 
   return (
     <div className="bg-white min-h-screen pb-24">
       
-      {/* 1. ສ່ວນຫົວ (Header) - ປັບ py-32 ລົງມາເປັນ py-20 ເພື່ອຫຼຸດຄວາມສູງ */}
+      {/* 1. ສ່ວນຫົວ (Header) */}
       <section className="bg-gray-100 py-20 px-6 border-b border-gray-200 relative overflow-hidden">
-        
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-500/15 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-400/15 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4"></div>
 
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tighter uppercase drop-shadow-sm">
-            {locale === 'lo' ? 'ທຸກໆການຊ່ວຍເຫຼືອມີຄວາມໝາຍ' : 'EVERY CONTRIBUTION MATTERS'}
+            {headerTitle}
           </h1>
           <p className="text-lg text-gray-600 font-medium max-w-2xl mx-auto leading-relaxed">
-            {locale === 'lo' 
-              ? 'ຮ່ວມເປັນສ່ວນໜຶ່ງໃນການປ່ຽນແປງສັງຄົມ ຜ່ານໂຄງການຕ່າງໆຂອງພວກເຮົາ. ເງິນທຸກກີບຈະຖືກນຳໄປໃຊ້ຢ່າງໂປ່ງໃສ ແລະ ເກີດປະໂຫຍດສູງສຸດ.' 
-              : 'Be a part of social change through our various campaigns. Every cent is used transparently for maximum impact.'}
+            {headerSubtitle}
           </p>
         </div>
       </section>
@@ -52,68 +72,84 @@ export default function CampaignsPage() {
       <section className="max-w-7xl mx-auto px-6 py-16">
         
         {loading ? (
-          <div className="py-20 text-center font-bold text-teal-600 text-xl">
-            {locale === 'lo' ? 'ກຳລັງໂຫຼດຂໍ້ມູນ...' : 'Loading campaigns...'}
+          <div className="py-20 flex flex-col items-center justify-center">
+            <div className="w-12 h-12 border-4 border-teal-100 border-t-teal-600 rounded-full animate-spin mb-4"></div>
+            <p className="font-bold text-teal-600 text-lg uppercase tracking-widest">
+              {locale === 'lo' ? 'ກຳລັງໂຫຼດຂໍ້ມູນ...' : 'Loading campaigns...'}
+            </p>
           </div>
         ) : campaigns.length === 0 ? (
-          <div className="py-20 text-center text-gray-500">
-            {locale === 'lo' ? 'ຍັງບໍ່ມີໂຄງການໃນຂະນະນີ້.' : 'No campaigns available at the moment.'}
+          <div className="py-32 text-center bg-gray-50 rounded-[2.5rem] border border-dashed border-gray-200">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+            </div>
+            <p className="text-gray-500 font-bold text-xl">
+              {locale === 'lo' ? 'ຍັງບໍ່ມີໂຄງການໃນຂະນະນີ້' : 'No campaigns available at the moment'}
+            </p>
+            <p className="text-gray-400 mt-2">
+              {locale === 'lo' ? 'ກະລຸນາກັບມາຕິດຕາມໃໝ່ໃນພາຍຫຼັງ.' : 'Please check back later.'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
             {campaigns.map((item) => {
-              const percent = item.target_amount > 0 
-                ? Math.min(Math.round((item.raised_amount / item.target_amount) * 100), 100) 
-                : 0;
+              const target = Number(item.target_amount) || 0;
+              const raised = Number(item.raised_amount) || 0;
+              const percent = target > 0 ? Math.min(Math.round((raised / target) * 100), 100) : 0;
+              
+              const title = locale === 'lo' ? item.title_lo : item.title_en;
+              const desc = locale === 'lo' ? item.description_lo : item.description_en;
               
               return (
-                <Link href={`/${locale}/campaigns/${item.id}`} key={item.id} className="group bg-white rounded-[2rem] shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col transform hover:-translate-y-2">
+                <Link href={`/${locale}/campaigns/${item.id}`} key={item.id} className="group bg-white rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col transform hover:-translate-y-2">
                   
                   {/* ຮູບໜ້າປົກ */}
                   <div className="relative aspect-[4/3] overflow-hidden bg-gray-100 shrink-0">
                     <img 
                       src={item.cover_image || 'https://via.placeholder.com/800x600?text=No+Image'} 
                       className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700"
-                      alt="cover"
+                      alt={title}
                     />
-                    <div className="absolute top-4 left-4">
-                      <span className="bg-pink-400 text-white px-4 py-1.5 rounded-full text-xs font-black uppercase shadow-md tracking-widest">
+                    {/* ແສງເງົາໄລ່ລະດັບ */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    
+                    <div className="absolute top-4 left-4 z-10">
+                      <span className="bg-pink-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase shadow-md tracking-widest">
                         {item.status || 'Active'}
                       </span>
                     </div>
                   </div>
 
                   {/* ລາຍລະອຽດ */}
-                  <div className="p-6 md:p-8 flex-1 flex flex-col">
-                    
-                    {/* ເພີ່ມຊື່ໂຄງການ (Title) ຕາມທີ່ເຈົ້າຕ້ອງການ */}
+                  <div className="p-6 md:p-8 flex-1 flex flex-col relative bg-white">
                     <h3 className="text-xl md:text-2xl font-black text-gray-900 group-hover:text-teal-600 transition-colors mb-3 line-clamp-2 leading-snug">
-                      {locale === 'lo' ? item.title_lo : item.title_en}
+                      {title}
                     </h3>
                     
-                    {/* ຄຳອະທິບາຍ (Description) ຫຍໍ້ */}
-                    <p className="text-gray-500 mb-6 text-sm md:text-base line-clamp-2 leading-relaxed">
-                      {locale === 'lo' ? item.desc_lo : item.desc_en}
+                    <p className="text-gray-500 mb-8 text-sm md:text-base line-clamp-2 leading-relaxed">
+                      {desc}
                     </p>
                     
                     {/* ແຖບຄວາມຄືບໜ້າ */}
                     <div className="mt-auto space-y-3">
-                      <div className="flex justify-between text-sm font-bold">
+                      <div className="flex justify-between text-sm font-black uppercase tracking-wider">
                         <span className="text-teal-600">{percent}% {locale === 'lo' ? 'ສຳເລັດ' : 'Raised'}</span>
-                        <span className="text-gray-400">{Number(item.target_amount).toLocaleString()} LAK</span>
+                        <span className="text-gray-400">{target.toLocaleString()} LAK</span>
                       </div>
                       
-                      <div className="h-2.5 w-full bg-gray-100 rounded-full overflow-hidden shadow-inner">
-                        <div className="h-full bg-gradient-to-r from-teal-400 to-teal-600 rounded-full transition-all duration-1000" style={{ width: `${percent}%` }}></div>
+                      <div className="h-2.5 w-full bg-gray-100 rounded-full overflow-hidden shadow-inner relative">
+                        <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-teal-400 to-teal-600 rounded-full transition-all duration-1000" style={{ width: `${percent}%` }}></div>
                       </div>
                       
-                      <div className="pt-2 flex justify-between items-end">
-                        <span className="text-gray-900 font-black text-lg md:text-xl">
-                          {Number(item.raised_amount).toLocaleString()} <span className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-widest">LAK</span>
-                        </span>
-                        <span className="text-teal-600 font-bold text-sm flex items-center gap-1 group-hover:underline">
-                          {locale === 'lo' ? 'ເບິ່ງເພີ່ມເຕີມ' : 'View Details'}
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                      <div className="pt-3 flex justify-between items-end">
+                        <div>
+                           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">{locale === 'lo' ? 'ຍອດບໍລິຈາກລວມ' : 'Total Raised'}</p>
+                           <span className="text-gray-900 font-black text-xl md:text-2xl leading-none block">
+                             {raised.toLocaleString()} <span className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-widest">LAK</span>
+                           </span>
+                        </div>
+                        <span className="w-10 h-10 bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white rounded-full flex items-center justify-center transition-colors">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                         </span>
                       </div>
                     </div>
