@@ -29,10 +29,14 @@ export default function HomeAbout() {
   return (
     <section className="bg-white py-24 px-6">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+        
+        {/* ຮູບພາບ (ເບື້ອງຊ້າຍ) */}
         <div className="w-full lg:w-1/2 relative">
           <div className="absolute -inset-4 bg-pink-100 rounded-3xl transform -rotate-3 z-0"></div>
           <img src={image} alt="About Us" className="relative z-10 w-full h-auto object-cover rounded-3xl shadow-xl aspect-[4/3] transition-opacity duration-500" />
         </div>
+
+        {/* ເນື້ອຫາ (ເບື້ອງຂວາ) */}
         <div className="w-full lg:w-1/2 space-y-8 mt-10 lg:mt-0 relative z-10">
           <div>
             <h3 className="text-teal-600 font-bold tracking-widest uppercase text-sm mb-3">{locale === 'lo' ? 'ກ່ຽວກັບພວກເຮົາ' : 'WHO WE ARE'}</h3>
@@ -42,8 +46,13 @@ export default function HomeAbout() {
             <p>{desc1}</p>
             {desc2 && <p>{desc2}</p>}
           </div>
+          
+          {/* ປຸ່ມກົດທີ່ປ່ຽນສີໃໝ່ */}
           <div className="pt-4 flex flex-col sm:flex-row gap-4">
-            <Link href={`/${locale}/about`} className="bg-gray-900 hover:bg-black text-white text-center font-black py-4 px-8 rounded-full transition-all shadow-md hover:shadow-xl uppercase tracking-wide text-sm transform hover:-translate-y-1">
+            <Link 
+              href={`/${locale}/about`} 
+              className="bg-white border-2 border-teal-600 text-teal-600 hover:bg-teal-600 hover:text-white text-center font-black py-4 px-8 rounded-full transition-all uppercase tracking-wide text-sm transform hover:-translate-y-1"
+            >
               {locale === 'lo' ? 'ອ່ານປະຫວັດຂອງພວກເຮົາ' : 'READ OUR STORY'}
             </Link>
           </div>
