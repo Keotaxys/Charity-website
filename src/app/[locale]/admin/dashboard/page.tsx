@@ -7,10 +7,11 @@ import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import AdminGuard from '@/components/AdminGuard';
 
-// ນຳເຂົ້າ (Import) Components ທີ່ເຮົາຫາກໍແຍກອອກໄປ
+// ນຳເຂົ້າ (Import) Components ທີ່ເຮົາແຍກໄຟລ໌ໄວ້
 import TabHome from '@/components/admin/TabHome';
 import TabCampaigns from '@/components/admin/TabCampaigns';
 import TabVideos from '@/components/admin/TabVideos';
+import TabAbout from '@/components/admin/TabAbout'; // 👈 Import TabAbout ເຂົ້າມາແລ້ວ
 
 export default function AdminDashboard() {
   const locale = useLocale();
@@ -19,7 +20,6 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('home');
   const [message, setMessage] = useState({ text: '', type: '' });
 
-  // ຟັງຊັນສຳລັບສະແດງຂໍ້ຄວາມແຈ້ງເຕືອນ ທີ່ຈະຖືກສົ່ງຕໍ່ໄປໃຫ້ທຸກໆ Tab ໃຊ້ງານ
   const showMessage = (text: string, type: string) => {
     setMessage({ text, type });
     setTimeout(() => setMessage({ text: '', type: '' }), 3000);
@@ -42,7 +42,6 @@ export default function AdminDashboard() {
     logout: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M12 2.25a.75.75 0 01.75.75v9a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM6.166 5.106a.75.75 0 010 1.06 8.25 8.25 0 1011.668 0 .75.75 0 111.06-1.06c3.808 3.807 3.808 9.98 0 13.788-3.807 3.808-9.98 3.808-13.788 0-3.808-3.807-3.808-9.98 0-13.788a.75.75 0 011.06 0z" clipRule="evenodd" /></svg>
   };
 
-  // ເມນູຕ່າງໆ ພ້ອມການປ່ຽນພາສາອັດຕະໂນມັດ
   const menuItems = [
     { id: 'home', icon: Icons.home, label: locale === 'lo' ? 'ຕັ້ງຄ່າໜ້າຫຼັກ' : 'Home Settings' },
     { id: 'campaigns', icon: Icons.campaigns, label: locale === 'lo' ? 'ໂຄງການ' : 'Campaigns' },
@@ -62,9 +61,10 @@ export default function AdminDashboard() {
         <aside className="w-full md:w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
           <div className="p-6 border-b border-gray-100">
             <h1 className="text-2xl font-black text-teal-600 tracking-tighter uppercase">Admin Panel</h1>
-            <p className="text-xs text-gray-400 font-bold mt-1">BEAST.LAO MANAGEMENT</p>
+            <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-widest">BEAST.LAO MANAGEMENT</p>
           </div>
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          
+          <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
             {menuItems.map((item) => (
               <button
                 key={item.id}
@@ -80,6 +80,7 @@ export default function AdminDashboard() {
               </button>
             ))}
           </nav>
+
           <div className="p-4 border-t border-gray-100">
             <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-pink-500 hover:bg-pink-50 transition-all text-sm">
               {Icons.logout} {locale === 'lo' ? 'ອອກຈາກລະບົບ' : 'Logout'}
@@ -89,64 +90,46 @@ export default function AdminDashboard() {
 
         {/* Main Content */}
         <main className="flex-1 p-6 md:p-10 overflow-y-auto h-screen">
-          <div className="max-w-4xl">
+          <div className="max-w-5xl mx-auto">
             
             {message.text && (
-              <div className={`p-4 rounded-xl font-bold text-center border mb-6 shadow-sm ${
+              <div className={`p-4 rounded-xl font-bold text-center border mb-8 shadow-sm animate-fade-in ${
                 message.type === 'success' ? 'bg-teal-50 text-teal-600 border-teal-200' : 'bg-pink-50 text-pink-500 border-pink-200'
               }`}>
                 {message.text}
               </div>
             )}
 
-            {/* Render Component ຕາມແຖບທີ່ຖືກເລືອກ */}
+            {/* --- ແຖບທີ່ພັດທະນາສຳເລັດແລ້ວ --- */}
             {activeTab === 'home' && <TabHome showMessage={showMessage} />}
             {activeTab === 'campaigns' && <TabCampaigns showMessage={showMessage} />}
             {activeTab === 'videos' && <TabVideos showMessage={showMessage} />}
+            {activeTab === 'about' && <TabAbout showMessage={showMessage} />}  {/* 👈 ເອີ້ນໃຊ້ TabAbout ຢູ່ບ່ອນນີ້ */}
 
-            {/* ແຖບອື່ນໆ ທີ່ຍັງບໍ່ທັນແຍກໄຟລ໌ */}
-            {activeTab === 'donations' && (
-              <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center animate-fade-in-up">
-                <div className="text-teal-600 flex justify-center mb-4"><span className="w-16 h-16">{Icons.donations}</span></div>
-                <h2 className="text-2xl font-black text-gray-900 mb-2">{locale === 'lo' ? 'ອະນຸມັດຍອດບໍລິຈາກ' : 'Approve Donations'}</h2>
-                <p className="text-gray-500">{locale === 'lo' ? 'ລະບົບກວດສອບສະລິບໂອນເງິນ ແລະ ອະນຸມັດຍອດ ເພື່ອສະແດງໃນໜ້າເວັບ.' : 'Verify donation slips and approve amounts to display on the website.'}</p>
-                <p className="text-pink-500 font-bold mt-4">ກຳລັງພັດທະນາ...</p>
-              </div>
-            )}
-
-            {activeTab === 'about' && (
-              <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center animate-fade-in-up">
-                <div className="text-teal-600 flex justify-center mb-4"><span className="w-16 h-16">{Icons.about}</span></div>
-                <h2 className="text-2xl font-black text-gray-900 mb-2">{locale === 'lo' ? 'ກ່ຽວກັບພວກເຮົາ' : 'About Us'}</h2>
-                <p className="text-gray-500">{locale === 'lo' ? 'ແກ້ໄຂປະຫວັດຄວາມເປັນມາ ແລະ ພາລະກິດຂອງອົງກອນ.' : 'Edit organization history and mission.'}</p>
-                <p className="text-pink-500 font-bold mt-4">ກຳລັງພັດທະນາ...</p>
-              </div>
-            )}
-
-            {activeTab === 'team' && (
-              <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center animate-fade-in-up">
-                <div className="text-teal-600 flex justify-center mb-4"><span className="w-16 h-16">{Icons.team}</span></div>
-                <h2 className="text-2xl font-black text-gray-900 mb-2">{locale === 'lo' ? 'ຈັດການຂໍ້ມູນທີມງານ' : 'Manage Team'}</h2>
-                <p className="text-gray-500">{locale === 'lo' ? 'ເພີ່ມ, ແກ້ໄຂ, ລຶບ ລາຍຊື່ ແລະ ຂໍ້ມູນຂອງທີມງານ.' : 'Add, edit, or delete team members.'}</p>
-                <p className="text-pink-500 font-bold mt-4">ກຳລັງພັດທະນາ...</p>
-              </div>
-            )}
-
-            {activeTab === 'contact' && (
-              <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center animate-fade-in-up">
-                <div className="text-teal-600 flex justify-center mb-4"><span className="w-16 h-16">{Icons.contact}</span></div>
-                <h2 className="text-2xl font-black text-gray-900 mb-2">{locale === 'lo' ? 'ຕັ້ງຄ່າການຕິດຕໍ່' : 'Contact Settings'}</h2>
-                <p className="text-gray-500">{locale === 'lo' ? 'ແກ້ໄຂເບີໂທ, ອີເມວ, ທີ່ຢູ່ ແລະ ລິ້ງໂຊຊຽວມີເດຍ.' : 'Edit phone, email, address, and social links.'}</p>
-                <p className="text-pink-500 font-bold mt-4">ກຳລັງພັດທະນາ...</p>
-              </div>
-            )}
-
-            {activeTab === 'supporters' && (
-              <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center animate-fade-in-up">
-                <div className="text-teal-600 flex justify-center mb-4"><span className="w-16 h-16">{Icons.supporters}</span></div>
-                <h2 className="text-2xl font-black text-gray-900 mb-2">{locale === 'lo' ? 'ຜູ້ສະໜັບສະໜູນ' : 'Supporters'}</h2>
-                <p className="text-gray-500">{locale === 'lo' ? 'ເພີ່ມ, ແກ້ໄຂ, ລຶບ ລາຍຊື່ ແລະ ໂລໂກ້ຂອງຜູ້ສະໜັບສະໜູນຫຼັກ.' : 'Manage logos and details of primary supporters.'}</p>
-                <p className="text-pink-500 font-bold mt-4">ກຳລັງພັດທະນາ...</p>
+            {/* --- ແຖບທີ່ຍັງລໍຖ້າການພັດທະນາ (Placeholder) --- */}
+            {['donations', 'team', 'contact', 'supporters'].includes(activeTab) && (
+              <div className="bg-white p-12 rounded-[2.5rem] shadow-sm border border-gray-100 text-center animate-fade-in-up">
+                <div className="text-teal-600 flex justify-center mb-6">
+                  <div className="p-6 bg-teal-50 rounded-full">
+                    {activeTab === 'donations' && <span className="w-12 h-12 block">{Icons.donations}</span>}
+                    {activeTab === 'team' && <span className="w-12 h-12 block">{Icons.team}</span>}
+                    {activeTab === 'contact' && <span className="w-12 h-12 block">{Icons.contact}</span>}
+                    {activeTab === 'supporters' && <span className="w-12 h-12 block">{Icons.supporters}</span>}
+                  </div>
+                </div>
+                <h2 className="text-2xl font-black text-gray-900 mb-3">
+                  {menuItems.find(i => i.id === activeTab)?.label}
+                </h2>
+                <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
+                  {locale === 'lo' 
+                    ? 'ພາກສ່ວນນີ້ກຳລັງຢູ່ໃນຂັ້ນຕອນການພັດທະນາລະບົບຈັດການຂໍ້ມູນ.' 
+                    : 'This section is currently under development.'}
+                </p>
+                <div className="mt-8">
+                  <span className="inline-block px-4 py-2 bg-pink-50 text-pink-500 rounded-full text-xs font-black uppercase tracking-widest border border-pink-100">
+                    Coming Soon
+                  </span>
+                </div>
               </div>
             )}
 
