@@ -5,11 +5,16 @@ import { db } from '@/lib/firebase';
 import { doc, setDoc, getDoc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 
 export default function TabTeam({ showMessage }: { showMessage: (text: string, type: string) => void }) {
-  // 1. State ສຳລັບການຕັ້ງຄ່າໜ້າ Header
+  // 1. State ສຳລັບການຕັ້ງຄ່າໜ້າ Header ແລະ ປຸ່ມ CTA (ອາສາສະໝັກ)
   const [pageSettings, setPageSettings] = useState({
     header_title_lo: 'ທີມງານຂອງພວກເຮົາ', header_title_en: 'OUR TEAM',
-    header_subtitle_lo: 'ກຸ່ມຄົນຜູ້ຢູ່ເບື້ອງຫຼັງຄວາມສຳເລັດ ແລະ ຂັບເຄື່ອນທຸກໆໂຄງການດ້ວຍຄວາມຕັ້ງໃຈ.', 
-    header_subtitle_en: 'The dedicated people behind our success, driving every project forward.'
+    header_subtitle_lo: 'ກຸ່ມຄົນຜູ້ຢູ່ເບື້ອງຫຼັງຂັບເຄື່ອນພາລະກິດ ເພື່ອສ້າງຮອຍຍິ້ມໃຫ້ກັບສັງຄົມ.', 
+    header_subtitle_en: 'The people behind our mission, driving forward to bring smiles to society.',
+    
+    cta_title_lo: 'ມາຮ່ວມເປັນສ່ວນໜຶ່ງກັບພວກເຮົາ', cta_title_en: 'COME JOIN US',
+    cta_desc_lo: 'ພວກເຮົາຍິນດີຕ້ອນຮັບທຸກຄົນທີ່ມີໃຈຮັກໃນການຊ່ວຍເຫຼືອສັງຄົມ ເພື່ອມາເປັນອາສາສະໝັກໃນໂຄງການຕໍ່ໄປ.',
+    cta_desc_en: 'We welcome everyone with a passion for helping society to become a volunteer in our next projects.',
+    cta_btn_lo: 'ສະໝັກເປັນອາສາສະໝັກ', cta_btn_en: 'APPLY AS VOLUNTEER'
   });
   const [loadingSettings, setLoadingSettings] = useState(false);
 
@@ -46,7 +51,7 @@ export default function TabTeam({ showMessage }: { showMessage: (text: string, t
     }
   };
 
-  // ບັນທຶກ Header
+  // ບັນທຶກ Page Settings
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoadingSettings(true);
@@ -70,7 +75,7 @@ export default function TabTeam({ showMessage }: { showMessage: (text: string, t
     try {
       const memberData = {
         ...formData,
-        order_index: Number(formData.order_index) // ແປງເປັນຕົວເລກເພື່ອໃຫ້ລຽງລຳດັບໄດ້
+        order_index: Number(formData.order_index)
       };
 
       if (isEditing && editId) {
@@ -94,7 +99,6 @@ export default function TabTeam({ showMessage }: { showMessage: (text: string, t
     setLoadingMember(false);
   };
 
-  // ດຶງຂໍ້ມູນມາແກ້ໄຂ
   const handleEditClick = (item: any) => {
     setFormData({
       name_lo: item.name_lo, name_en: item.name_en, 
@@ -105,7 +109,6 @@ export default function TabTeam({ showMessage }: { showMessage: (text: string, t
     setEditId(item.id);
   };
 
-  // ລຶບສະມາຊິກ
   const handleDeleteClick = async (id: string) => {
     if (confirm('ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລຶບລາຍຊື່ທີມງານນີ້?')) {
       try {
@@ -130,34 +133,49 @@ export default function TabTeam({ showMessage }: { showMessage: (text: string, t
         </div>
       </div>
 
-      {/* --- 1. ຕັ້ງຄ່າໜ້າ Header --- */}
+      {/* --- 1. ຕັ້ງຄ່າໜ້າ (Page Settings) --- */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
         <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-3">
-          <span className="text-xl">1️⃣</span> ຕັ້ງຄ່າຂໍ້ຄວາມສ່ວນຫົວ (Page Header)
+          <span className="text-xl">1️⃣</span> ຕັ້ງຄ່າຂໍ້ຄວາມ (Page Settings)
         </h3>
-        <form onSubmit={handleSaveSettings} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-gray-700 font-bold mb-2 text-sm">ຫົວຂໍ້ (ລາວ)</label>
-              <input type="text" name="header_title_lo" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" value={pageSettings.header_title_lo} onChange={handleSettingsChange} />
-            </div>
-            <div>
-              <label className="block text-gray-700 font-bold mb-2 text-sm">ຫົວຂໍ້ (ອັງກິດ)</label>
-              <input type="text" name="header_title_en" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" value={pageSettings.header_title_en} onChange={handleSettingsChange} />
+        <form onSubmit={handleSaveSettings} className="space-y-8">
+          
+          <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
+            <h4 className="font-bold text-teal-700 mb-4">» ສ່ວນຫົວ (Header)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-700 font-bold mb-2 text-sm">ຫົວຂໍ້ (ລາວ)</label>
+                <input type="text" name="header_title_lo" required className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium" value={pageSettings.header_title_lo} onChange={handleSettingsChange} />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-bold mb-2 text-sm">ຫົວຂໍ້ (ອັງກິດ)</label>
+                <input type="text" name="header_title_en" required className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium" value={pageSettings.header_title_en} onChange={handleSettingsChange} />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-gray-700 font-bold mb-2 text-sm">ຄຳອະທິບາຍ (ລາວ)</label>
+                <textarea name="header_subtitle_lo" required rows={2} className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium resize-none" value={pageSettings.header_subtitle_lo} onChange={handleSettingsChange}></textarea>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-gray-700 font-bold mb-2 text-sm">ຄຳອະທິບາຍ (ອັງກິດ)</label>
+                <textarea name="header_subtitle_en" required rows={2} className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium resize-none" value={pageSettings.header_subtitle_en} onChange={handleSettingsChange}></textarea>
+              </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-gray-700 font-bold mb-2 text-sm">ຄຳອະທິບາຍ (ລາວ)</label>
-              <textarea name="header_subtitle_lo" required rows={2} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium resize-none" value={pageSettings.header_subtitle_lo} onChange={handleSettingsChange}></textarea>
-            </div>
-            <div>
-              <label className="block text-gray-700 font-bold mb-2 text-sm">ຄຳອະທິບາຍ (ອັງກິດ)</label>
-              <textarea name="header_subtitle_en" required rows={2} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium resize-none" value={pageSettings.header_subtitle_en} onChange={handleSettingsChange}></textarea>
+
+          <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
+            <h4 className="font-bold text-pink-600 mb-4">» ສ່ວນຊັກຊວນອາສາສະໝັກ (Call to Action)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input type="text" name="cta_title_lo" placeholder="ຫົວຂໍ້ (ລາວ)" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium" value={pageSettings.cta_title_lo} onChange={handleSettingsChange} required />
+              <input type="text" name="cta_title_en" placeholder="ຫົວຂໍ້ (ອັງກິດ)" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium" value={pageSettings.cta_title_en} onChange={handleSettingsChange} required />
+              <textarea name="cta_desc_lo" placeholder="ຂໍ້ຄວາມ (ລາວ)" rows={2} className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium resize-none" value={pageSettings.cta_desc_lo} onChange={handleSettingsChange} required></textarea>
+              <textarea name="cta_desc_en" placeholder="ຂໍ້ຄວາມ (ອັງກິດ)" rows={2} className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium resize-none" value={pageSettings.cta_desc_en} onChange={handleSettingsChange} required></textarea>
+              <input type="text" name="cta_btn_lo" placeholder="ຂໍ້ຄວາມປຸ່ມກົດ (ລາວ)" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium" value={pageSettings.cta_btn_lo} onChange={handleSettingsChange} required />
+              <input type="text" name="cta_btn_en" placeholder="ຂໍ້ຄວາມປຸ່ມກົດ (ອັງກິດ)" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none font-medium" value={pageSettings.cta_btn_en} onChange={handleSettingsChange} required />
             </div>
           </div>
-          <button type="submit" disabled={loadingSettings} className="bg-gray-900 hover:bg-gray-800 text-white font-black py-3 px-8 rounded-xl transition-all disabled:bg-gray-400">
-            {loadingSettings ? 'ກຳລັງບັນທຶກ...' : 'ບັນທຶກ Header'}
+
+          <button type="submit" disabled={loadingSettings} className="bg-gray-900 hover:bg-gray-800 text-white font-black py-4 px-8 rounded-xl transition-all disabled:bg-gray-400">
+            {loadingSettings ? 'ກຳລັງບັນທຶກ...' : 'ບັນທຶກການຕັ້ງຄ່າ'}
           </button>
         </form>
       </div>
@@ -171,21 +189,21 @@ export default function TabTeam({ showMessage }: { showMessage: (text: string, t
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-700 font-bold mb-2 text-sm">ຊື່-ນາມສະກຸນ (ລາວ)</label>
-              <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" placeholder="ຕົວຢ່າງ: ສົມຊາຍ ສີວິໄລ" value={formData.name_lo} onChange={(e) => setFormData({...formData, name_lo: e.target.value})} />
+              <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" placeholder="ຕົວຢ່າງ: ສົມຊາຍ ພົມມະຈັນ" value={formData.name_lo} onChange={(e) => setFormData({...formData, name_lo: e.target.value})} />
             </div>
             <div>
               <label className="block text-gray-700 font-bold mb-2 text-sm">ຊື່-ນາມສະກຸນ (ອັງກິດ)</label>
-              <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" placeholder="Ex: Somchay Sivilay" value={formData.name_en} onChange={(e) => setFormData({...formData, name_en: e.target.value})} />
+              <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" placeholder="Ex: Somchay Phommachan" value={formData.name_en} onChange={(e) => setFormData({...formData, name_en: e.target.value})} />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-700 font-bold mb-2 text-sm">ຕຳແໜ່ງ (ລາວ)</label>
-              <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" placeholder="ຕົວຢ່າງ: ຜູ້ຈັດການໂຄງການ" value={formData.position_lo} onChange={(e) => setFormData({...formData, position_lo: e.target.value})} />
+              <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" placeholder="ຕົວຢ່າງ: ຜູ້ກໍ່ຕັ້ງ & ຜູ້ອຳນວຍການ" value={formData.position_lo} onChange={(e) => setFormData({...formData, position_lo: e.target.value})} />
             </div>
             <div>
               <label className="block text-gray-700 font-bold mb-2 text-sm">ຕຳແໜ່ງ (ອັງກິດ)</label>
-              <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" placeholder="Ex: Project Manager" value={formData.position_en} onChange={(e) => setFormData({...formData, position_en: e.target.value})} />
+              <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" placeholder="Ex: Founder & Director" value={formData.position_en} onChange={(e) => setFormData({...formData, position_en: e.target.value})} />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -217,12 +235,12 @@ export default function TabTeam({ showMessage }: { showMessage: (text: string, t
         {members.length === 0 ? (
           <p className="text-gray-500 text-center py-6 bg-gray-50 rounded-xl">ຍັງບໍ່ມີລາຍຊື່ທີມງານໃນລະບົບ.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {members.map((member) => (
-              <div key={member.id} className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow">
-                <img src={member.image_url} alt={member.name_lo} className="w-24 h-24 rounded-full object-cover mb-4 border-4 border-gray-50" />
+              <div key={member.id} className="bg-white border border-gray-200 rounded-3xl p-4 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow">
+                <img src={member.image_url} alt={member.name_lo} className="w-full aspect-square rounded-2xl object-cover mb-4 bg-gray-100" />
                 <h4 className="font-black text-gray-900 text-lg mb-1">{member.name_lo}</h4>
-                <p className="text-teal-600 text-sm font-bold mb-4">{member.position_lo}</p>
+                <p className="text-pink-500 text-xs font-bold mb-4 tracking-wide">{member.position_lo}</p>
                 <div className="w-full flex gap-2 border-t border-gray-100 pt-4">
                   <button onClick={() => handleEditClick(member)} className="flex-1 text-teal-600 font-bold bg-teal-50 hover:bg-teal-100 py-2 rounded-lg transition-colors text-sm">ແກ້ໄຂ</button>
                   <button onClick={() => handleDeleteClick(member.id)} className="flex-1 text-pink-500 font-bold bg-pink-50 hover:bg-pink-100 py-2 rounded-lg transition-colors text-sm">ລຶບ</button>
