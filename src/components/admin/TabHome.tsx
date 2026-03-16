@@ -5,7 +5,6 @@ import { db } from '@/lib/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 export default function TabHome({ showMessage }: { showMessage: (text: string, type: string) => void }) {
-  // ສ້າງ State ດຽວເພື່ອເກັບຂໍ້ມູນທຸກຢ່າງຂອງໜ້າຫຼັກ
   const [settings, setSettings] = useState({
     hero_video_url: '',
     hero_title_lo: 'ຍິນດີຕ້ອນຮັບສູ່ ໂຄງການຊ່ວຍເຫຼືອສັງຄົມ',
@@ -15,7 +14,6 @@ export default function TabHome({ showMessage }: { showMessage: (text: string, t
   });
   const [loading, setLoading] = useState(false);
 
-  // ດຶງຂໍ້ມູນເກົ່າຈາກ Firebase ມາສະແດງໃນຟອມ
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -38,7 +36,6 @@ export default function TabHome({ showMessage }: { showMessage: (text: string, t
     fetchSettings();
   }, []);
 
-  // ຟັງຊັນບັນທຶກຂໍ້ມູນທັງໝົດລົງ Firebase
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -51,7 +48,6 @@ export default function TabHome({ showMessage }: { showMessage: (text: string, t
     setLoading(false);
   };
 
-  // ຟັງຊັນຈັດການເມື່ອມີການພິມຂໍ້ຄວາມໃນຊ່ອງຕ່າງໆ
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
   };
@@ -67,17 +63,17 @@ export default function TabHome({ showMessage }: { showMessage: (text: string, t
       
       <form onSubmit={handleSave} className="space-y-8">
         
-        {/* ສ່ວນທີ 1: ວິດີໂອພື້ນຫຼັງ */}
+        {/* ສ່ວນທີ 1: ວິດີໂອພື້ນຫຼັງ (ປ່ຽນ Emoji ເປັນ Solid Video Icon) */}
         <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
           <h3 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
-            <span>🎬</span> 1. ວິດີໂອພື້ນຫຼັງ (Background Video)
+            <svg className="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z" /></svg>
+            1. ວິດີໂອພື້ນຫຼັງ (Background Video)
           </h3>
           <label className="block text-gray-700 font-bold mb-2 text-sm">ລິ້ງວິດີໂອ (URL)</label>
           <input 
             type="url" 
             name="hero_video_url"
             required 
-            // ປັບສີໃຫ້ເຂັ້ມຂຶ້ນ: bg-white, text-gray-900, font-medium
             className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium transition-all" 
             placeholder="ວາງລິ້ງວິດີໂອທີ່ນີ້..." 
             value={settings.hero_video_url} 
@@ -85,10 +81,11 @@ export default function TabHome({ showMessage }: { showMessage: (text: string, t
           />
         </div>
 
-        {/* ສ່ວນທີ 2: ຂໍ້ຄວາມໜ້າຫຼັກ */}
+        {/* ສ່ວນທີ 2: ຂໍ້ຄວາມໜ້າຫຼັກ (ປ່ຽນ Emoji ເປັນ Solid Edit/Text Icon) */}
         <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 space-y-6">
           <h3 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
-            <span>📝</span> 2. ຂໍ້ຄວາມໜ້າຫຼັກ (Hero Text)
+            <svg className="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" /><path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z" /></svg>
+            2. ຂໍ້ຄວາມໜ້າຫຼັກ (Hero Text)
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
