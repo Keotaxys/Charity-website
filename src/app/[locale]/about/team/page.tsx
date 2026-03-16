@@ -90,7 +90,7 @@ export default function TeamPage() {
       {/* 3. ສ່ວນຊວນມາເປັນອາສາສະໝັກ (Volunteer Call to Action) - ອັບເດດພື້ນຫຼັງ */}
       <section className="max-w-4xl mx-auto px-6 mt-10">
         {/* ປ່ຽນພື້ນຫຼັງໃຫ້ເປັນສີເທົາເຂັ້ມ (#111827) ແລະ ເພີ່ມ Gradient */}
-        <div className="bg-gray-900 rounded-[2.5rem] p-12 md:p-16 text-center text-white relative overflow-hidden shadow-2xl">
+        <div className="bg-gray-700 rounded-[2.5rem] p-12 md:p-16 text-center text-white relative overflow-hidden shadow-2xl">
           
           {/* ແສງຕົກແຕ່ງພື້ນຫຼັງ (Teal ແລະ Pink) */}
           <div className="absolute top-0 left-0 w-[300px] h-[300px] bg-teal-500/20 rounded-full blur-[80px] -translate-y-1/2 -translate-x-1/4"></div>
