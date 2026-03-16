@@ -6,7 +6,7 @@ import Link from 'next/link';
 export default function TeamPage() {
   const locale = useLocale();
 
-  // ຂໍ້ມູນຈຳລອງຂອງທີມງານ (ສາມາດປ່ຽນຊື່ ແລະ ຮູບພາບຕົວຈິງໄດ້ພາຍຫຼັງ)
+  // ຂໍ້ມູນຈຳລອງຂອງທີມງານ
   const teamMembers = [
     {
       id: 1,
@@ -45,9 +45,8 @@ export default function TeamPage() {
   return (
     <div className="bg-white min-h-screen pb-24">
       
-      {/* 1. ສ່ວນຫົວ (Header) - ປັບໃຫ້ເປັນ bg-gray-100 ແລະ py-20 ຕາມ Theme ໃໝ່ */}
+      {/* 1. ສ່ວນຫົວ (Header) */}
       <section className="bg-gray-100 py-20 px-6 border-b border-gray-200 relative overflow-hidden">
-        {/* ຕົກແຕ່ງພື້ນຫຼັງດ້ວຍແສງສີ Teal ແລະ ສີບົວ */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-500/15 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-400/15 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4"></div>
 
@@ -68,18 +67,15 @@ export default function TeamPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           {teamMembers.map((member) => (
             <div key={member.id} className="group text-center">
-              {/* ຮູບພາບ (ມີເອັບເຟັກປ່ຽນຈາກຂາວດຳເປັນສີ ເວລາ Hover) */}
               <div className="relative w-full aspect-square mb-6 overflow-hidden rounded-[2.5rem] bg-gray-100">
                 <img 
                   src={member.image} 
                   alt={member.name_en} 
                   className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500 transform group-hover:scale-105"
                 />
-                {/* ເງົາສີ Teal ບາງໆດ້ານລຸ່ມ */}
                 <div className="absolute inset-0 bg-gradient-to-t from-teal-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               </div>
 
-              {/* ຊື່ ແລະ ຕຳແໜ່ງ */}
               <h3 className="text-2xl font-black text-gray-900 group-hover:text-teal-600 transition-colors">
                 {locale === 'lo' ? member.name_lo : member.name_en}
               </h3>
@@ -91,27 +87,35 @@ export default function TeamPage() {
         </div>
       </section>
 
-      {/* 3. ສ່ວນຊວນມາເປັນອາສາສະໝັກ (Volunteer Call to Action) */}
+      {/* 3. ສ່ວນຊວນມາເປັນອາສາສະໝັກ (Volunteer Call to Action) - ອັບເດດພື້ນຫຼັງ */}
       <section className="max-w-4xl mx-auto px-6 mt-10">
-        <div className="bg-teal-600 rounded-3xl p-10 md:p-16 text-center text-white relative overflow-hidden shadow-2xl">
-          {/* ຕົກແຕ່ງພື້ນຫຼັງ */}
-          <div className="absolute -top-20 -right-20 w-64 h-64 bg-teal-500 rounded-full blur-3xl opacity-50"></div>
+        {/* ປ່ຽນພື້ນຫຼັງໃຫ້ເປັນສີເທົາເຂັ້ມ (#111827) ແລະ ເພີ່ມ Gradient */}
+        <div className="bg-gray-900 rounded-[2.5rem] p-12 md:p-16 text-center text-white relative overflow-hidden shadow-2xl">
+          
+          {/* ແສງຕົກແຕ່ງພື້ນຫຼັງ (Teal ແລະ Pink) */}
+          <div className="absolute top-0 left-0 w-[300px] h-[300px] bg-teal-500/20 rounded-full blur-[80px] -translate-y-1/2 -translate-x-1/4"></div>
+          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-pink-500/20 rounded-full blur-[100px] translate-y-1/4 translate-x-1/4"></div>
           
           <div className="relative z-10">
-            <h2 className="text-3xl md:text-5xl font-black mb-6 uppercase tracking-tight">
-              {locale === 'lo' ? 'ມາຮ່ວມເປັນສ່ວນໜຶ່ງກັບພວກເຮົາ' : 'BECOME A VOLUNTEER'}
+            <h2 className="text-teal-400 font-bold tracking-widest uppercase text-sm mb-4">
+              {locale === 'lo' ? 'ຮ່ວມເປັນສ່ວນໜຶ່ງຂອງທີມ' : 'JOIN OUR MOVEMENT'}
             </h2>
-            <p className="text-lg md:text-xl text-teal-100 mb-10">
+            <h3 className="text-3xl md:text-5xl font-black mb-8 tracking-tighter drop-shadow-md">
+              {locale === 'lo' ? 'ມາຮ່ວມເປັນອາສາສະໝັກນຳກັນ' : 'BECOME A VOLUNTEER'}
+            </h3>
+            <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
               {locale === 'lo' 
                 ? 'ພວກເຮົາຍິນດີຕ້ອນຮັບທຸກຄົນທີ່ມີໃຈຮັກໃນການຊ່ວຍເຫຼືອສັງຄົມ ເພື່ອມາເປັນອາສາສະໝັກໃນໂຄງການຕໍ່ໄປ.' 
                 : 'We welcome anyone with a passion for helping others to join our upcoming projects.'}
             </p>
-            <Link 
-              href={`/${locale}/about/contact`}
-              className="inline-block bg-white text-teal-600 hover:bg-gray-100 font-black py-4 px-10 rounded-full transition-all uppercase tracking-wider text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-            >
-              {locale === 'lo' ? 'ສະໝັກເປັນອາສາສະໝັກ' : 'JOIN THE TEAM'}
-            </Link>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link 
+                href={`/${locale}/about/contact`}
+                className="inline-block bg-teal-600 hover:bg-teal-500 text-white font-black py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-teal-500/50 uppercase tracking-wider text-lg"
+              >
+                {locale === 'lo' ? 'ສະໝັກເປັນອາສາສະໝັກ' : 'JOIN THE TEAM'}
+              </Link>
+            </div>
           </div>
         </div>
       </section>
