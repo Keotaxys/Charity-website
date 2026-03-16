@@ -100,7 +100,7 @@ export default function HistoryPage() {
       {/* 3. ສ່ວນອະນາຄົດ (The Future) - ອັບເດດພື້ນຫຼັງຕາມຮູບທີ 1 */}
       <section className="max-w-5xl mx-auto px-6 mt-10">
         {/* ປ່ຽນພື້ນຫຼັງໃຫ້ເປັນສີເທົາເຂັ້ມ (#111827) ແລະ ເພີ່ມ Gradient */}
-        <div className="bg-gray-900 rounded-[2.5rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
+        <div className="bg-gray-800 rounded-[2.5rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
           
           {/* ແສງຕົກແຕ່ງພື້ນຫຼັງ (Teal ແລະ Pink) */}
           <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-teal-500/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
