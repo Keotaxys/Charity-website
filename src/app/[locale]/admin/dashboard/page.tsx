@@ -48,8 +48,8 @@ export default function AdminDashboard() {
     { id: 'campaigns', icon: Icons.campaigns, label: locale === 'lo' ? 'ໂຄງການ' : 'Campaigns' },
     { id: 'donations', icon: Icons.donations, label: locale === 'lo' ? 'ອະນຸມັດຍອດບໍລິຈາກ' : 'Approve Donations' },
     { id: 'about', icon: Icons.about, label: locale === 'lo' ? 'ກ່ຽວກັບພວກເຮົາ' : 'About Us' },
-    { id: 'team', icon: Icons.team, label: locale === 'lo' ? 'ທີມງານ' : 'Our Team' }, // ເພີ່ມໃໝ່
-    { id: 'contact', icon: Icons.contact, label: locale === 'lo' ? 'ຕິດຕໍ່ພວກເຮົາ' : 'Contact Us' }, // ເພີ່ມໃໝ່
+    { id: 'team', icon: Icons.team, label: locale === 'lo' ? 'ທີມງານ' : 'Our Team' },
+    { id: 'contact', icon: Icons.contact, label: locale === 'lo' ? 'ຕິດຕໍ່ພວກເຮົາ' : 'Contact Us' },
     { id: 'supporters', icon: Icons.supporters, label: locale === 'lo' ? 'ຜູ້ສະໜັບສະໜູນ' : 'Supporters' },
     { id: 'videos', icon: Icons.videos, label: locale === 'lo' ? 'ວິດີໂອ' : 'Videos' },
   ];
