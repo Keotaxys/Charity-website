@@ -23,24 +23,21 @@ export default function VideosPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 1. ດຶງການຕັ້ງຄ່າໜ້າ ແລະ ວິດີໂອໄຮໄລທ໌
         const docRef = doc(db, 'settings', 'videos_page');
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) setPageSettings(docSnap.data());
 
-        // 2. ດຶງລາຍການວິດີໂອທັງໝົດຈາກ Firebase
         const q = query(collection(db, 'videos'), orderBy('created_at', 'desc'));
         const snap = await getDocs(q);
         let fbVideos: any[] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-        // 3. ດຶງຂໍ້ມູນຍອດວິວ ແລະ ວັນທີ ຈາກ YouTube API ອັດຕະໂນມັດ
+        // ດຶງຂໍ້ມູນຍອດວິວ ແລະ ວັນທີ ຈາກ YouTube API ອັດຕະໂນມັດ
         const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
         
         if (apiKey && fbVideos.length > 0) {
           const videoIds = fbVideos.map(v => getYoutubeId(v.video_url)).filter(Boolean);
           if (videoIds.length > 0) {
             const idsString = videoIds.join(',');
-            // ເອີ້ນ API ຂອງ YouTube
             const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${idsString}&key=${apiKey}`);
             const ytData = await res.json();
             
@@ -53,7 +50,6 @@ export default function VideosPage() {
                 };
               });
 
-              // ເອົາຂໍ້ມູນຈາກ YouTube ມາລວມກັບຂໍ້ມູນໃນ Firebase
               fbVideos = fbVideos.map(v => {
                 const id = getYoutubeId(v.video_url);
                 if (id && statsMap[id]) {
@@ -75,7 +71,6 @@ export default function VideosPage() {
     fetchData();
   }, []);
 
-  // ຟັງຊັນຈັດຮູບແບບຍອດວິວ (ຕົວຢ່າງ: 1500 -> 1.5K)
   const formatViews = (viewCount: string | number) => {
     if (!viewCount) return '0';
     const num = Number(viewCount);
@@ -84,7 +79,6 @@ export default function VideosPage() {
     return num.toString();
   };
 
-  // ຟັງຊັນຈັດຮູບແບບວັນທີ
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -106,8 +100,10 @@ export default function VideosPage() {
   const featuredId = getYoutubeId(pageSettings?.featured_url);
   const embedUrl = featuredId ? `https://www.youtube.com/embed/${featuredId}` : '';
   
-  // ດຶງຊື່ Tag ສຳລັບວິດີໂອໄຮໄລທ໌ (ແກ້ໄຂຈຸດທີ 1)
-  const featuredTag = pageSettings ? (locale === 'lo' ? (pageSettings.featured_tag_lo || 'ວິດີໂອຫຼ້າສຸດ') : (pageSettings.featured_tag_en || 'LATEST VIDEO')) : '';
+  // 💡 ປ່ຽນຄ່າເລີ່ມຕົ້ນເປັນ "ວິດີໂອໂດດເດັ່ນ" (FEATURED VIDEO)
+  const featuredTag = pageSettings 
+    ? (locale === 'lo' ? (pageSettings.featured_tag_lo || 'ວິດີໂອໂດດເດັ່ນ') : (pageSettings.featured_tag_en || 'FEATURED VIDEO')) 
+    : (locale === 'lo' ? 'ວິດີໂອໂດດເດັ່ນ' : 'FEATURED VIDEO');
 
   return (
     <div className="bg-white min-h-screen pb-24">
@@ -198,7 +194,6 @@ export default function VideosPage() {
               const vidId = getYoutubeId(video.video_url);
               const thumbUrl = vidId ? `https://img.youtube.com/vi/${vidId}/maxresdefault.jpg` : 'https://via.placeholder.com/800x450?text=Video';
               
-              // ດຶງຂໍ້ມູນຈາກ YT ທີ່ເຮົາ Fetch ມາ, ຖ້າບໍ່ມີໃຫ້ໃຊ້ຂໍ້ມູນຈາກ Firebase ແທນຊົ່ວຄາວ
               const views = video.yt_views ? formatViews(video.yt_views) : (video.views || '0');
               const date = video.yt_date ? formatDate(video.yt_date) : (video.date || '');
 
@@ -210,6 +205,7 @@ export default function VideosPage() {
                       src={thumbUrl} 
                       alt={video.title_en} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100"
+                      onError={(e) => { e.currentTarget.src = `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`; }}
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300"></div>
                     
