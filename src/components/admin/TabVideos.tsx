@@ -5,12 +5,12 @@ import { db } from '@/lib/firebase';
 import { doc, setDoc, getDoc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 
 export default function TabVideos({ showMessage }: { showMessage: (text: string, type: string) => void }) {
-  // 1. State ສຳລັບ Page Settings & Featured Video (ຮູບທີ 5 & 6)
+  // 1. State ສຳລັບ Page Settings & Featured Video
   const [pageSettings, setPageSettings] = useState({
     header_title_lo: 'ວິດີໂອກິດຈະກຳ', header_title_en: 'OUR VIDEOS',
     header_subtitle_lo: 'ຕິດຕາມທຸກຄວາມເຄື່ອນໄຫວ ແລະ ພາລະກິດຂອງພວກເຮົາຜ່ານວິດີໂອ.',
     header_subtitle_en: 'Follow our movements and missions through our video gallery.',
-    youtube_channel_url: '', // ລິ້ງຊ່ອງ YouTube (ປຸ່ມສີບົວ)
+    youtube_channel_url: '', 
     
     // ວິດີໂອເດັ່ນ (Featured)
     featured_url: '',
@@ -39,7 +39,7 @@ export default function TabVideos({ showMessage }: { showMessage: (text: string,
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) setPageSettings(docSnap.data() as any);
 
-      const q = query(collection(db, 'videos'), orderBy('date', 'desc'));
+      const q = query(collection(db, 'videos'), orderBy('created_at', 'desc'));
       const snapshot = await getDocs(q);
       setVideoList(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     } catch (error) {
@@ -76,11 +76,19 @@ export default function TabVideos({ showMessage }: { showMessage: (text: string,
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('ລຶບວິດີໂອນີ້?')) {
+    if (confirm('ທ່ານຕ້ອງການລຶບວິດີໂອນີ້ແທ້ບໍ່?')) {
       await deleteDoc(doc(db, 'videos', id));
       showMessage('ລຶບສຳເລັດ!', 'success');
       fetchData();
     }
+  };
+
+  // ຟັງຊັນສະກັດເອົາ ID ຂອງ YouTube ຈາກລິ້ງ ເພື່ອດຶງຮູບໜ້າປົກ
+  const getYoutubeId = (url: string) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
   };
 
   const inputClass = "w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium transition-all";
@@ -90,7 +98,9 @@ export default function TabVideos({ showMessage }: { showMessage: (text: string,
       {/* --- 1. ຕັ້ງຄ່າທົ່ວໄປ & Featured Video --- */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
         <h2 className="text-2xl font-black text-gray-900 mb-8 flex items-center gap-3">
-          <svg className="w-8 h-8 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z" /></svg>
+          <div className="text-teal-600 bg-teal-50 p-3 rounded-full">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z" /></svg>
+          </div>
           1. ຕັ້ງຄ່າໜ້າວິດີໂອ & ວິດີໂອເດັ່ນ
         </h2>
 
@@ -101,23 +111,52 @@ export default function TabVideos({ showMessage }: { showMessage: (text: string,
                 <label className="block text-pink-500 font-black mb-2 text-xs uppercase tracking-widest">YouTube Channel URL (ປຸ່ມສີບົວ)</label>
                 <input type="url" className={inputClass} value={pageSettings.youtube_channel_url} onChange={(e)=>setPageSettings({...pageSettings, youtube_channel_url: e.target.value})} placeholder="https://youtube.com/@beastlao" />
              </div>
-             <input type="text" placeholder="ຫົວຂໍ້ໜ້າ (ລາວ)" className={inputClass} value={pageSettings.header_title_lo} onChange={(e)=>setPageSettings({...pageSettings, header_title_lo: e.target.value})} />
-             <input type="text" placeholder="Page Title (EN)" className={inputClass} value={pageSettings.header_title_en} onChange={(e)=>setPageSettings({...pageSettings, header_title_en: e.target.value})} />
+             <div>
+                <label className="block text-gray-700 font-bold mb-2 text-xs uppercase">ຫົວຂໍ້ໜ້າ (ລາວ)</label>
+                <input type="text" placeholder="ຫົວຂໍ້ໜ້າ (ລາວ)" className={inputClass} value={pageSettings.header_title_lo} onChange={(e)=>setPageSettings({...pageSettings, header_title_lo: e.target.value})} />
+             </div>
+             <div>
+                <label className="block text-gray-700 font-bold mb-2 text-xs uppercase">Page Title (EN)</label>
+                <input type="text" placeholder="Page Title (EN)" className={inputClass} value={pageSettings.header_title_en} onChange={(e)=>setPageSettings({...pageSettings, header_title_en: e.target.value})} />
+             </div>
           </div>
 
           {/* Featured Video Details */}
           <div className="p-6 bg-teal-50/30 rounded-2xl border border-teal-100 space-y-4">
              <h4 className="font-black text-teal-700 text-sm uppercase">» ວິດີໂອເດັ່ນ (Featured Video - ດ້ານເທິງສຸດ)</h4>
-             <input type="url" placeholder="ລິ້ງວິດີໂອ YouTube" className={inputClass} value={pageSettings.featured_url} onChange={(e)=>setPageSettings({...pageSettings, featured_url: e.target.value})} />
+             <div>
+                <label className="block text-teal-700 font-bold mb-2 text-xs uppercase">ລິ້ງວິດີໂອ YouTube</label>
+                <input type="url" placeholder="https://www.youtube.com/watch?v=..." className={inputClass} value={pageSettings.featured_url} onChange={(e)=>setPageSettings({...pageSettings, featured_url: e.target.value})} />
+             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input type="text" placeholder="ຫົວຂໍ້ວິດີໂອ (ລາວ)" className={inputClass} value={pageSettings.featured_title_lo} onChange={(e)=>setPageSettings({...pageSettings, featured_title_lo: e.target.value})} />
-                <input type="text" placeholder="Video Title (EN)" className={inputClass} value={pageSettings.featured_title_en} onChange={(e)=>setPageSettings({...pageSettings, featured_title_en: e.target.value})} />
-                <textarea placeholder="ຄຳອະທິບາຍ (ລາວ)" rows={2} className={`${inputClass} resize-none`} value={pageSettings.featured_desc_lo} onChange={(e)=>setPageSettings({...pageSettings, featured_desc_lo: e.target.value})}></textarea>
-                <textarea placeholder="Description (EN)" rows={2} className={`${inputClass} resize-none`} value={pageSettings.featured_desc_en} onChange={(e)=>setPageSettings({...pageSettings, featured_desc_en: e.target.value})}></textarea>
+                <div>
+                   <label className="block text-teal-700 font-bold mb-2 text-xs uppercase">ຊື່ປ້າຍກຳກັບ (ລາວ)</label>
+                   <input type="text" placeholder="ຕົວຢ່າງ: ວິດີໂອລ່າສຸດ" className={inputClass} value={pageSettings.featured_tag_lo} onChange={(e)=>setPageSettings({...pageSettings, featured_tag_lo: e.target.value})} />
+                </div>
+                <div>
+                   <label className="block text-teal-700 font-bold mb-2 text-xs uppercase">Label Tag (EN)</label>
+                   <input type="text" placeholder="Example: LATEST VIDEO" className={inputClass} value={pageSettings.featured_tag_en} onChange={(e)=>setPageSettings({...pageSettings, featured_tag_en: e.target.value})} />
+                </div>
+                <div>
+                   <label className="block text-teal-700 font-bold mb-2 text-xs uppercase">ຫົວຂໍ້ວິດີໂອ (ລາວ)</label>
+                   <input type="text" placeholder="ຫົວຂໍ້ວິດີໂອ (ລາວ)" className={inputClass} value={pageSettings.featured_title_lo} onChange={(e)=>setPageSettings({...pageSettings, featured_title_lo: e.target.value})} />
+                </div>
+                <div>
+                   <label className="block text-teal-700 font-bold mb-2 text-xs uppercase">Video Title (EN)</label>
+                   <input type="text" placeholder="Video Title (EN)" className={inputClass} value={pageSettings.featured_title_en} onChange={(e)=>setPageSettings({...pageSettings, featured_title_en: e.target.value})} />
+                </div>
+                <div>
+                   <label className="block text-teal-700 font-bold mb-2 text-xs uppercase">ຄຳອະທິບາຍ (ລາວ)</label>
+                   <textarea placeholder="ຄຳອະທິບາຍ (ລາວ)" rows={2} className={`${inputClass} resize-none`} value={pageSettings.featured_desc_lo} onChange={(e)=>setPageSettings({...pageSettings, featured_desc_lo: e.target.value})}></textarea>
+                </div>
+                <div>
+                   <label className="block text-teal-700 font-bold mb-2 text-xs uppercase">Description (EN)</label>
+                   <textarea placeholder="Description (EN)" rows={2} className={`${inputClass} resize-none`} value={pageSettings.featured_desc_en} onChange={(e)=>setPageSettings({...pageSettings, featured_desc_en: e.target.value})}></textarea>
+                </div>
              </div>
           </div>
 
-          <button type="submit" disabled={loading} className="bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-10 rounded-xl transition-all shadow-md uppercase tracking-widest">
+          <button type="submit" disabled={loading} className="bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-10 rounded-xl transition-all shadow-md uppercase tracking-widest w-full md:w-auto">
             {loading ? 'ກຳລັງບັນທຶກ...' : 'ບັນທຶກການຕັ້ງຄ່າທັງໝົດ'}
           </button>
         </form>
@@ -126,50 +165,83 @@ export default function TabVideos({ showMessage }: { showMessage: (text: string,
       {/* --- 2. ຈັດການລາຍການວິດີໂອທັງໝົດ --- */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-teal-100">
         <h2 className="text-2xl font-black text-gray-900 mb-8 flex items-center gap-3">
-          <svg className="w-8 h-8 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M2.25 4.5A2.25 2.25 0 014.5 2.25h15a2.25 2.25 0 012.25 2.25v15a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25v-15zm3 10.5V6a.75.75 0 01.75-.75h7.5a.75.75 0 01.75.75v9a.75.75 0 01-1.5 0v-8.25H6.75v7.5a.75.75 0 01-1.5 0z" clipRule="evenodd" /></svg>
-          {isEditing ? 'ແກ້ໄຂວິດີໂອ' : 'ເພີ່ມວິດີໂອໃໝ່'}
+          <div className="text-teal-600 bg-teal-50 p-3 rounded-full">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+          </div>
+          {isEditing ? 'ແກ້ໄຂວິດີໂອ' : 'ເພີ່ມວິດີໂອໃໝ່ລົງໃນ Grid'}
         </h2>
 
         <form onSubmit={handleSaveVideo} className="space-y-6">
-          <input type="url" placeholder="ລິ້ງວິດີໂອ YouTube" className={inputClass} value={formData.video_url} onChange={(e)=>setFormData({...formData, video_url: e.target.value})} required />
+          <div>
+             <label className="block text-gray-700 font-bold mb-2 text-xs uppercase">ລິ້ງວິດີໂອ (YouTube URL)</label>
+             <input type="url" placeholder="https://www.youtube.com/watch?v=..." className={inputClass} value={formData.video_url} onChange={(e)=>setFormData({...formData, video_url: e.target.value})} required />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input type="text" placeholder="ຊື່ວິດີໂອ (ລາວ)" className={inputClass} value={formData.title_lo} onChange={(e)=>setFormData({...formData, title_lo: e.target.value})} required />
-            <input type="text" placeholder="Video Title (EN)" className={inputClass} value={formData.title_en} onChange={(e)=>setFormData({...formData, title_en: e.target.value})} required />
-            <input type="text" placeholder="ວັນທີສະແດງ (ຕົວຢ່າງ: 15 Jan 2026)" className={inputClass} value={formData.date} onChange={(e)=>setFormData({...formData, date: e.target.value})} required />
-            <input type="text" placeholder="ຍອດວິວ (ຕົວຢ່າງ: 12K)" className={inputClass} value={formData.views} onChange={(e)=>setFormData({...formData, views: e.target.value})} required />
+            <div>
+               <label className="block text-gray-700 font-bold mb-2 text-xs uppercase">ຊື່ວິດີໂອ (ລາວ)</label>
+               <input type="text" placeholder="ຊື່ວິດີໂອ (ລາວ)" className={inputClass} value={formData.title_lo} onChange={(e)=>setFormData({...formData, title_lo: e.target.value})} required />
+            </div>
+            <div>
+               <label className="block text-gray-700 font-bold mb-2 text-xs uppercase">Video Title (EN)</label>
+               <input type="text" placeholder="Video Title (EN)" className={inputClass} value={formData.title_en} onChange={(e)=>setFormData({...formData, title_en: e.target.value})} required />
+            </div>
+            <div>
+               <label className="block text-gray-700 font-bold mb-2 text-xs uppercase">ວັນທີສະແດງ (ຖ້າຍັງບໍ່ມີ API Key)</label>
+               <input type="text" placeholder="ຕົວຢ່າງ: 15 Jan 2026" className={inputClass} value={formData.date} onChange={(e)=>setFormData({...formData, date: e.target.value})} />
+               <p className="text-xs text-gray-400 mt-1">ຈະຖືກແທນທີ່ອັດຕະໂນມັດເມື່ອເພີ່ມ YouTube API Key</p>
+            </div>
+            <div>
+               <label className="block text-gray-700 font-bold mb-2 text-xs uppercase">ຍອດວິວ (ຖ້າຍັງບໍ່ມີ API Key)</label>
+               <input type="text" placeholder="ຕົວຢ່າງ: 12K" className={inputClass} value={formData.views} onChange={(e)=>setFormData({...formData, views: e.target.value})} />
+               <p className="text-xs text-gray-400 mt-1">ຈະຖືກແທນທີ່ອັດຕະໂນມັດເມື່ອເພີ່ມ YouTube API Key</p>
+            </div>
           </div>
           <div className="flex gap-4">
-            <button type="submit" disabled={loading} className="flex-1 bg-teal-600 text-white font-black py-4 rounded-xl uppercase transition-all shadow-md">
-              {loading ? 'ກຳລັງປະມວນຜົນ...' : (isEditing ? 'ບັນທຶກການແກ້ໄຂ' : 'ເພີ່ມວິດີໂອເຂົ້າ Grid')}
+            <button type="submit" disabled={loading} className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-black py-4 rounded-xl uppercase transition-all shadow-md">
+              {loading ? 'ກຳລັງປະມວນຜົນ...' : (isEditing ? 'ບັນທຶກການແກ້ໄຂ' : 'ເພີ່ມວິດີໂອ')}
             </button>
-            {isEditing && <button type="button" onClick={()=>{setIsEditing(false); setFormData({title_lo:'', title_en:'', video_url:'', date:'', views:''})}} className="flex-1 bg-gray-100 text-gray-500 font-bold py-4 rounded-xl">ຍົກເລີກ</button>}
+            {isEditing && (
+              <button type="button" onClick={()=>{setIsEditing(false); setEditId(null); setFormData({title_lo:'', title_en:'', video_url:'', date:'', views:''})}} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-black py-4 rounded-xl uppercase transition-all">
+                ຍົກເລີກ
+              </button>
+            )}
           </div>
         </form>
       </div>
 
       {/* --- 3. Video List --- */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-        <h3 className="text-xl font-black text-gray-900 mb-6">ລາຍການວິດີໂອທັງໝົດໃນ Grid</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {videoList.map((vid) => (
-            <div key={vid.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group">
-               <div className="aspect-video bg-gray-900 relative">
-                  <img src={`https://img.youtube.com/vi/${vid.video_url.split('v=')[1]?.split('&')[0]}/0.jpg`} alt="thumb" className="w-full h-full object-cover opacity-80" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                     <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm"><span className="text-white text-xs">▶</span></div>
-                  </div>
-               </div>
-               <div className="p-4">
-                  <h4 className="font-bold text-gray-900 line-clamp-1 mb-1">{vid.title_lo}</h4>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase">{vid.date} • {vid.views} VIEWS</p>
-                  <div className="flex gap-2 mt-4 pt-4 border-t border-gray-50">
-                    <button onClick={() => { setFormData(vid); setIsEditing(true); setEditId(vid.id); window.scrollTo({top:0, behavior:'smooth'}) }} className="flex-1 text-teal-600 font-black text-[10px] uppercase bg-teal-50 py-2 rounded-lg">ແກ້ໄຂ</button>
-                    <button onClick={() => handleDelete(vid.id)} className="flex-1 text-pink-500 font-black text-[10px] uppercase bg-pink-50 py-2 rounded-lg">ລຶບ</button>
-                  </div>
-               </div>
-            </div>
-          ))}
-        </div>
+        <h3 className="text-xl font-black text-gray-900 mb-6">ລາຍການວິດີໂອທັງໝົດໃນ Grid ({videoList.length})</h3>
+        
+        {videoList.length === 0 ? (
+          <p className="text-center text-gray-400 py-10 border border-dashed border-gray-200 rounded-xl font-bold">ຍັງບໍ່ມີວິດີໂອ</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {videoList.map((vid) => {
+              const ytId = getYoutubeId(vid.video_url);
+              const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : 'https://via.placeholder.com/800x450?text=Video';
+
+              return (
+                <div key={vid.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col">
+                   <div className="aspect-video bg-gray-900 relative">
+                      <img src={thumbUrl} alt="thumb" className="w-full h-full object-cover opacity-80" onError={(e) => { e.currentTarget.src = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`; }} />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                         <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm pl-1"><span className="text-white text-xs">▶</span></div>
+                      </div>
+                   </div>
+                   <div className="p-4 flex-1 flex flex-col">
+                      <h4 className="font-bold text-gray-900 line-clamp-2 mb-2 flex-1" title={vid.title_lo}>{vid.title_lo}</h4>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase mb-4">{vid.date || '-'} • {vid.views || '0'} VIEWS</p>
+                      <div className="flex gap-2 mt-auto pt-4 border-t border-gray-50">
+                        <button onClick={() => { setFormData(vid); setIsEditing(true); setEditId(vid.id); window.scrollTo({top:0, behavior:'smooth'}) }} className="flex-1 text-teal-600 font-black text-[10px] uppercase bg-teal-50 hover:bg-teal-100 py-2 rounded-lg transition-colors">ແກ້ໄຂ</button>
+                        <button onClick={() => handleDelete(vid.id)} className="flex-1 text-pink-500 font-black text-[10px] uppercase bg-pink-50 hover:bg-pink-100 py-2 rounded-lg transition-colors">ລຶບ</button>
+                      </div>
+                   </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
