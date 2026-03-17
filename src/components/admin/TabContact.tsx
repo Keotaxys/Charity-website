@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useLocale } from 'next-intl';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 export default function TabContact({ showMessage }: { showMessage: (text: string, type: string) => void }) {
+  const locale = useLocale(); // 💡 ເອີ້ນໃຊ້ useLocale ເພື່ອກວດສອບພາສາແອັດມິນ
+  
   const [settings, setSettings] = useState({
     phone: '',
     email: '',
@@ -35,9 +38,9 @@ export default function TabContact({ showMessage }: { showMessage: (text: string
     setLoading(true);
     try {
       await setDoc(doc(db, 'settings', 'contact_info'), settings, { merge: true });
-      showMessage('ບັນທຶກຂໍ້ມູນການຕິດຕໍ່ສຳເລັດແລ້ວ!', 'success');
+      showMessage(locale === 'lo' ? 'ບັນທຶກຂໍ້ມູນການຕິດຕໍ່ສຳເລັດແລ້ວ!' : 'Contact info saved successfully!', 'success');
     } catch (error) {
-      showMessage('ເກີດຂໍ້ຜິດພາດໃນການບັນທຶກ', 'error');
+      showMessage(locale === 'lo' ? 'ເກີດຂໍ້ຜິດພາດໃນການບັນທຶກ' : 'Error saving data', 'error');
     }
     setLoading(false);
   };
@@ -57,7 +60,9 @@ export default function TabContact({ showMessage }: { showMessage: (text: string
           <svg className="w-8 h-8 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" /><path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" /></svg>
         </div>
         <div>
-          <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">ຕັ້ງຄ່າການຕິດຕໍ່</h2>
+          <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">
+            {locale === 'lo' ? 'ຕັ້ງຄ່າການຕິດຕໍ່' : 'Contact Settings'}
+          </h2>
           <p className="text-gray-500 text-sm mt-1 font-bold">CONTACT & SOCIAL MEDIA SETTINGS</p>
         </div>
       </div>
@@ -67,11 +72,15 @@ export default function TabContact({ showMessage }: { showMessage: (text: string
         {/* ສ່ວນຂໍ້ມູນພື້ນຖານ */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">ເບີໂທລະສັບ (Phone)</label>
+            <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">
+              {locale === 'lo' ? 'ເບີໂທລະສັບ (Phone)' : 'Phone Number'}
+            </label>
             <input type="text" name="phone" placeholder="+856 20..." className={inputClass} value={settings.phone} onChange={handleChange} />
           </div>
           <div>
-            <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">ອີເມວ (Email)</label>
+            <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">
+              {locale === 'lo' ? 'ອີເມວ (Email)' : 'Email Address'}
+            </label>
             <input type="email" name="email" placeholder="contact@beast.lao" className={inputClass} value={settings.email} onChange={handleChange} />
           </div>
         </div>
@@ -79,11 +88,15 @@ export default function TabContact({ showMessage }: { showMessage: (text: string
         {/* ສ່ວນທີ່ຢູ່ */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">ທີ່ຢູ່ (ພາສາລາວ)</label>
-            <textarea name="address_lo" rows={3} placeholder="ບ້ານ, ເມືອງ, ແຂວງ..." className={`${inputClass} resize-none`} value={settings.address_lo} onChange={handleChange}></textarea>
+            <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">
+              {locale === 'lo' ? 'ທີ່ຢູ່ (ພາສາລາວ)' : 'Address (Lao)'}
+            </label>
+            <textarea name="address_lo" rows={3} placeholder={locale === 'lo' ? 'ບ້ານ, ເມືອງ, ແຂວງ...' : 'Village, District, Province...'} className={`${inputClass} resize-none`} value={settings.address_lo} onChange={handleChange}></textarea>
           </div>
           <div>
-            <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">ທີ່ຢູ່ (English)</label>
+            <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">
+              {locale === 'lo' ? 'ທີ່ຢູ່ (ພາສາອັງກິດ)' : 'Address (English)'}
+            </label>
             <textarea name="address_en" rows={3} placeholder="Village, District, Province..." className={`${inputClass} resize-none`} value={settings.address_en} onChange={handleChange}></textarea>
           </div>
         </div>
@@ -121,7 +134,10 @@ export default function TabContact({ showMessage }: { showMessage: (text: string
             disabled={loading} 
             className="w-full md:w-auto bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-12 rounded-2xl transition-all shadow-md hover:shadow-teal-600/30 disabled:bg-gray-400 uppercase tracking-widest text-sm"
           >
-            {loading ? 'ກຳລັງບັນທຶກ...' : 'ບັນທຶກຂໍ້ມູນການຕິດຕໍ່'}
+            {loading 
+              ? (locale === 'lo' ? 'ກຳລັງບັນທຶກ...' : 'Saving...') 
+              : (locale === 'lo' ? 'ບັນທຶກຂໍ້ມູນການຕິດຕໍ່' : 'Save Contact Info')
+            }
           </button>
         </div>
       </form>

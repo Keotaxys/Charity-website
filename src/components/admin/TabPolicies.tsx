@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useLocale } from 'next-intl';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 export default function TabPolicies({ showMessage }: { showMessage: (text: string, type: string) => void }) {
+  const locale = useLocale(); // 💡 ເອີ້ນໃຊ້ useLocale ເພື່ອກວດສອບພາສາ
   const [settings, setSettings] = useState({
     privacy_lo: '', privacy_en: '',
     terms_lo: '', terms_en: '',
@@ -32,9 +34,9 @@ export default function TabPolicies({ showMessage }: { showMessage: (text: strin
     setLoading(true);
     try {
       await setDoc(doc(db, 'settings', 'policies_page'), settings, { merge: true });
-      showMessage('ບັນທຶກຂໍ້ມູນນະໂຍບາຍ ແລະ ລາຍງານສຳເລັດ!', 'success');
+      showMessage(locale === 'lo' ? 'ບັນທຶກຂໍ້ມູນນະໂຍບາຍ ແລະ ລາຍງານສຳເລັດ!' : 'Policies and reports saved successfully!', 'success');
     } catch (error) {
-      showMessage('ເກີດຂໍ້ຜິດພາດໃນການບັນທຶກ', 'error');
+      showMessage(locale === 'lo' ? 'ເກີດຂໍ້ຜິດພາດໃນການບັນທຶກ' : 'Error saving data', 'error');
     }
     setLoading(false);
   };
@@ -54,8 +56,12 @@ export default function TabPolicies({ showMessage }: { showMessage: (text: strin
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
         </div>
         <div>
-          <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">ຈັດການເນື້ອຍັງ (Policies & Reports)</h2>
-          <p className="text-gray-500 text-sm font-bold uppercase">PRIVACY, TERMS AND FINANCIAL REPORTS</p>
+          <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">
+            {locale === 'lo' ? 'ຈັດການເນື້ອຫາ' : 'Manage Policies'}
+          </h2>
+          <p className="text-gray-500 text-sm font-bold uppercase">
+            {locale === 'lo' ? 'ນະໂຍບາຍ, ເງື່ອນໄຂ ແລະ ລາຍງານການເງິນ' : 'Privacy, Terms and Financial Reports'}
+          </p>
         </div>
       </div>
 
@@ -65,16 +71,16 @@ export default function TabPolicies({ showMessage }: { showMessage: (text: strin
         <div className={sectionClass}>
           <h3 className="text-lg font-black text-teal-600 flex items-center gap-2">
             <span className="bg-teal-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
-            ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ (Privacy Policy)
+            {locale === 'lo' ? 'ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ (Privacy Policy)' : 'Privacy Policy'}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className={labelClass}>ເນື້ອຫາພາສາລາວ</label>
-              <textarea name="privacy_lo" className={textareaClass} value={settings.privacy_lo} onChange={handleChange} placeholder="ພິມເນື້ອຫາບ່ອນນີ້..." />
+              <label className={labelClass}>{locale === 'lo' ? 'ເນື້ອຫາພາສາລາວ' : 'Lao Content'}</label>
+              <textarea name="privacy_lo" className={textareaClass} value={settings.privacy_lo} onChange={handleChange} placeholder={locale === 'lo' ? 'ພິມເນື້ອຫາບ່ອນນີ້...' : 'Type content here...'} />
             </div>
             <div>
-              <label className={labelClass}>English Content</label>
-              <textarea name="privacy_en" className={textareaClass} value={settings.privacy_en} onChange={handleChange} placeholder="Type content here..." />
+              <label className={labelClass}>{locale === 'lo' ? 'ເນື້ອຫາພາສາອັງກິດ' : 'English Content'}</label>
+              <textarea name="privacy_en" className={textareaClass} value={settings.privacy_en} onChange={handleChange} placeholder={locale === 'lo' ? 'ພິມເນື້ອຫາບ່ອນນີ້...' : 'Type content here...'} />
             </div>
           </div>
         </div>
@@ -83,16 +89,16 @@ export default function TabPolicies({ showMessage }: { showMessage: (text: strin
         <div className={sectionClass}>
           <h3 className="text-lg font-black text-teal-600 flex items-center gap-2">
             <span className="bg-teal-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
-            ເງື່ອນໄຂການບໍລິຈາກ (Terms of Donation)
+            {locale === 'lo' ? 'ເງື່ອນໄຂການບໍລິຈາກ (Terms of Donation)' : 'Terms of Donation'}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className={labelClass}>ເນື້ອຫາພາສາລາວ</label>
-              <textarea name="terms_lo" className={textareaClass} value={settings.terms_lo} onChange={handleChange} placeholder="ພິມເນື້ອຫາບ່ອນນີ້..." />
+              <label className={labelClass}>{locale === 'lo' ? 'ເນື້ອຫາພາສາລາວ' : 'Lao Content'}</label>
+              <textarea name="terms_lo" className={textareaClass} value={settings.terms_lo} onChange={handleChange} placeholder={locale === 'lo' ? 'ພິມເນື້ອຫາບ່ອນນີ້...' : 'Type content here...'} />
             </div>
             <div>
-              <label className={labelClass}>English Content</label>
-              <textarea name="terms_en" className={textareaClass} value={settings.terms_en} onChange={handleChange} placeholder="Type content here..." />
+              <label className={labelClass}>{locale === 'lo' ? 'ເນື້ອຫາພາສາອັງກິດ' : 'English Content'}</label>
+              <textarea name="terms_en" className={textareaClass} value={settings.terms_en} onChange={handleChange} placeholder={locale === 'lo' ? 'ພິມເນື້ອຫາບ່ອນນີ້...' : 'Type content here...'} />
             </div>
           </div>
         </div>
@@ -101,23 +107,26 @@ export default function TabPolicies({ showMessage }: { showMessage: (text: strin
         <div className={sectionClass}>
           <h3 className="text-lg font-black text-teal-600 flex items-center gap-2">
             <span className="bg-teal-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
-            ລາຍງານການເງິນ (Financial Report)
+            {locale === 'lo' ? 'ລາຍງານການເງິນ (Financial Report)' : 'Financial Report'}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className={labelClass}>ເນື້ອຫາພາສາລາວ</label>
-              <textarea name="financial_lo" className={textareaClass} value={settings.financial_lo} onChange={handleChange} placeholder="ພິມເນື້ອຫາບ່ອນນີ້..." />
+              <label className={labelClass}>{locale === 'lo' ? 'ເນື້ອຫາພາສາລາວ' : 'Lao Content'}</label>
+              <textarea name="financial_lo" className={textareaClass} value={settings.financial_lo} onChange={handleChange} placeholder={locale === 'lo' ? 'ພິມເນື້ອຫາບ່ອນນີ້...' : 'Type content here...'} />
             </div>
             <div>
-              <label className={labelClass}>English Content</label>
-              <textarea name="financial_en" className={textareaClass} value={settings.financial_en} onChange={handleChange} placeholder="Type content here..." />
+              <label className={labelClass}>{locale === 'lo' ? 'ເນື້ອຫາພາສາອັງກິດ' : 'English Content'}</label>
+              <textarea name="financial_en" className={textareaClass} value={settings.financial_en} onChange={handleChange} placeholder={locale === 'lo' ? 'ພິມເນື້ອຫາບ່ອນນີ້...' : 'Type content here...'} />
             </div>
           </div>
         </div>
 
         <div className="sticky bottom-6 flex justify-end">
           <button type="submit" disabled={loading} className="bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-12 rounded-2xl transition-all shadow-xl hover:shadow-teal-600/30 uppercase tracking-widest flex items-center gap-2">
-            {loading ? 'ກຳລັງບັນທຶກ...' : 'ບັນທຶກຂໍ້ມູນທັງໝົດ'}
+            {loading 
+              ? (locale === 'lo' ? 'ກຳລັງບັນທຶກ...' : 'Saving...') 
+              : (locale === 'lo' ? 'ບັນທຶກຂໍ້ມູນທັງໝົດ' : 'Save All Changes')
+            }
           </button>
         </div>
       </form>
