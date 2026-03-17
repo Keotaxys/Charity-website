@@ -12,6 +12,14 @@ export default function VideosPage() {
   const [videoList, setVideoList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // ຟັງຊັນສະກັດເອົາ ID ຂອງ YouTube ຈາກລິ້ງ
+  const getYoutubeId = (url: string) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -20,10 +28,44 @@ export default function VideosPage() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) setPageSettings(docSnap.data());
 
-        // 2. ດຶງລາຍການວິດີໂອທັງໝົດ
-        const q = query(collection(db, 'videos'), orderBy('date', 'desc'));
+        // 2. ດຶງລາຍການວິດີໂອທັງໝົດຈາກ Firebase
+        const q = query(collection(db, 'videos'), orderBy('created_at', 'desc'));
         const snap = await getDocs(q);
-        setVideoList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        let fbVideos: any[] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // 3. ດຶງຂໍ້ມູນຍອດວິວ ແລະ ວັນທີ ຈາກ YouTube API ອັດຕະໂນມັດ
+        const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
+        
+        if (apiKey && fbVideos.length > 0) {
+          const videoIds = fbVideos.map(v => getYoutubeId(v.video_url)).filter(Boolean);
+          if (videoIds.length > 0) {
+            const idsString = videoIds.join(',');
+            // ເອີ້ນ API ຂອງ YouTube
+            const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${idsString}&key=${apiKey}`);
+            const ytData = await res.json();
+            
+            if (ytData.items) {
+              const statsMap: any = {};
+              ytData.items.forEach((item: any) => {
+                statsMap[item.id] = {
+                  views: item.statistics.viewCount,
+                  date: item.snippet.publishedAt
+                };
+              });
+
+              // ເອົາຂໍ້ມູນຈາກ YouTube ມາລວມກັບຂໍ້ມູນໃນ Firebase
+              fbVideos = fbVideos.map(v => {
+                const id = getYoutubeId(v.video_url);
+                if (id && statsMap[id]) {
+                  return { ...v, yt_views: statsMap[id].views, yt_date: statsMap[id].date };
+                }
+                return v;
+              });
+            }
+          }
+        }
+        
+        setVideoList(fbVideos);
       } catch (error) {
         console.error("Error fetching video data:", error);
       } finally {
@@ -33,12 +75,24 @@ export default function VideosPage() {
     fetchData();
   }, []);
 
-  // ຟັງຊັນສະກັດເອົາ ID ຂອງ YouTube ເພື່ອເຮັດ Thumbnail ຫຼື Embed URL
-  const getYoutubeId = (url: string) => {
-    if (!url) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+  // ຟັງຊັນຈັດຮູບແບບຍອດວິວ (ຕົວຢ່າງ: 1500 -> 1.5K)
+  const formatViews = (viewCount: string | number) => {
+    if (!viewCount) return '0';
+    const num = Number(viewCount);
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
+  };
+
+  // ຟັງຊັນຈັດຮູບແບບວັນທີ
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    if (locale === 'lo') {
+      const monthsLo = ['ມັງກອນ', 'ກຸມພາ', 'ມີນາ', 'ເມສາ', 'ພຶດສະພາ', 'ມິຖຸນາ', 'ກໍລະກົດ', 'ສິງຫາ', 'ກັນຍາ', 'ຕຸລາ', 'ພະຈິກ', 'ທັນວາ'];
+      return `${date.getDate()} ${monthsLo[date.getMonth()]} ${date.getFullYear()}`;
+    }
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
   };
 
   if (loading) {
@@ -51,12 +105,15 @@ export default function VideosPage() {
 
   const featuredId = getYoutubeId(pageSettings?.featured_url);
   const embedUrl = featuredId ? `https://www.youtube.com/embed/${featuredId}` : '';
+  
+  // ດຶງຊື່ Tag ສຳລັບວິດີໂອໄຮໄລທ໌ (ແກ້ໄຂຈຸດທີ 1)
+  const featuredTag = pageSettings ? (locale === 'lo' ? (pageSettings.featured_tag_lo || 'ວິດີໂອຫຼ້າສຸດ') : (pageSettings.featured_tag_en || 'LATEST VIDEO')) : '';
 
   return (
     <div className="bg-white min-h-screen pb-24">
       
       {/* 1. ສ່ວນຫົວ (Header) */}
-      <section className="bg-gray-100 py-20 px-6 border-b border-gray-200 relative overflow-hidden">
+      <section className="bg-gray-50 py-20 px-6 border-b border-gray-200 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-500/15 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-400/15 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4"></div>
 
@@ -88,7 +145,7 @@ export default function VideosPage() {
 
             <div className="w-full lg:w-1/3 space-y-4 px-4 pb-4 lg:pb-0">
               <span className="inline-block bg-pink-50 text-pink-500 font-black px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest border border-pink-100">
-                {locale === 'lo' ? pageSettings?.featured_tag_lo : pageSettings?.featured_tag_en}
+                {featuredTag}
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-gray-900 leading-tight">
                 {locale === 'lo' ? pageSettings?.featured_title_lo : pageSettings?.featured_title_en}
@@ -141,6 +198,10 @@ export default function VideosPage() {
               const vidId = getYoutubeId(video.video_url);
               const thumbUrl = vidId ? `https://img.youtube.com/vi/${vidId}/maxresdefault.jpg` : 'https://via.placeholder.com/800x450?text=Video';
               
+              // ດຶງຂໍ້ມູນຈາກ YT ທີ່ເຮົາ Fetch ມາ, ຖ້າບໍ່ມີໃຫ້ໃຊ້ຂໍ້ມູນຈາກ Firebase ແທນຊົ່ວຄາວ
+              const views = video.yt_views ? formatViews(video.yt_views) : (video.views || '0');
+              const date = video.yt_date ? formatDate(video.yt_date) : (video.date || '');
+
               return (
                 <a href={video.video_url} target="_blank" rel="noopener noreferrer" key={video.id} className="group cursor-pointer">
                   
@@ -164,9 +225,9 @@ export default function VideosPage() {
                       {locale === 'lo' ? video.title_lo : video.title_en}
                     </h3>
                     <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-gray-400">
-                      <span>{video.date}</span>
+                      <span>{date}</span>
                       <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                      <span>{video.views} {locale === 'lo' ? 'ຄົນເບິ່ງ' : 'VIEWS'}</span>
+                      <span>{views} {locale === 'lo' ? 'ຄົນເບິ່ງ' : 'VIEWS'}</span>
                     </div>
                   </div>
 
