@@ -99,7 +99,7 @@ export default function AboutPage() {
               {storyDesc2 && <p className="whitespace-pre-line">{storyDesc2}</p>}
             </div>
 
-            {/* ປ່ຽນປຸ່ມໃຫ້ເປັນຂອບ Teal, ພື້ນຂາວ, ຕົວໜັງສື Teal */}
+            {/* ປຸ່ມຂອບ Teal, ພື້ນຂາວ, ຕົວໜັງສື Teal */}
             <div className="pt-4 flex flex-col sm:flex-row gap-4">
               <Link 
                 href={`/${locale}/about`} 
@@ -163,13 +163,16 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 4. ສ່ວນ Call to Action */}
-      <section className="py-24 px-6 text-center">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-8 uppercase">
+      {/* 4. ສ່ວນ Call to Action - ອັບເດດພື້ນຫຼັງສີເທົາອ່ອນ + Gradient */}
+      <section className="bg-gray-50 border-t border-gray-100 py-24 px-6 relative overflow-hidden mt-10">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-400/10 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4"></div>
+
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-8 tracking-tighter uppercase">
             {ctaTitle}
           </h2>
-          <p className="text-xl text-gray-500 mb-10">
+          <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
             {ctaSubtitle}
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">

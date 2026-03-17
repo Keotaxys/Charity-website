@@ -105,30 +105,28 @@ export default function HistoryPage() {
         )}
       </section>
 
-      {/* 3. ສ່ວນອະນາຄົດ (The Future) - ປ່ຽນພື້ນເປັນສີດຳ bg-gray-900 */}
-      <section className="max-w-5xl mx-auto px-6 mt-10">
-        <div className="bg-gray-900 rounded-[2.5rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-teal-500/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
-          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-pink-500/20 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4"></div>
+      {/* 3. ສ່ວນອະນາຄົດ (The Future) - ອັບເດດພື້ນຫຼັງສີເທົາອ່ອນ + Gradient */}
+      <section className="bg-gray-50 border-t border-gray-100 py-24 px-6 relative overflow-hidden mt-10">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-400/10 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4"></div>
 
-          <div className="relative z-10">
-            <h2 className="text-teal-400 font-bold tracking-widest uppercase text-sm mb-4">
-              {footerSmall}
-            </h2>
-            <h3 className="text-4xl md:text-6xl font-black mb-8 tracking-tighter drop-shadow-md">
-              {footerTitle}
-            </h3>
-            <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
-              {footerDesc}
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link 
-                href={`/${locale}/campaigns`}
-                className="bg-teal-600 hover:bg-teal-500 text-white font-black py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-teal-500/50 uppercase tracking-wider text-lg"
-              >
-                {footerBtn}
-              </Link>
-            </div>
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <h2 className="text-teal-600 font-bold tracking-widest uppercase text-sm mb-4">
+            {footerSmall}
+          </h2>
+          <h3 className="text-4xl md:text-6xl font-black text-gray-900 mb-8 tracking-tighter">
+            {footerTitle}
+          </h3>
+          <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+            {footerDesc}
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link 
+              href={`/${locale}/campaigns`}
+              className="bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-teal-600/50 uppercase tracking-wider text-lg"
+            >
+              {footerBtn}
+            </Link>
           </div>
         </div>
       </section>

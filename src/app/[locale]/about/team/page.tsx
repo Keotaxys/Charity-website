@@ -89,30 +89,28 @@ export default function TeamPage() {
         )}
       </section>
 
-      {/* 3. ສ່ວນຊວນມາເປັນອາສາສະໝັກ */}
-      <section className="max-w-4xl mx-auto px-6 mt-10">
-        <div className="bg-gray-900 rounded-[2.5rem] p-12 md:p-16 text-center text-white relative overflow-hidden shadow-2xl">
-          <div className="absolute top-0 left-0 w-[300px] h-[300px] bg-teal-500/20 rounded-full blur-[80px] -translate-y-1/2 -translate-x-1/4"></div>
-          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-pink-500/20 rounded-full blur-[100px] translate-y-1/4 translate-x-1/4"></div>
-          
-          <div className="relative z-10">
-            <h2 className="text-teal-400 font-bold tracking-widest uppercase text-sm mb-4">
-              {locale === 'lo' ? 'ຮ່ວມເປັນສ່ວນໜຶ່ງຂອງທີມ' : 'JOIN OUR MOVEMENT'}
-            </h2>
-            <h3 className="text-3xl md:text-5xl font-black mb-8 tracking-tighter drop-shadow-md">
-              {ctaTitle}
-            </h3>
-            <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
-              {ctaDesc}
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link 
-                href={`/${locale}/about/contact`}
-                className="inline-block bg-teal-600 hover:bg-teal-500 text-white font-black py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-teal-500/50 uppercase tracking-wider text-lg"
-              >
-                {ctaBtn}
-              </Link>
-            </div>
+      {/* 3. ສ່ວນຊວນມາເປັນອາສາສະໝັກ (Call to Action) */}
+      <section className="bg-gray-50 border-t border-gray-100 py-24 px-6 relative overflow-hidden mt-10">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-400/10 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4"></div>
+
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <h2 className="text-teal-600 font-bold tracking-widest uppercase text-sm mb-4">
+            {locale === 'lo' ? 'ຮ່ວມເປັນສ່ວນໜຶ່ງຂອງທີມ' : 'JOIN OUR MOVEMENT'}
+          </h2>
+          <h3 className="text-3xl md:text-5xl font-black text-gray-900 mb-8 tracking-tighter">
+            {ctaTitle}
+          </h3>
+          <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+            {ctaDesc}
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link 
+              href={`/${locale}/about/contact`}
+              className="bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-teal-600/50 uppercase tracking-wider text-lg"
+            >
+              {ctaBtn}
+            </Link>
           </div>
         </div>
       </section>

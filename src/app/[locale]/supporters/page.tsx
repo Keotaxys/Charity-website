@@ -175,14 +175,19 @@ export default function SupportersPage() {
       </section>
 
       {/* 5. ສ່ວນ Call to Action */}
-      <section className="max-w-4xl mx-auto px-6 mt-10">
-        <div className="bg-teal-600 rounded-[2.5rem] p-10 md:p-16 text-center text-white relative overflow-hidden shadow-2xl">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2"></div>
-          <div className="relative z-10">
-            <h2 className="text-3xl md:text-5xl font-black mb-6 uppercase tracking-tight">
-              {ctaTitle}
-            </h2>
-            <Link href={`/${locale}/about/contact`} className="inline-block bg-white text-teal-600 hover:bg-gray-100 font-black py-4 px-10 rounded-full transition-all uppercase tracking-wider text-lg shadow-lg">
+      <section className="bg-gray-50 border-t border-gray-100 py-24 px-6 relative overflow-hidden mt-10">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-400/10 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4"></div>
+
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-8 tracking-tighter uppercase">
+            {ctaTitle}
+          </h2>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link 
+              href={`/${locale}/about/contact`} 
+              className="bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-teal-600/50 uppercase tracking-wider text-lg"
+            >
               {ctaBtn}
             </Link>
           </div>
