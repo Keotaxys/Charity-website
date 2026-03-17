@@ -98,6 +98,16 @@ export default function AboutPage() {
               <p className="whitespace-pre-line">{storyDesc1}</p>
               {storyDesc2 && <p className="whitespace-pre-line">{storyDesc2}</p>}
             </div>
+
+            {/* ປ່ຽນປຸ່ມໃຫ້ເປັນຂອບ Teal, ພື້ນຂາວ, ຕົວໜັງສື Teal */}
+            <div className="pt-4 flex flex-col sm:flex-row gap-4">
+              <Link 
+                href={`/${locale}/about`} 
+                className="bg-white border-2 border-teal-600 text-teal-600 hover:bg-teal-600 hover:text-white text-center font-black py-4 px-8 rounded-full transition-all uppercase tracking-wide text-sm transform hover:-translate-y-1 shadow-sm"
+              >
+                {locale === 'lo' ? 'ອ່ານປະຫວັດຂອງພວກເຮົາ' : 'READ OUR STORY'}
+              </Link>
+            </div>
           </div>
 
           {/* ຮູບພາບ (ເບື້ອງຂວາ) */}

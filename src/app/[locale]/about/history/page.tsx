@@ -105,7 +105,7 @@ export default function HistoryPage() {
         )}
       </section>
 
-      {/* 3. ສ່ວນອະນາຄົດ (The Future) */}
+      {/* 3. ສ່ວນອະນາຄົດ (The Future) - ປ່ຽນພື້ນເປັນສີດຳ bg-gray-900 */}
       <section className="max-w-5xl mx-auto px-6 mt-10">
         <div className="bg-gray-900 rounded-[2.5rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-teal-500/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
