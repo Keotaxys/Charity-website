@@ -12,7 +12,7 @@ export default function FinancialPage() {
     const fetchData = async () => {
       const docSnap = await getDoc(doc(db, 'settings', 'policies_page'));
       if (docSnap.exists()) {
-        const data = docSnap.data();
+        const data = docSnap.data() as any; // 💡 ຕື່ມ as any ບ່ອນນີ້
         setContent(locale === 'lo' ? data.financial_lo : data.financial_en);
       }
     };
