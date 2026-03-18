@@ -42,7 +42,7 @@ export default function CampaignDetailPage({ params }: Props) {
   return (
     <div className="bg-white min-h-screen pb-24 font-sans">
       
-      {/* 1. Header Navigation: ປຸ່ມກັບຄືນ ແລະ ຫົວຂໍ້ໃຫຍ່ */}
+      {/* 1. Header Navigation */}
       <div className="max-w-6xl mx-auto px-6 pt-10 md:pt-16">
         <Link href={`/${locale}/campaigns`} className="inline-flex items-center gap-2 text-teal-600 font-bold text-sm mb-6 hover:text-teal-700 transition-all uppercase tracking-widest">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -53,18 +53,19 @@ export default function CampaignDetailPage({ params }: Props) {
         </h1>
       </div>
 
-      {/* 2. Main Content Grid: ແບ່ງເປັນ 2 ຖັນ (ຊ້າຍ: ຮູບ+ເນື້ອຫາ, ຂວາ: ບັດບໍລິຈາກ) */}
+      {/* 2. Main Content Grid */}
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           
           {/* --- ເບື້ອງຊ້າຍ (8/12): ຮູບພາບ ແລະ ລາຍລະອຽດ --- */}
           <div className="lg:col-span-8 space-y-10">
-            {/* ຮູບພາບໂຄງການ: 💡 ເພີ່ມ object-top ເພື່ອໃຫ້ຮູບເນັ້ນສະແດງສ່ວນຫົວຂອງຄົນ */}
-            <div className="w-full aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl shadow-gray-200 bg-gray-100 border border-gray-100">
+            
+            {/* 💡 ຈຸດແກ້ໄຂ: ໃຊ້ w-full h-auto ເພື່ອສະແດງຮູບເຕັມສັດສ່ວນ ໂດຍບໍ່ມີການ Crop */}
+            <div className="w-full rounded-[2rem] overflow-hidden shadow-2xl shadow-gray-200 bg-gray-50 border border-gray-100">
               <img 
                 src={campaign.cover_image} 
                 alt="cover" 
-                className="w-full h-full object-cover object-top" 
+                className="w-full h-auto block" // 💡 h-auto ຈະເຮັດໃຫ້ເຫັນຮູບຄົບທຸກສ່ວນ
               />
             </div>
 
@@ -80,15 +81,13 @@ export default function CampaignDetailPage({ params }: Props) {
             </div>
           </div>
 
-          {/* --- ເບື້ອງຂວາ (4/12): ບັດຄວາມຄືບໜ້າ ແລະ ປຸ່ມບໍລິຈາກ (Sticky) --- */}
+          {/* --- ເບື້ອງຂວາ (4/12): ບັດຄວາມຄືບໜ້າ (Sticky) --- */}
           <div className="lg:col-span-4 lg:sticky lg:top-10">
             <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl shadow-teal-900/10 border border-teal-50 relative overflow-hidden">
               
-              {/* ຕົບແຕ່ງພື້ນຫຼັງບັດເລັກນ້ອຍ */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
 
               <div className="relative z-10 space-y-8">
-                {/* ຕົວເລກເປີເຊັນ */}
                 <div>
                   <div className="flex justify-between items-end mb-4">
                     <div className="flex flex-col">
@@ -96,7 +95,6 @@ export default function CampaignDetailPage({ params }: Props) {
                         <span className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">{locale === 'lo' ? 'ສຳເລັດແລ້ວ' : 'REACHED'}</span>
                     </div>
                   </div>
-                  {/* Progress Bar */}
                   <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-50">
                     <div 
                       className="h-full bg-gradient-to-r from-teal-400 to-teal-600 rounded-full transition-all duration-1000 ease-out shadow-inner" 
@@ -105,7 +103,6 @@ export default function CampaignDetailPage({ params }: Props) {
                   </div>
                 </div>
 
-                {/* ລາຍລະອຽດເງິນ */}
                 <div className="space-y-6 pt-2">
                   <div className="flex flex-col">
                     <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-1">{locale === 'lo' ? 'ຍອດບໍລິຈາກປັດຈຸບັນ' : 'CURRENTLY RAISED'}</span>
@@ -124,7 +121,6 @@ export default function CampaignDetailPage({ params }: Props) {
                   </div>
                 </div>
 
-                {/* ປຸ່ມບໍລິຈາກ: ໃຫຍ່ ແລະ ເດັ່ນ */}
                 <div className="pt-4">
                   <Link 
                     href={`/${locale}/donate?campaignId=${campaign.id}`}
