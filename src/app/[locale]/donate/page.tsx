@@ -1,26 +1,30 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useLocale } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { db, storage } from '@/lib/firebase';
-import { collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, orderBy, where, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-export default function DonatePage() {
+function DonateForm() {
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const prefillCampaignId = searchParams.get('campaignId');
 
   const [campaigns, setCampaigns] = useState<any[]>([]);
   
   // State ຂອງຟອມ
   const [formData, setFormData] = useState({
     campaign_id: 'general',
-    name: '',
+    donor_name: '',
     email: '',
-    phone: '',
+    donor_phone: '',
     hideName: false,
     hideAmount: false,
   });
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ type: '', text: '' });
@@ -33,16 +37,24 @@ export default function DonatePage() {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const q = query(collection(db, 'campaigns'), orderBy('created_at', 'desc'));
+        const q = query(collection(db, 'campaigns'), where('status', '==', 'Active'), orderBy('created_at', 'desc'));
         const snapshot = await getDocs(q);
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setCampaigns(data);
+
+        // ຖ້າມີ campaignId ມານຳ URL ໃຫ້ຕັ້ງຄ່າເລີ່ມຕົ້ນເລີຍ
+        if (prefillCampaignId) {
+          const found = data.find(c => c.id === prefillCampaignId);
+          if (found) {
+            setFormData(prev => ({ ...prev, campaign_id: found.id }));
+          }
+        }
       } catch (error) {
         console.error("Error fetching campaigns:", error);
       }
     };
     fetchCampaigns();
-  }, []);
+  }, [prefillCampaignId]);
 
   // ປິດ Dropdown ເວລາກົດບ່ອນອື່ນ
   useEffect(() => {
@@ -54,6 +66,19 @@ export default function DonatePage() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // 💡 ເພີ່ມຟັງຊັນ handleInputChange ທີ່ຂາດຫາຍໄປ 💡
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setReceiptFile(selectedFile);
+      setPreviewUrl(URL.createObjectURL(selectedFile));
+    }
+  };
 
   // ຟັງຊັນບັນທຶກການບໍລິຈາກພ້ອມອັບໂຫຼດສະລິບ
   const handleSubmit = async (e: React.FormEvent) => {
@@ -68,16 +93,36 @@ export default function DonatePage() {
     setStatus({ type: '', text: '' });
 
     try {
-      const storageRef = ref(storage, `receipts/${Date.now()}_${receiptFile.name}`);
+      // 1. ອັບໂຫຼດສະລິບ
+      const storageRef = ref(storage, `slips/${Date.now()}_${receiptFile.name}`);
       await uploadBytes(storageRef, receiptFile);
       const receiptUrl = await getDownloadURL(storageRef);
 
+      // 2. ດຶງຊື່ໂຄງການ
+      let campTitleLo = 'ກອງທຶນລວມ';
+      let campTitleEn = 'General Fund';
+      if (formData.campaign_id !== 'general') {
+        const selectedCamp = campaigns.find(c => c.id === formData.campaign_id);
+        if (selectedCamp) {
+          campTitleLo = selectedCamp.title_lo;
+          campTitleEn = selectedCamp.title_en;
+        }
+      }
+
+      // 3. ບັນທຶກຂໍ້ມູນ
       await addDoc(collection(db, 'donations'), {
-        ...formData,
-        receipt_url: receiptUrl,
-        amount: 0, 
-        status: 'pending', 
-        created_at: new Date()
+        donor_name: formData.donor_name,
+        donor_phone: formData.donor_phone,
+        email: formData.email,
+        campaign_id: formData.campaign_id,
+        campaign_title_lo: campTitleLo,
+        campaign_title_en: campTitleEn,
+        slip_url: receiptUrl,
+        amount: 0, // ແອັດມິນຈະກວດສອບສະລິບແລ້ວພິມຍອດເງິນເອງ
+        status: 'Pending', 
+        hideName: formData.hideName,
+        hideAmount: formData.hideAmount,
+        created_at: serverTimestamp()
       });
       
       setStatus({ 
@@ -85,8 +130,9 @@ export default function DonatePage() {
         text: locale === 'lo' ? 'ຂໍຂອບໃຈ! ພວກເຮົາໄດ້ຮັບແຈ້ງການໂອນເງິນຂອງທ່ານແລ້ວ. ທີມງານຈະກວດສອບສະລິບ ແລະ ອັບເດດຍອດເງິນໃຫ້ໂດຍໄວ.' : 'Thank you! We have received your receipt. Our team will verify and update the amount soon.' 
       });
       
-      setFormData({ campaign_id: 'general', name: '', email: '', phone: '', hideName: false, hideAmount: false });
+      setFormData({ campaign_id: 'general', donor_name: '', email: '', donor_phone: '', hideName: false, hideAmount: false });
       setReceiptFile(null);
+      setPreviewUrl(null);
     } catch (error) {
       console.error("Error submitting donation:", error);
       setStatus({ type: 'error', text: locale === 'lo' ? 'ເກີດຂໍ້ຜິດພາດ. ກະລຸນາລອງໃໝ່.' : 'An error occurred. Please try again.' });
@@ -219,7 +265,7 @@ export default function DonatePage() {
                           ${formData.campaign_id === 'general' ? 'bg-teal-50 text-teal-700 font-black' : 'text-gray-700 hover:bg-teal-50 hover:text-teal-700 font-medium'}
                         `}
                       >
-                        {locale === 'lo' ? 'ກອງທຶນລວມ (ນຳໃຊ້ເຂົ້າໃນທຸກໂຄງການ)' : 'General Fund'}
+                        {locale === 'lo' ? 'ກອງທຶນລວມ (ນຳໃຊ້ເຂົ້າໃນທຸກໂຄງການ)' : 'General Fund (Use where most needed)'}
                       </div>
                       
                       {campaigns.map(camp => (
@@ -238,12 +284,12 @@ export default function DonatePage() {
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wider">{locale === 'lo' ? 'ຊື່ ແລະ ນາມສະກຸນ' : 'FULL NAME'}</label>
-                  <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-teal-600 outline-none transition-all" placeholder={locale === 'lo' ? 'ຊື່ຜູ້ບໍລິຈາກ' : 'John Doe'} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                  <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wider">{locale === 'lo' ? 'ຊື່ຜູ້ບໍລິຈາກ' : 'FULL NAME'}</label>
+                  <input type="text" required name="donor_name" className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-teal-600 outline-none transition-all" placeholder={locale === 'lo' ? 'ຊື່ຜູ້ບໍລິຈາກ' : 'John Doe'} value={formData.donor_name} onChange={handleInputChange} />
                 </div>
                 <div>
                   <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wider">{locale === 'lo' ? 'ເບີໂທລະສັບ' : 'PHONE NUMBER'}</label>
-                  <input type="tel" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-teal-600 outline-none transition-all" placeholder="020 xxxx xxxx" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+                  <input type="tel" required name="donor_phone" className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-teal-600 outline-none transition-all" placeholder="020 xxxx xxxx" value={formData.donor_phone} onChange={handleInputChange} />
                 </div>
 
                 {/* ອັບໂຫຼດຮູບສະລິບ */}
@@ -255,15 +301,22 @@ export default function DonatePage() {
                     ${receiptFile ? 'border-teal-500 bg-teal-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-teal-400'}`}>
                     <input 
                       type="file" accept="image/*" required className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      onChange={(e) => { if (e.target.files && e.target.files[0]) { setReceiptFile(e.target.files[0]); } }}
+                      onChange={handleFileChange}
                     />
-                    <div className="flex flex-col items-center pointer-events-none">
-                      <svg className={`w-10 h-10 mb-2 ${receiptFile ? 'text-teal-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                      <span className={`font-bold ${receiptFile ? 'text-teal-700' : 'text-gray-600'}`}>
-                        {receiptFile ? receiptFile.name : (locale === 'lo' ? 'ກົດເພື່ອເລືອກຮູບສະລິບ' : 'Click to select receipt image')}
-                      </span>
-                      {!receiptFile && <span className="text-gray-400 text-sm mt-1">{locale === 'lo' ? 'ຮອງຮັບໄຟລ໌ .jpg, .png' : 'Supports .jpg, .png'}</span>}
-                    </div>
+                    {previewUrl ? (
+                      <div className="flex flex-col items-center">
+                        <img src={previewUrl} alt="Preview" className="h-32 object-contain rounded-lg mb-2 shadow-sm" />
+                        <span className="font-bold text-teal-700 text-sm">{receiptFile?.name}</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center pointer-events-none">
+                        <svg className={`w-10 h-10 mb-2 text-gray-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                        <span className="font-bold text-gray-600">
+                          {locale === 'lo' ? 'ກົດເພື່ອເລືອກຮູບສະລິບ' : 'Click to select receipt image'}
+                        </span>
+                        <span className="text-gray-400 text-sm mt-1">{locale === 'lo' ? 'ຮອງຮັບໄຟລ໌ .jpg, .png' : 'Supports .jpg, .png'}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -307,5 +360,14 @@ export default function DonatePage() {
       </section>
 
     </div>
+  );
+}
+
+// ຫໍ່ຫຸ້ມດ້ວຍ Suspense ສຳລັບການໃຊ້ useSearchParams ໃນ Next.js App Router
+export default function DonateWrapper() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center font-black text-xl text-teal-600">Loading...</div>}>
+      <DonateForm />
+    </Suspense>
   );
 }
