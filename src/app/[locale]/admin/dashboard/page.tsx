@@ -17,7 +17,6 @@ import TabTeam from '@/components/admin/TabTeam';
 import TabContact from '@/components/admin/TabContact';
 import TabSupporters from '@/components/admin/TabSupporters';
 import TabVideos from '@/components/admin/TabVideos';
-// 💡 ເພີ່ມການນຳເຂົ້າ TabPolicies ໃໝ່
 import TabPolicies from '@/components/admin/TabPolicies';
 
 export default function AdminDashboard() {
@@ -48,7 +47,6 @@ export default function AdminDashboard() {
     contact: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" /><path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" /></svg>,
     supporters: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z" /></svg>,
     videos: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z" /></svg>,
-    // 💡 ໄອຄອນສຳລັບໜ້ານະໂຍບາຍໃໝ່
     policies: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm11.378-3.917c-.89-.777-2.366-.777-3.255 0a.75.75 0 01-.988-1.129c1.454-1.272 3.776-1.272 5.23 0 1.513 1.324 1.513 3.518 0 4.842a3.75 3.75 0 01-.837.552c-.676.328-1.028.774-1.028 1.152v.75a.75.75 0 01-1.5 0v-.75c0-1.279 1.06-2.107 1.875-2.502.182-.088.351-.199.503-.331.89-.777.89-2.038 0-2.815zM12 19.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clipRule="evenodd" /></svg>,
     logout: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M12 2.25a.75.75 0 01.75.75v9a.75.75 0 01-1.5 0V3a.75.75 0 01-.75-.75zM6.166 5.106a.75.75 0 010 1.06 8.25 8.25 0 1011.668 0 .75.75 0 111.06-1.06c3.808 3.807 3.808 9.98 0 13.788-3.807 3.808-9.98 3.808-13.788 0-3.808-3.807-3.808-9.98 0-13.788a.75.75 0 011.06 0z" clipRule="evenodd" /></svg>
   };
@@ -63,51 +61,68 @@ export default function AdminDashboard() {
     { id: 'contact', icon: Icons.contact, label: locale === 'lo' ? 'ຕິດຕໍ່ພວກເຮົາ' : 'Contact Us' },
     { id: 'supporters', icon: Icons.supporters, label: locale === 'lo' ? 'ຜູ້ສະໜັບສະໜູນ' : 'Supporters' },
     { id: 'videos', icon: Icons.videos, label: locale === 'lo' ? 'ວິດີໂອ' : 'Videos' },
-    // 💡 ເພີ່ມເມນູໃໝ່ລົງໃນ Sidebar
     { id: 'policies', icon: Icons.policies, label: locale === 'lo' ? 'ນະໂຍບາຍ & ລາຍງານ' : 'Policies & Reports' },
   ];
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+      <div className="min-h-screen bg-[#F1F5F9] flex flex-col md:flex-row">
         
-        {/* Sidebar */}
-        <aside className="w-full md:w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
-          <div className="p-6 border-b border-gray-100">
-            <h1 className="text-2xl font-black text-teal-600 tracking-tighter uppercase">Admin Panel</h1>
-            <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-widest">BEAST.LAO MANAGEMENT</p>
+        {/* Sidebar: ປັບໃຫ້ກວ້າງຂຶ້ນເລັກນ້ອຍ ແລະ ໃຊ້ສີທີ່ Soft ຂຶ້ນ */}
+        <aside className="w-full md:w-72 bg-white border-r border-gray-200 flex flex-col shrink-0 z-20 shadow-sm relative">
+          <div className="p-8 border-b border-gray-50">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-teal-600 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-teal-600/30">B</div>
+              <div>
+                <h1 className="text-xl font-black text-gray-900 leading-none">ADMIN</h1>
+                <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-[0.2em]">MANAGEMENT</p>
+              </div>
+            </div>
           </div>
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {menuItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all text-sm text-left ${
-                  activeTab === item.id ? 'bg-teal-50 text-teal-600 border border-teal-100' : 'text-gray-500 hover:bg-gray-50'
-                }`}
+                className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all text-sm text-left
+                  ${activeTab === item.id 
+                    ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20' 
+                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}
+                `}
               >
-                {item.icon} {item.label}
+                <span className={activeTab === item.id ? 'text-white' : 'text-gray-400'}>{item.icon}</span>
+                {item.label}
               </button>
             ))}
           </nav>
-          <div className="p-4 border-t border-gray-100">
-            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-pink-500 hover:bg-pink-50 transition-all text-sm">
+
+          <div className="p-6 border-t border-gray-50">
+            <button onClick={handleLogout} className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-black text-pink-500 hover:bg-pink-50 transition-all text-sm uppercase tracking-widest">
               {Icons.logout} {locale === 'lo' ? 'ອອກຈາກລະບົບ' : 'Logout'}
             </button>
           </div>
         </aside>
 
-        {/* Content Area */}
-        <main className="flex-1 p-6 md:p-10 overflow-y-auto h-screen">
-          <div className="max-w-5xl mx-auto">
-            {message.text && (
-              <div className={`p-4 rounded-xl font-bold text-center border mb-8 shadow-sm ${
-                message.type === 'success' ? 'bg-teal-50 text-teal-600 border-teal-200' : 'bg-pink-50 text-pink-500 border-pink-200'
+        {/* Content Area: ເພີ່ມ Padding ແລະ ຈັດລຽງໃຫ້ສົມດຸນ */}
+        <main className="flex-1 p-6 md:p-12 overflow-y-auto h-screen scroll-smooth relative">
+          
+          {/* Message Toast ແບບ Floating ເດັ້ງລົງມາຈາກດ້ານເທິງ */}
+          {message.text && (
+            <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] animate-bounce">
+               <div className={`px-8 py-4 rounded-2xl font-black shadow-2xl border flex items-center gap-3 ${
+                message.type === 'success' ? 'bg-white text-teal-600 border-teal-100' : 'bg-white text-pink-500 border-pink-100'
               }`}>
+                {message.type === 'success' 
+                  ? <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  : <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                }
                 {message.text}
               </div>
-            )}
+            </div>
+          )}
 
+          <div className="max-w-5xl mx-auto animate-fade-in-up">
             {/* Render ແຕ່ລະແຖບ */}
             {activeTab === 'home' && <TabHome showMessage={showMessage} />}
             {activeTab === 'campaigns' && <TabCampaigns showMessage={showMessage} />}
@@ -118,10 +133,10 @@ export default function AdminDashboard() {
             {activeTab === 'contact' && <TabContact showMessage={showMessage} />}
             {activeTab === 'supporters' && <TabSupporters showMessage={showMessage} />}
             {activeTab === 'videos' && <TabVideos showMessage={showMessage} />}
-            {/* 💡 ເພີ່ມການ Render Tab ໃໝ່ */}
             {activeTab === 'policies' && <TabPolicies showMessage={showMessage} />}
           </div>
         </main>
+
       </div>
     </AdminGuard>
   );
