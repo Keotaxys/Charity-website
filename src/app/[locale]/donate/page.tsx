@@ -228,7 +228,7 @@ function DonateForm() {
 
             <div>
               <h2 className="text-xl font-black mb-6 uppercase tracking-widest text-[#00457C] flex items-center gap-3">
-                <span className="bg-blue-50 text-[#00457C] w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                <span className="bg-pink-50 text-[#00457C] w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
                 {locale === 'lo' ? 'ບໍລິຈາກຜ່ານ PayPal' : 'DONATE VIA PAYPAL'}
               </h2>
               <div className="bg-[#00457C]/5 p-6 rounded-3xl border border-[#00457C]/10 text-center">
