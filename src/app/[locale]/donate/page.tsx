@@ -22,9 +22,16 @@ function DonateForm() {
     donor_phone: '',
     hideName: false,
     hideAmount: false,
+    hideProfile: false, // 💡 ເພີ່ມ State ສຳລັບເຊື່ອງຮູບໂປຣໄຟລ໌
   });
+
+  // State ສຳລັບຮູບສະລິບ (ບັງຄັບ)
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // 💡 State ສຳລັບຮູບໂປຣໄຟລ໌ (ທາງເລືອກ)
+  const [profileFile, setProfileFile] = useState<File | null>(null);
+  const [profilePreviewUrl, setProfilePreviewUrl] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ type: '', text: '' });
@@ -42,7 +49,6 @@ function DonateForm() {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setCampaigns(data);
 
-        // ຖ້າມີ campaignId ມານຳ URL ໃຫ້ຕັ້ງຄ່າເລີ່ມຕົ້ນເລີຍ
         if (prefillCampaignId) {
           const found = data.find(c => c.id === prefillCampaignId);
           if (found) {
@@ -67,7 +73,6 @@ function DonateForm() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 💡 ເພີ່ມຟັງຊັນ handleInputChange ທີ່ຂາດຫາຍໄປ 💡
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -80,7 +85,16 @@ function DonateForm() {
     }
   };
 
-  // ຟັງຊັນບັນທຶກການບໍລິຈາກພ້ອມອັບໂຫຼດສະລິບ
+  // 💡 ຟັງຊັນຈັດການຮູບໂປຣໄຟລ໌
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setProfileFile(selectedFile);
+      setProfilePreviewUrl(URL.createObjectURL(selectedFile));
+    }
+  };
+
+  // ຟັງຊັນບັນທຶກການບໍລິຈາກ
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -98,7 +112,15 @@ function DonateForm() {
       await uploadBytes(storageRef, receiptFile);
       const receiptUrl = await getDownloadURL(storageRef);
 
-      // 2. ດຶງຊື່ໂຄງການ
+      // 2. 💡 ອັບໂຫຼດຮູບໂປຣໄຟລ໌ (ຖ້າມີ)
+      let profileUrl = '';
+      if (profileFile) {
+        const profileRef = ref(storage, `profiles/${Date.now()}_${profileFile.name}`);
+        await uploadBytes(profileRef, profileFile);
+        profileUrl = await getDownloadURL(profileRef);
+      }
+
+      // 3. ດຶງຊື່ໂຄງການ
       let campTitleLo = 'ກອງທຶນລວມ';
       let campTitleEn = 'General Fund';
       if (formData.campaign_id !== 'general') {
@@ -109,7 +131,7 @@ function DonateForm() {
         }
       }
 
-      // 3. ບັນທຶກຂໍ້ມູນ
+      // 4. ບັນທຶກຂໍ້ມູນ
       await addDoc(collection(db, 'donations'), {
         donor_name: formData.donor_name,
         donor_phone: formData.donor_phone,
@@ -118,10 +140,12 @@ function DonateForm() {
         campaign_title_lo: campTitleLo,
         campaign_title_en: campTitleEn,
         slip_url: receiptUrl,
-        amount: 0, // ແອັດມິນຈະກວດສອບສະລິບແລ້ວພິມຍອດເງິນເອງ
+        profile_url: profileUrl, // 💡 ບັນທຶກ URL ໂປຣໄຟລ໌
+        amount: 0,
         status: 'Pending', 
         hideName: formData.hideName,
         hideAmount: formData.hideAmount,
+        hideProfile: formData.hideProfile, // 💡 ບັນທຶກການຕັ້ງຄ່າເຊື່ອງຮູບ
         created_at: serverTimestamp()
       });
       
@@ -130,9 +154,13 @@ function DonateForm() {
         text: locale === 'lo' ? 'ຂໍຂອບໃຈ! ພວກເຮົາໄດ້ຮັບແຈ້ງການໂອນເງິນຂອງທ່ານແລ້ວ. ທີມງານຈະກວດສອບສະລິບ ແລະ ອັບເດດຍອດເງິນໃຫ້ໂດຍໄວ.' : 'Thank you! We have received your receipt. Our team will verify and update the amount soon.' 
       });
       
-      setFormData({ campaign_id: 'general', donor_name: '', email: '', donor_phone: '', hideName: false, hideAmount: false });
+      // ລ້າງຟອມຫຼັງຈາກສຳເລັດ
+      setFormData({ campaign_id: 'general', donor_name: '', email: '', donor_phone: '', hideName: false, hideAmount: false, hideProfile: false });
       setReceiptFile(null);
       setPreviewUrl(null);
+      setProfileFile(null);
+      setProfilePreviewUrl(null);
+
     } catch (error) {
       console.error("Error submitting donation:", error);
       setStatus({ type: 'error', text: locale === 'lo' ? 'ເກີດຂໍ້ຜິດພາດ. ກະລຸນາລອງໃໝ່.' : 'An error occurred. Please try again.' });
@@ -141,7 +169,6 @@ function DonateForm() {
     }
   };
 
-  // ຊອກຫາຊື່ໂຄງການທີ່ຖືກເລືອກເພື່ອມາສະແດງໃນກ່ອງ Dropdown
   const selectedCampaignTitle = formData.campaign_id === 'general' 
     ? (locale === 'lo' ? 'ກອງທຶນລວມ (ນຳໃຊ້ເຂົ້າໃນທຸກໂຄງການ)' : 'General Fund (Use where most needed)')
     : (() => {
@@ -173,7 +200,6 @@ function DonateForm() {
           
           {/* ຝັ່ງຊ້າຍ: ຊ່ອງທາງການຊຳລະເງິນ (QR & PayPal) */}
           <div className="w-full lg:w-2/5 bg-white p-8 md:p-12 border-b lg:border-b-0 lg:border-r border-gray-100 relative">
-            
             <div className="mb-10">
               <h2 className="text-xl font-black mb-6 uppercase tracking-widest text-teal-600 flex items-center gap-3">
                 <span className="bg-teal-100 text-teal-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
@@ -217,7 +243,6 @@ function DonateForm() {
                 </a>
               </div>
             </div>
-
           </div>
 
           {/* ຝັ່ງຂວາ: ຟອມແຈ້ງໂອນເງິນ & ອັບໂຫຼດສະລິບ */}
@@ -239,13 +264,26 @@ function DonateForm() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
+                {/* 💡 ອັບໂຫຼດຮູບໂປຣໄຟລ໌ (ທາງເລືອກ) */}
+                <div className="md:col-span-2 flex flex-col items-center justify-center py-4">
+                  <div className="relative w-24 h-24 rounded-full border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden hover:border-teal-400 transition-colors cursor-pointer group shadow-sm">
+                    {profilePreviewUrl ? (
+                      <img src={profilePreviewUrl} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <svg className="w-8 h-8 text-gray-400 group-hover:text-teal-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    )}
+                    <input type="file" accept="image/*" onChange={handleProfileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                  </div>
+                  <span className="text-[10px] font-bold text-gray-400 mt-3 uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-full">
+                    {locale === 'lo' ? 'ເພີ່ມຮູບໂປຣໄຟລ໌ (ທາງເລືອກ)' : 'ADD PROFILE (OPTIONAL)'}
+                  </span>
+                </div>
+
                 {/* Custom Dropdown ສຳລັບເລືອກໂຄງການ */}
                 <div className="md:col-span-2 relative" ref={dropdownRef}>
                   <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wider">
                     {locale === 'lo' ? 'ເລືອກໂຄງການ' : 'SELECT CAMPAIGN'}
                   </label>
-                  
-                  {/* ກ່ອງປຸ່ມກົດ Dropdown */}
                   <div 
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className={`w-full p-4 bg-gray-50 border rounded-xl text-gray-900 flex justify-between items-center cursor-pointer transition-all
@@ -255,8 +293,6 @@ function DonateForm() {
                     <span className="font-bold truncate pr-4">{selectedCampaignTitle}</span>
                     <svg className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180 text-teal-600' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                   </div>
-
-                  {/* ລາຍການຕົວເລືອກທີ່ຊ້ອນລົງມາ */}
                   {isDropdownOpen && (
                     <div className="absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
                       <div 
@@ -267,7 +303,6 @@ function DonateForm() {
                       >
                         {locale === 'lo' ? 'ກອງທຶນລວມ (ນຳໃຊ້ເຂົ້າໃນທຸກໂຄງການ)' : 'General Fund (Use where most needed)'}
                       </div>
-                      
                       {campaigns.map(camp => (
                         <div 
                           key={camp.id}
@@ -334,7 +369,17 @@ function DonateForm() {
                     <svg className="absolute w-4 h-4 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                   </div>
                   <span className="text-gray-700 font-medium group-hover:text-teal-600 transition-colors">
-                    {locale === 'lo' ? 'ບໍ່ປະສົງອອກນາມ (ເຊື່ອງຊື່ໃນໜ້າເວັບ)' : 'Donate Anonymously (Hide my name)'}
+                    {locale === 'lo' ? 'ບໍ່ປະສົງອອກນາມ (ເຊື່ອງຊື່)' : 'Donate Anonymously (Hide my name)'}
+                  </span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center">
+                    <input type="checkbox" className="peer appearance-none w-6 h-6 border-2 border-gray-300 rounded-md checked:bg-blue-400 checked:border-blue-400 transition-all cursor-pointer" checked={formData.hideProfile} onChange={(e) => setFormData({...formData, hideProfile: e.target.checked})} />
+                    <svg className="absolute w-4 h-4 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                  <span className="text-gray-700 font-medium group-hover:text-blue-500 transition-colors">
+                    {locale === 'lo' ? 'ບໍ່ສະແດງຮູບໂປຣໄຟລ໌' : 'Hide my profile picture'}
                   </span>
                 </label>
 
@@ -350,7 +395,7 @@ function DonateForm() {
               </div>
 
               <button type="submit" disabled={loading || !receiptFile} className="w-full bg-teal-600 hover:bg-teal-700 text-white font-black py-5 rounded-xl transition-all shadow-md hover:shadow-teal-600/40 uppercase tracking-widest text-lg disabled:bg-gray-400 mt-8">
-                {loading ? (locale === 'lo' ? 'ກຳລັງອັບໂຫຼດສະລິບ...' : 'UPLOADING...') : (locale === 'lo' ? 'ແຈ້ງການໂອນເງິນ' : 'SUBMIT RECEIPT')}
+                {loading ? (locale === 'lo' ? 'ກຳລັງສົ່ງຂໍ້ມູນ...' : 'SUBMITTING...') : (locale === 'lo' ? 'ແຈ້ງການໂອນເງິນ' : 'SUBMIT RECEIPT')}
               </button>
 
             </form>
@@ -363,7 +408,6 @@ function DonateForm() {
   );
 }
 
-// ຫໍ່ຫຸ້ມດ້ວຍ Suspense ສຳລັບການໃຊ້ useSearchParams ໃນ Next.js App Router
 export default function DonateWrapper() {
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center font-black text-xl text-teal-600">Loading...</div>}>
