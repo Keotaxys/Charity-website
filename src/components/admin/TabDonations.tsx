@@ -6,10 +6,13 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, updateDoc, increment, query, orderBy, where } from 'firebase/firestore';
 
 export default function TabDonations({ showMessage }: { showMessage: (text: string, type: string) => void }) {
-  const locale = useLocale(); // 💡 ເອີ້ນໃຊ້ useLocale ເພື່ອກວດສອບພາສາແອັດມິນ
+  const locale = useLocale();
   const [donations, setDonations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // 💡 State ໃໝ່ສຳລັບເກັບຂໍ້ມູນຈຳນວນເງິນ ແລະ ສະກຸນເງິນທີ່ແອັດມິນກຳລັງພິມ
+  const [approvalData, setApprovalData] = useState<Record<string, { amount: string, currency: string }>>({});
 
   useEffect(() => {
     fetchDonations();
@@ -18,7 +21,6 @@ export default function TabDonations({ showMessage }: { showMessage: (text: stri
   const fetchDonations = async () => {
     setLoading(true);
     try {
-      // ດຶງສະເພາະລາຍການທີ່ "ລໍຖ້າການກວດສອບ (Pending)"
       const q = query(
         collection(db, 'donations'), 
         where('status', '==', 'Pending'),
@@ -26,29 +28,56 @@ export default function TabDonations({ showMessage }: { showMessage: (text: stri
       );
       const snapshot = await getDocs(q);
       setDonations(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      // ລ້າງຂໍ້ມູນທີ່ເຄີຍພິມໄວ້ເມື່ອໂຫຼດໃໝ່
+      setApprovalData({});
     } catch (error) {
       console.error("Error fetching donations:", error);
     }
     setLoading(false);
   };
 
+  // ຟັງຊັນຈັດການເມື່ອແອັດມິນພິມຕົວເລກ
+  const handleAmountChange = (id: string, amount: string) => {
+    setApprovalData(prev => ({ ...prev, [id]: { ...prev[id], amount, currency: prev[id]?.currency || 'LAK' } }));
+  };
+
+  // ຟັງຊັນຈັດການເມື່ອແອັດມິນປ່ຽນສະກຸນເງິນ
+  const handleCurrencyChange = (id: string, currency: string) => {
+    setApprovalData(prev => ({ ...prev, [id]: { ...prev[id], amount: prev[id]?.amount || '', currency } }));
+  };
+
   // ຟັງຊັນອະນຸມັດ
   const handleApprove = async (donation: any) => {
-    const confirmMsg = locale === 'lo' ? 'ຢືນຢັນການອະນຸມັດຍອດເງິນນີ້?' : 'Confirm approval for this donation?';
+    const inputData = approvalData[donation.id];
+    const amountNum = Number(inputData?.amount || 0);
+    const currency = inputData?.currency || 'LAK';
+
+    // 💡 ກວດສອບວ່າແອັດມິນປ້ອນຈຳນວນເງິນຫຼືຍັງ
+    if (amountNum <= 0) {
+      alert(locale === 'lo' ? 'ກະລຸນາປ້ອນຈຳນວນເງິນໃຫ້ຖືກຕ້ອງກ່ອນກົດອະນຸມັດ!' : 'Please enter a valid amount before approving!');
+      return;
+    }
+
+    const confirmMsg = locale === 'lo' 
+      ? `ຢືນຢັນການອະນຸມັດຍອດເງິນ ${amountNum.toLocaleString()} ${currency} ບໍ່?` 
+      : `Confirm approval of ${amountNum.toLocaleString()} ${currency}?`;
+      
     if (!confirm(confirmMsg)) return;
     
     setActionLoading(donation.id);
     try {
-      // 1. ອັບເດດສະຖານະການບໍລິຈາກ
+      // 1. ອັບເດດສະຖານະການບໍລິຈາກ ພ້ອມບັນທຶກຈຳນວນເງິນ ແລະ ສະກຸນເງິນລົງໄປນຳ
       await updateDoc(doc(db, 'donations', donation.id), {
         status: 'Approved',
+        amount: amountNum,
+        currency: currency,
         approved_at: new Date()
       });
 
       // 2. ໄປບວກຍອດເງິນ (increment) ເຂົ້າໃນໂຄງການທີ່ກ່ຽວຂ້ອງ
       const campaignRef = doc(db, 'campaigns', donation.campaign_id);
       await updateDoc(campaignRef, {
-        raised_amount: increment(donation.amount)
+        raised_amount: increment(amountNum)
       });
 
       showMessage(locale === 'lo' ? 'ອະນຸມັດຍອດບໍລິຈາກ ແລະ ອັບເດດໂຄງການສຳເລັດ!' : 'Donation approved and campaign updated successfully!', 'success');
@@ -92,7 +121,7 @@ export default function TabDonations({ showMessage }: { showMessage: (text: stri
           </h2>
         </div>
         <p className="text-gray-500 mb-8 text-sm">
-          {locale === 'lo' ? 'ກວດສອບສະລິບ ແລະ ອະນຸມັດເພື່ອໃຫ້ຍອດເງິນສະແດງໃນໜ້າໂຄງການ.' : 'Verify slips and approve to update campaign amounts.'}
+          {locale === 'lo' ? 'ກວດສອບສະລິບ, ປ້ອນຈຳນວນເງິນທີ່ຖືກຕ້ອງ ແລ້ວກົດອະນຸມັດ.' : 'Verify slips, enter the correct amount, and approve.'}
         </p>
 
         {/* --- ການສະແດງຜົນລາຍການ (List Rendering) --- */}
@@ -123,9 +152,9 @@ export default function TabDonations({ showMessage }: { showMessage: (text: stri
                   </a>
                 </div>
 
-                {/* ຂໍ້ມູນຜູ້ບໍລິຈາກ (Donor Info) */}
+                {/* ຂໍ້ມູນຜູ້ບໍລິຈາກ & ຊ່ອງປ້ອນຈຳນວນເງິນ */}
                 <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mb-2">
                     <span className="bg-teal-50 text-teal-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
                       {locale === 'lo' ? 'ລໍຖ້າການກວດສອບ' : 'PENDING'}
                     </span>
@@ -133,13 +162,29 @@ export default function TabDonations({ showMessage }: { showMessage: (text: stri
                       {item.created_at?.toDate ? new Date(item.created_at.toDate()).toLocaleString() : ''}
                     </span>
                   </div>
+                  
                   <h3 className="text-xl font-black text-gray-900">{item.donor_name}</h3>
-                  <p className="text-gray-500 font-medium">
+                  <p className="text-gray-500 font-medium text-sm">
                     {locale === 'lo' ? 'ບໍລິຈາກໃຫ້:' : 'Donated to:'} <span className="text-teal-600 font-bold">{locale === 'lo' ? item.campaign_title_lo : item.campaign_title_en}</span>
                   </p>
-                  <div className="pt-2">
-                    <span className="text-3xl font-black text-gray-900">{Number(item.amount).toLocaleString()}</span>
-                    <span className="ml-2 text-sm text-gray-400 font-bold uppercase tracking-widest">LAK</span>
+                  
+                  {/* 💡 ຊ່ອງປ້ອນຈຳນວນເງິນ ແລະ ເລືອກສະກຸນເງິນ */}
+                  <div className="pt-3 pb-1 flex items-center gap-2">
+                    <input 
+                      type="number" 
+                      placeholder={locale === 'lo' ? 'ປ້ອນຈຳນວນເງິນ...' : 'Enter amount...'}
+                      className="w-40 md:w-48 p-3 bg-gray-50 border border-gray-200 rounded-xl font-black text-xl text-gray-900 outline-none focus:ring-2 focus:ring-teal-600 transition-all"
+                      value={approvalData[item.id]?.amount || ''}
+                      onChange={(e) => handleAmountChange(item.id, e.target.value)}
+                    />
+                    <select
+                      className="p-3.5 bg-gray-50 border border-gray-200 rounded-xl font-black text-gray-700 outline-none focus:ring-2 focus:ring-teal-600 cursor-pointer transition-all uppercase"
+                      value={approvalData[item.id]?.currency || 'LAK'}
+                      onChange={(e) => handleCurrencyChange(item.id, e.target.value)}
+                    >
+                      <option value="LAK">LAK</option>
+                      <option value="USD">USD</option>
+                    </select>
                   </div>
                 </div>
 
