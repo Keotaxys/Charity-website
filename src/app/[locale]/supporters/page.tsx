@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import Link from 'next/link';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, getDoc, query, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy, limit, where } from 'firebase/firestore';
 
 export default function SupportersPage() {
   const locale = useLocale();
@@ -22,15 +22,42 @@ export default function SupportersPage() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) setPageSettings(docSnap.data());
 
-        // 2. ດຶງລາຍຊື່ຜູ້ສະໜັບສະໜູນທັງໝົດສຳລັບ Logo (ລຽງຕາມການຕັ້ງຄ່າ order_index)
+        // 2. ດຶງລາຍຊື່ຜູ້ສະໜັບສະໜູນທັງໝົດສຳລັບ Logo
         const sponsorsQuery = query(collection(db, 'sponsors'), orderBy('order_index', 'asc'));
         const sponsorsSnap = await getDocs(sponsorsQuery);
         setSponsors(sponsorsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
 
-        // 3. ດຶງ 5 ອັນດັບຍອດບໍລິຈາກສູງສຸດສຳລັບ Wall of Fame (ລຽງຕາມຍອດເງິນ)
-        const topDonorsQuery = query(collection(db, 'sponsors'), orderBy('total_donation', 'desc'), limit(5));
-        const topDonorsSnap = await getDocs(topDonorsQuery);
-        setTopDonors(topDonorsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        // 3. 💡 ດຶງຂໍ້ມູນການບໍລິຈາກທີ່ອະນຸມັດແລ້ວເພື່ອມາຈັດ Top 5 Ranking
+        const donationsQuery = query(
+          collection(db, 'donations'),
+          where('status', '==', 'Approved')
+        );
+        const donationsSnap = await getDocs(donationsQuery);
+        
+        // ຈັດກຸ່ມ (Group) ຍອດບໍລິຈາກຕາມຊື່
+        const donorTotals: Record<string, number> = {};
+        donationsSnap.forEach((doc) => {
+          const data = doc.data();
+          // ຂ້າມຖ້າຜູ້ບໍລິຈາກເລືອກ "ບໍ່ປະສົງອອກນາມ" (hideName) ຫຼື "ເຊື່ອງຍອດເງິນ" (hideAmount)
+          if (data.hideName || data.hideAmount) return; 
+
+          const name = data.donor_name?.trim() || 'Anonymous';
+          const amount = Number(data.amount) || 0;
+          
+          if (donorTotals[name]) {
+            donorTotals[name] += amount;
+          } else {
+            donorTotals[name] = amount;
+          }
+        });
+
+        // ປ່ຽນ Object ເປັນ Array ແລ້ວຈັດລຽງຈາກຫຼາຍຫາໜ້ອຍ ພ້ອມຕັດເອົາແຕ່ 5 ຄົນທຳອິດ
+        const sortedTopDonors = Object.entries(donorTotals)
+          .map(([name, total]) => ({ name, total }))
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 5);
+
+        setTopDonors(sortedTopDonors);
 
       } catch (error) {
         console.error("Error fetching supporters data:", error);
@@ -48,7 +75,6 @@ export default function SupportersPage() {
   // ກຳນົດຄ່າ Fallback (ຖ້າບໍ່ມີຂໍ້ມູນ)
   const headerTitle = pageSettings ? (locale === 'lo' ? pageSettings.header_title_lo : pageSettings.header_title_en) : '';
   const headerSubtitle = pageSettings ? (locale === 'lo' ? pageSettings.header_subtitle_lo : pageSettings.header_subtitle_en) : '';
-  
   const ctaTitle = pageSettings ? (locale === 'lo' ? pageSettings.cta_title_lo : pageSettings.cta_title_en) : '';
   const ctaBtn = pageSettings ? (locale === 'lo' ? pageSettings.cta_btn_lo : pageSettings.cta_btn_en) : 'BECOME A PARTNER';
 
@@ -74,21 +100,19 @@ export default function SupportersPage() {
         </div>
       </section>
 
-      {/* 2. ພາກສ່ວນ Top 5 (Wall of Fame) */}
+      {/* 2. 💡 ພາກສ່ວນ Top 5 (Wall of Fame) */}
       {topDonors.length > 0 && (
         <section className="max-w-4xl mx-auto px-6 py-20">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight uppercase mb-4">
               {locale === 'lo' ? 'ທຳນຽບ 5 ອັນດັບຜູ້ສະໜັບສະໜູນ' : 'TOP 5 WALL OF FAME'}
             </h2>
-            <div className="w-20 h-1 bg-teal-600 rounded-full mx-auto"></div>
+            <div className="w-20 h-1.5 bg-teal-600 rounded-full mx-auto"></div>
           </div>
 
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-teal-900/5 border border-gray-100 overflow-hidden">
             {topDonors.map((donor, index) => {
               const isFirst = index === 0;
-              const displayName = locale === 'lo' ? donor.name_lo : donor.name_en;
-              const amount = Number(donor.total_donation) || 0;
 
               let rankBadge = <span className="text-gray-400 font-black text-xl">#{index + 1}</span>;
               if (index === 0) rankBadge = <span className="text-3xl" title="Gold">🥇</span>;
@@ -97,7 +121,7 @@ export default function SupportersPage() {
 
               return (
                 <div 
-                  key={donor.id} 
+                  key={index} 
                   className={`flex items-center p-6 sm:p-8 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
                     isFirst ? 'bg-gradient-to-r from-yellow-50/50 to-white' : ''
                   }`}
@@ -107,21 +131,15 @@ export default function SupportersPage() {
                   </div>
                   
                   <div className="flex-1 px-4">
-                    <h3 className={`font-bold sm:text-lg ${isFirst ? 'text-gray-900' : 'text-gray-700'}`}>
-                      {displayName}
+                    <h3 className={`font-black sm:text-xl uppercase tracking-wider ${isFirst ? 'text-gray-900' : 'text-gray-700'}`}>
+                      {donor.name}
                     </h3>
                   </div>
                   
                   <div className="text-right shrink-0">
-                    {amount > 0 ? (
-                      <p className={`font-black tracking-wide ${isFirst ? 'text-teal-600 text-xl sm:text-2xl' : 'text-teal-600 text-lg sm:text-xl'}`}>
-                        {amount.toLocaleString()} <span className="text-sm font-bold text-gray-400 uppercase">LAK</span>
-                      </p>
-                    ) : (
-                      <p className="text-gray-400 italic font-medium text-sm sm:text-base bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
-                        {locale === 'lo' ? 'ບໍ່ເປີດເຜີຍຈຳນວນ' : 'Undisclosed'}
-                      </p>
-                    )}
+                    <p className={`font-black tracking-wide ${isFirst ? 'text-teal-600 text-2xl sm:text-3xl' : 'text-teal-600 text-xl sm:text-2xl'}`}>
+                      {donor.total.toLocaleString()} <span className="text-sm font-bold text-gray-400 uppercase">LAK</span>
+                    </p>
                   </div>
                 </div>
               );
@@ -186,7 +204,7 @@ export default function SupportersPage() {
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link 
               href={`/${locale}/about/contact`} 
-              className="bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-teal-600/50 uppercase tracking-wider text-lg"
+              className="bg-teal-600 hover:bg-teal-700 text-white font-black py-5 px-10 rounded-3xl transition-all shadow-xl shadow-teal-600/30 hover:-translate-y-1 uppercase tracking-[0.2em] text-lg"
             >
               {ctaBtn}
             </Link>
