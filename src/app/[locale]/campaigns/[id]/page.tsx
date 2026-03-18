@@ -60,12 +60,12 @@ export default function CampaignDetailPage({ params }: Props) {
           {/* --- ເບື້ອງຊ້າຍ (8/12): ຮູບພາບ ແລະ ລາຍລະອຽດ --- */}
           <div className="lg:col-span-8 space-y-10">
             
-            {/* 💡 ຈຸດແກ້ໄຂ: ໃຊ້ w-full h-auto ເພື່ອສະແດງຮູບເຕັມສັດສ່ວນ ໂດຍບໍ່ມີການ Crop */}
-            <div className="w-full rounded-[2rem] overflow-hidden shadow-2xl shadow-gray-200 bg-gray-50 border border-gray-100">
+            {/* 💡 ແກ້ໄຂຮູບພາບ: ໃຊ້ max-h-[450px] ແລະ object-contain ເພື່ອບໍ່ໃຫ້ຮູບໃຫຍ່ເກີນໄປ ແລະ ບໍ່ຖືກຕັດ */}
+            <div className="w-full bg-gray-50 rounded-[2.5rem] overflow-hidden shadow-md border border-gray-100 flex items-center justify-center p-2">
               <img 
                 src={campaign.cover_image} 
                 alt="cover" 
-                className="w-full h-auto block" // 💡 h-auto ຈະເຮັດໃຫ້ເຫັນຮູບຄົບທຸກສ່ວນ
+                className="w-full max-h-[450px] object-contain rounded-[2rem]" 
               />
             </div>
 
@@ -92,7 +92,10 @@ export default function CampaignDetailPage({ params }: Props) {
                   <div className="flex justify-between items-end mb-4">
                     <div className="flex flex-col">
                         <span className="text-teal-600 font-black text-5xl tracking-tighter">{percent}%</span>
-                        <span className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">{locale === 'lo' ? 'ສຳເລັດແລ້ວ' : 'REACHED'}</span>
+                        {/* 💡 ປັບຂະໜາດຕົວໜັງສືໃຫ້ໃຫຍ່ຂຶ້ນເປັນ text-xs md:text-sm */}
+                        <span className="text-gray-400 font-bold text-xs md:text-sm uppercase tracking-wider mt-1">
+                          {locale === 'lo' ? 'ສຳເລັດແລ້ວ' : 'REACHED'}
+                        </span>
                     </div>
                   </div>
                   <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-50">
@@ -105,7 +108,10 @@ export default function CampaignDetailPage({ params }: Props) {
 
                 <div className="space-y-6 pt-2">
                   <div className="flex flex-col">
-                    <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-1">{locale === 'lo' ? 'ຍອດບໍລິຈາກປັດຈຸບັນ' : 'CURRENTLY RAISED'}</span>
+                    {/* 💡 ປັບຂະໜາດຕົວໜັງສືໃຫ້ໃຫຍ່ຂຶ້ນ */}
+                    <span className="text-gray-500 font-bold uppercase tracking-wider text-xs md:text-sm mb-1">
+                      {locale === 'lo' ? 'ຍອດບໍລິຈາກປັດຈຸບັນ' : 'CURRENTLY RAISED'}
+                    </span>
                     <div className="flex items-baseline gap-1">
                         <span className="font-black text-gray-900 text-3xl">{Number(campaign.raised_amount).toLocaleString()}</span>
                         <span className="text-gray-400 font-bold text-sm">LAK</span>
@@ -113,7 +119,10 @@ export default function CampaignDetailPage({ params }: Props) {
                   </div>
                   
                   <div className="flex flex-col border-t border-gray-100 pt-6">
-                    <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-1">{locale === 'lo' ? 'ເປົ້າໝາຍທັງໝົດ' : 'TOTAL GOAL'}</span>
+                    {/* 💡 ປັບຂະໜາດຕົວໜັງສືໃຫ້ໃຫຍ່ຂຶ້ນ */}
+                    <span className="text-gray-500 font-bold uppercase tracking-wider text-xs md:text-sm mb-1">
+                      {locale === 'lo' ? 'ເປົ້າໝາຍທັງໝົດ' : 'TOTAL GOAL'}
+                    </span>
                     <div className="flex items-baseline gap-1">
                         <span className="font-bold text-gray-500 text-xl">{Number(campaign.target_amount).toLocaleString()}</span>
                         <span className="text-gray-400 font-medium text-xs">LAK</span>
@@ -124,13 +133,14 @@ export default function CampaignDetailPage({ params }: Props) {
                 <div className="pt-4">
                   <Link 
                     href={`/${locale}/donate?campaignId=${campaign.id}`}
-                    className="flex items-center justify-center w-full bg-teal-600 hover:bg-teal-700 text-white text-center font-black py-6 rounded-3xl transition-all shadow-xl shadow-teal-600/20 hover:-translate-y-1 active:scale-95 uppercase tracking-[0.2em] text-lg"
+                    className="flex items-center justify-center w-full bg-teal-600 hover:bg-teal-700 text-white text-center font-black py-6 rounded-3xl transition-all shadow-xl shadow-teal-600/20 hover:-translate-y-1 active:scale-95 uppercase tracking-wider text-lg"
                   >
                     {locale === 'lo' ? 'ຮ່ວມບໍລິຈາກ' : 'DONATE NOW'}
                   </Link>
                 </div>
 
-                <p className="text-center text-gray-400 text-[10px] font-bold leading-relaxed px-4">
+                {/* 💡 ປັບຂະໜາດຕົວໜັງສືໃຫ້ໃຫຍ່ຂຶ້ນ */}
+                <p className="text-center text-gray-400 text-xs md:text-sm font-bold leading-relaxed px-4">
                    {locale === 'lo' 
                     ? 'ຂໍ້ມູນການບໍລິຈາກຂອງທ່ານຈະຖືກບັນທຶກຢ່າງໂປ່ງໃສ' 
                     : 'YOUR CONTRIBUTION IS SECURE AND TRANSPARENT'}
