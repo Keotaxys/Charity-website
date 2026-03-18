@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import Link from 'next/link';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, getDoc, query, orderBy, limit, where } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy, where } from 'firebase/firestore';
 
 export default function SupportersPage() {
   const locale = useLocale();
@@ -35,25 +35,32 @@ export default function SupportersPage() {
         const donationsSnap = await getDocs(donationsQuery);
         
         // ຈັດກຸ່ມ (Group) ຍອດບໍລິຈາກຕາມຊື່
-        const donorTotals: Record<string, number> = {};
+        const donorTotals: Record<string, { total: number; hideAmount: boolean }> = {};
+        
         donationsSnap.forEach((doc) => {
           const data = doc.data();
-          // ຂ້າມຖ້າຜູ້ບໍລິຈາກເລືອກ "ບໍ່ປະສົງອອກນາມ" (hideName) ຫຼື "ເຊື່ອງຍອດເງິນ" (hideAmount)
-          if (data.hideName || data.hideAmount) return; 
+          
+          // 💡 ຖ້າເລືອກ "ບໍ່ປະສົງອອກນາມ" (hideName) ຈະບໍ່ເອົາມາສະແດງໃນ Ranking
+          if (data.hideName) return; 
 
           const name = data.donor_name?.trim() || 'Anonymous';
           const amount = Number(data.amount) || 0;
           
           if (donorTotals[name]) {
-            donorTotals[name] += amount;
+            donorTotals[name].total += amount;
+            // ຖ້າມີລາຍການໃດໜຶ່ງຂອງຄົນນີ້ຂໍເຊື່ອງເງິນ ໃຫ້ເຊື່ອງຍອດລວມໄປນຳ
+            if (data.hideAmount) donorTotals[name].hideAmount = true;
           } else {
-            donorTotals[name] = amount;
+            donorTotals[name] = { 
+              total: amount, 
+              hideAmount: data.hideAmount || false 
+            };
           }
         });
 
-        // ປ່ຽນ Object ເປັນ Array ແລ້ວຈັດລຽງຈາກຫຼາຍຫາໜ້ອຍ ພ້ອມຕັດເອົາແຕ່ 5 ຄົນທຳອິດ
+        // ປ່ຽນ Object ເປັນ Array, ຈັດລຽງຈາກຫຼາຍຫາໜ້ອຍ, ຕັດເອົາແຕ່ 5 ຄົນ
         const sortedTopDonors = Object.entries(donorTotals)
-          .map(([name, total]) => ({ name, total }))
+          .map(([name, val]) => ({ name, total: val.total, hideAmount: val.hideAmount }))
           .sort((a, b) => b.total - a.total)
           .slice(0, 5);
 
@@ -137,9 +144,16 @@ export default function SupportersPage() {
                   </div>
                   
                   <div className="text-right shrink-0">
-                    <p className={`font-black tracking-wide ${isFirst ? 'text-teal-600 text-2xl sm:text-3xl' : 'text-teal-600 text-xl sm:text-2xl'}`}>
-                      {donor.total.toLocaleString()} <span className="text-sm font-bold text-gray-400 uppercase">LAK</span>
-                    </p>
+                    {/* 💡 ກວດສອບເງື່ອນໄຂການສະແດງເງິນ */}
+                    {!donor.hideAmount && donor.total > 0 ? (
+                      <p className={`font-black tracking-wide ${isFirst ? 'text-teal-600 text-2xl sm:text-3xl' : 'text-teal-600 text-xl sm:text-2xl'}`}>
+                        {donor.total.toLocaleString()} <span className="text-sm font-bold text-gray-400 uppercase">LAK</span>
+                      </p>
+                    ) : (
+                      <span className="inline-block bg-gray-50 text-gray-400 font-bold text-xs sm:text-sm px-4 py-2 rounded-full border border-gray-100">
+                        {locale === 'lo' ? 'ບໍ່ເປີດເຜີຍຈຳນວນ' : 'UNDISCLOSED'}
+                      </span>
+                    )}
                   </div>
                 </div>
               );
