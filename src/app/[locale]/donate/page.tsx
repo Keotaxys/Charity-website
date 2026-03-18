@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, Suspense } from 'react';
 import { useLocale } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { db, storage } from '@/lib/firebase';
-import { collection, addDoc, getDocs, query, orderBy, where, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, getDoc, query, orderBy, where, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 function DonateForm() {
@@ -13,8 +13,8 @@ function DonateForm() {
   const prefillCampaignId = searchParams.get('campaignId');
 
   const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [pageSettings, setPageSettings] = useState<any>(null); // 💡 ເພີ່ມ State ຮັບຂໍ້ມູນຕັ້ງຄ່າ
   
-  // State ຂອງຟອມ
   const [formData, setFormData] = useState({
     campaign_id: 'general',
     donor_name: '',
@@ -22,47 +22,52 @@ function DonateForm() {
     donor_phone: '',
     hideName: false,
     hideAmount: false,
-    hideProfile: false, // 💡 ເພີ່ມ State ສຳລັບເຊື່ອງຮູບໂປຣໄຟລ໌
+    hideProfile: false,
   });
 
-  // State ສຳລັບຮູບສະລິບ (ບັງຄັບ)
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  // 💡 State ສຳລັບຮູບໂປຣໄຟລ໌ (ທາງເລືອກ)
   const [profileFile, setProfileFile] = useState<File | null>(null);
   const [profilePreviewUrl, setProfilePreviewUrl] = useState<string | null>(null);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // 💡 ປ່ຽນເປັນ true ຕອນເລີ່ມ
+  const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState({ type: '', text: '' });
 
-  // State ສຳລັບຄວບຄຸມ Custom Dropdown
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // ດຶງລາຍຊື່ໂຄງການ
+  // 💡 ດຶງຂໍ້ມູນໂຄງການ ແລະ ການຕັ້ງຄ່າໜ້າພ້ອມກັນ
   useEffect(() => {
-    const fetchCampaigns = async () => {
+    const fetchData = async () => {
       try {
+        // ດຶງໂຄງການ
         const q = query(collection(db, 'campaigns'), where('status', '==', 'Active'), orderBy('created_at', 'desc'));
         const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         setCampaigns(data);
 
         if (prefillCampaignId) {
           const found = data.find(c => c.id === prefillCampaignId);
-          if (found) {
-            setFormData(prev => ({ ...prev, campaign_id: found.id }));
-          }
+          if (found) setFormData(prev => ({ ...prev, campaign_id: found.id }));
         }
+
+        // ດຶງການຕັ້ງຄ່າໜ້າບໍລິຈາກ
+        const docRef = doc(db, 'settings', 'donate_page');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setPageSettings(docSnap.data());
+        }
+
       } catch (error) {
-        console.error("Error fetching campaigns:", error);
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchCampaigns();
+    fetchData();
   }, [prefillCampaignId]);
 
-  // ປິດ Dropdown ເວລາກົດບ່ອນອື່ນ
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -85,7 +90,6 @@ function DonateForm() {
     }
   };
 
-  // 💡 ຟັງຊັນຈັດການຮູບໂປຣໄຟລ໌
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
@@ -94,25 +98,21 @@ function DonateForm() {
     }
   };
 
-  // ຟັງຊັນບັນທຶກການບໍລິຈາກ
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!receiptFile) {
       setStatus({ type: 'error', text: locale === 'lo' ? 'ກະລຸນາແນບຮູບໃບບິນ/ສະລິບການໂອນເງິນ.' : 'Please upload your transfer receipt.' });
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     setStatus({ type: '', text: '' });
 
     try {
-      // 1. ອັບໂຫຼດສະລິບ
       const storageRef = ref(storage, `slips/${Date.now()}_${receiptFile.name}`);
       await uploadBytes(storageRef, receiptFile);
       const receiptUrl = await getDownloadURL(storageRef);
 
-      // 2. 💡 ອັບໂຫຼດຮູບໂປຣໄຟລ໌ (ຖ້າມີ)
       let profileUrl = '';
       if (profileFile) {
         const profileRef = ref(storage, `profiles/${Date.now()}_${profileFile.name}`);
@@ -120,7 +120,6 @@ function DonateForm() {
         profileUrl = await getDownloadURL(profileRef);
       }
 
-      // 3. ດຶງຊື່ໂຄງການ
       let campTitleLo = 'ກອງທຶນລວມ';
       let campTitleEn = 'General Fund';
       if (formData.campaign_id !== 'general') {
@@ -131,7 +130,6 @@ function DonateForm() {
         }
       }
 
-      // 4. ບັນທຶກຂໍ້ມູນ
       await addDoc(collection(db, 'donations'), {
         donor_name: formData.donor_name,
         donor_phone: formData.donor_phone,
@@ -140,21 +138,16 @@ function DonateForm() {
         campaign_title_lo: campTitleLo,
         campaign_title_en: campTitleEn,
         slip_url: receiptUrl,
-        profile_url: profileUrl, // 💡 ບັນທຶກ URL ໂປຣໄຟລ໌
+        profile_url: profileUrl,
         amount: 0,
         status: 'Pending', 
         hideName: formData.hideName,
         hideAmount: formData.hideAmount,
-        hideProfile: formData.hideProfile, // 💡 ບັນທຶກການຕັ້ງຄ່າເຊື່ອງຮູບ
+        hideProfile: formData.hideProfile,
         created_at: serverTimestamp()
       });
       
-      setStatus({ 
-        type: 'success', 
-        text: locale === 'lo' ? 'ຂໍຂອບໃຈ! ພວກເຮົາໄດ້ຮັບແຈ້ງການໂອນເງິນຂອງທ່ານແລ້ວ. ທີມງານຈະກວດສອບສະລິບ ແລະ ອັບເດດຍອດເງິນໃຫ້ໂດຍໄວ.' : 'Thank you! We have received your receipt. Our team will verify and update the amount soon.' 
-      });
-      
-      // ລ້າງຟອມຫຼັງຈາກສຳເລັດ
+      setStatus({ type: 'success', text: locale === 'lo' ? 'ຂໍຂອບໃຈ! ພວກເຮົາໄດ້ຮັບແຈ້ງການໂອນເງິນຂອງທ່ານແລ້ວ.' : 'Thank you! We have received your receipt.' });
       setFormData({ campaign_id: 'general', donor_name: '', email: '', donor_phone: '', hideName: false, hideAmount: false, hideProfile: false });
       setReceiptFile(null);
       setPreviewUrl(null);
@@ -165,7 +158,7 @@ function DonateForm() {
       console.error("Error submitting donation:", error);
       setStatus({ type: 'error', text: locale === 'lo' ? 'ເກີດຂໍ້ຜິດພາດ. ກະລຸນາລອງໃໝ່.' : 'An error occurred. Please try again.' });
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -176,6 +169,18 @@ function DonateForm() {
         return camp ? (locale === 'lo' ? camp.title_lo : camp.title_en) : '';
       })();
 
+  if (loading) return <div className="min-h-screen flex items-center justify-center font-black text-xl text-teal-600">ກຳລັງໂຫຼດຂໍ້ມູນ...</div>;
+
+  // 💡 ກຳນົດຄ່າ Fallback (ຖ້າ Admin ຍັງບໍ່ໄດ້ຕັ້ງຄ່າ)
+  const headerTitle = pageSettings ? (locale === 'lo' ? pageSettings.header_title_lo : pageSettings.header_title_en) : (locale === 'lo' ? 'ຮ່ວມບໍລິຈາກ' : 'MAKE A DONATION');
+  const headerSubtitle = pageSettings ? (locale === 'lo' ? pageSettings.header_subtitle_lo : pageSettings.header_subtitle_en) : '';
+  const bankName = pageSettings?.bank_name || 'BCEL Bank';
+  const accountName = pageSettings?.account_name || 'BEAST LAO FOUNDATION';
+  const accountNumber = pageSettings?.account_number || '160-120-00-0000';
+  const qrImage = pageSettings?.qr_image_url || 'https://via.placeholder.com/200x200/ffffff/0d9488?text=QR+CODE';
+  const paypalLink = pageSettings?.paypal_link || 'https://paypal.me/';
+  const paypalDesc = pageSettings ? (locale === 'lo' ? pageSettings.paypal_desc_lo : pageSettings.paypal_desc_en) : '';
+
   return (
     <div className="bg-gray-50 min-h-screen pb-24">
       
@@ -184,12 +189,10 @@ function DonateForm() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-60"></div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h1 className="text-4xl md:text-6xl font-black mb-4 tracking-tighter uppercase text-teal-800">
-            {locale === 'lo' ? 'ຮ່ວມບໍລິຈາກ' : 'MAKE A DONATION'}
+            {headerTitle}
           </h1>
           <p className="text-lg md:text-xl text-teal-600 font-medium max-w-2xl mx-auto">
-            {locale === 'lo' 
-              ? 'ທຸກໆການໃຫ້ຂອງທ່ານ ຄືພະລັງອັນຍິ່ງໃຫຍ່. ເລືອກຊ່ອງທາງການບໍລິຈາກທີ່ທ່ານສະດວກທີ່ສຸດ.' 
-              : 'Your contribution is a powerful force. Choose the donation method that works best for you.'}
+            {headerSubtitle}
           </p>
         </div>
       </section>
@@ -207,12 +210,12 @@ function DonateForm() {
               </h2>
               <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 text-center">
                 <div className="bg-white p-3 rounded-2xl inline-block mb-4 shadow-sm border border-gray-100">
-                  <img src="https://via.placeholder.com/200x200/ffffff/0d9488?text=QR+CODE" alt="BCEL QR Code" className="w-40 h-40 object-contain rounded-xl" />
+                  <img src={qrImage} alt="QR Code" className="w-40 h-40 object-contain rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-gray-900 font-bold text-lg">BCEL Bank</p>
-                  <p className="text-pink-500 font-black tracking-wide">BEAST LAO FOUNDATION</p>
-                  <p className="text-2xl font-black tracking-widest font-mono text-gray-900">160-120-00-0000</p>
+                  <p className="text-gray-900 font-bold text-lg">{bankName}</p>
+                  <p className="text-pink-500 font-black tracking-wide">{accountName}</p>
+                  <p className="text-2xl font-black tracking-widest font-mono text-gray-900">{accountNumber}</p>
                 </div>
               </div>
             </div>
@@ -229,11 +232,9 @@ function DonateForm() {
                 {locale === 'lo' ? 'ບໍລິຈາກຜ່ານ PayPal' : 'DONATE VIA PAYPAL'}
               </h2>
               <div className="bg-[#00457C]/5 p-6 rounded-3xl border border-[#00457C]/10 text-center">
-                <p className="text-gray-600 mb-6 text-sm">
-                  {locale === 'lo' ? 'ສຳລັບຜູ້ທີ່ຢູ່ຕ່າງປະເທດ ສາມາດບໍລິຈາກໄດ້ຢ່າງປອດໄພຜ່ານລະບົບ PayPal.' : 'For international donors, safely donate using PayPal.'}
-                </p>
+                <p className="text-gray-600 mb-6 text-sm">{paypalDesc}</p>
                 <a 
-                  href="https://paypal.me/yourpaypal" 
+                  href={paypalLink} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 bg-[#0070BA] hover:bg-[#003087] text-white font-black py-4 px-8 rounded-xl transition-all shadow-md w-full justify-center text-lg"
@@ -264,7 +265,7 @@ function DonateForm() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
-                {/* 💡 ອັບໂຫຼດຮູບໂປຣໄຟລ໌ (ທາງເລືອກ) */}
+                {/* ອັບໂຫຼດຮູບໂປຣໄຟລ໌ */}
                 <div className="md:col-span-2 flex flex-col items-center justify-center py-4">
                   <div className="relative w-24 h-24 rounded-full border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden hover:border-teal-400 transition-colors cursor-pointer group shadow-sm">
                     {profilePreviewUrl ? (
@@ -394,8 +395,8 @@ function DonateForm() {
                 </label>
               </div>
 
-              <button type="submit" disabled={loading || !receiptFile} className="w-full bg-teal-600 hover:bg-teal-700 text-white font-black py-5 rounded-xl transition-all shadow-md hover:shadow-teal-600/40 uppercase tracking-widest text-lg disabled:bg-gray-400 mt-8">
-                {loading ? (locale === 'lo' ? 'ກຳລັງສົ່ງຂໍ້ມູນ...' : 'SUBMITTING...') : (locale === 'lo' ? 'ແຈ້ງການໂອນເງິນ' : 'SUBMIT RECEIPT')}
+              <button type="submit" disabled={submitting || !receiptFile} className="w-full bg-teal-600 hover:bg-teal-700 text-white font-black py-5 rounded-xl transition-all shadow-md hover:shadow-teal-600/40 uppercase tracking-widest text-lg disabled:bg-gray-400 mt-8">
+                {submitting ? (locale === 'lo' ? 'ກຳລັງສົ່ງຂໍ້ມູນ...' : 'SUBMITTING...') : (locale === 'lo' ? 'ແຈ້ງການໂອນເງິນ' : 'SUBMIT RECEIPT')}
               </button>
 
             </form>

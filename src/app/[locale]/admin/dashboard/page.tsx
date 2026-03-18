@@ -18,6 +18,7 @@ import TabContact from '@/components/admin/TabContact';
 import TabSupporters from '@/components/admin/TabSupporters';
 import TabVideos from '@/components/admin/TabVideos';
 import TabPolicies from '@/components/admin/TabPolicies';
+import TabDonatePage from '@/components/admin/TabDonatePage';
 
 export default function AdminDashboard() {
   const locale = useLocale();
@@ -48,7 +49,8 @@ export default function AdminDashboard() {
     supporters: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z" /></svg>,
     videos: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z" /></svg>,
     policies: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm11.378-3.917c-.89-.777-2.366-.777-3.255 0a.75.75 0 01-.988-1.129c1.454-1.272 3.776-1.272 5.23 0 1.513 1.324 1.513 3.518 0 4.842a3.75 3.75 0 01-.837.552c-.676.328-1.028.774-1.028 1.152v.75a.75.75 0 01-1.5 0v-.75c0-1.279 1.06-2.107 1.875-2.502.182-.088.351-.199.503-.331.89-.777.89-2.038 0-2.815zM12 19.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clipRule="evenodd" /></svg>,
-    logout: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M12 2.25a.75.75 0 01.75.75v9a.75.75 0 01-1.5 0V3a.75.75 0 01-.75-.75zM6.166 5.106a.75.75 0 010 1.06 8.25 8.25 0 1011.668 0 .75.75 0 111.06-1.06c3.808 3.807 3.808 9.98 0 13.788-3.807 3.808-9.98 3.808-13.788 0-3.808-3.807-3.808-9.98 0-13.788a.75.75 0 011.06 0z" clipRule="evenodd" /></svg>
+    logout: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M12 2.25a.75.75 0 01.75.75v9a.75.75 0 01-1.5 0V3a.75.75 0 01-.75-.75zM6.166 5.106a.75.75 0 010 1.06 8.25 8.25 0 1011.668 0 .75.75 0 111.06-1.06c3.808 3.807 3.808 9.98 0 13.788-3.807 3.808-9.98 3.808-13.788 0-3.808-3.807-3.808-9.98 0-13.788a.75.75 0 011.06 0z" clipRule="evenodd" /></svg>,
+    donateSettings: <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M10.464 8.746c.227-.18.497-.311.786-.394v2.795a2.252 2.252 0 01-.786-.393c-.394-.313-.546-.681-.546-1.004 0-.323.152-.691.546-1.004zM12.75 15.662v-2.824c.347.085.664.228.921.421.427.32.579.686.579.991 0 .305-.152.671-.579.991a2.534 2.534 0 01-.921.42z" /><path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v.816a3.836 3.836 0 00-1.72.756c-.712.566-1.112 1.484-1.112 2.428 0 1.033.46 1.956 1.211 2.47.6.41 1.341.677 2.121.848v3.235c-.139-.03-.28-.067-.42-.112a3.748 3.748 0 01-1.89-1.55.75.75 0 00-1.284.773 5.248 5.248 0 002.844 2.308V18a.75.75 0 001.5 0v-.81a3.834 3.834 0 001.72-.756c.712-.566 1.112-1.484 1.112-2.428 0-1.033-.46-1.956-1.211-2.47-.6-.41-1.341-.677-2.121-.848V7.453c.139.03.28.067.42.112a3.748 3.748 0 011.89 1.55.75.75 0 101.284-.773 5.248 5.248 0 00-2.844-2.308V6z" clipRule="evenodd" /></svg>,
   };
 
   const menuItems = [
@@ -62,7 +64,9 @@ export default function AdminDashboard() {
     { id: 'supporters', icon: Icons.supporters, label: locale === 'lo' ? 'ຜູ້ສະໜັບສະໜູນ' : 'Supporters' },
     { id: 'videos', icon: Icons.videos, label: locale === 'lo' ? 'ວິດີໂອ' : 'Videos' },
     { id: 'policies', icon: Icons.policies, label: locale === 'lo' ? 'ນະໂຍບາຍ & ລາຍງານ' : 'Policies & Reports' },
+    { id: 'donateSettings', icon: Icons.donateSettings, label: locale === 'lo' ? 'ຕັ້ງຄ່າໜ້າບໍລິຈາກ' : 'Donate Page Settings' },
   ];
+  
 
   return (
     <AdminGuard>
@@ -134,6 +138,7 @@ export default function AdminDashboard() {
             {activeTab === 'supporters' && <TabSupporters showMessage={showMessage} />}
             {activeTab === 'videos' && <TabVideos showMessage={showMessage} />}
             {activeTab === 'policies' && <TabPolicies showMessage={showMessage} />}
+            {activeTab === 'donateSettings' && <TabDonatePage showMessage={showMessage} />}
           </div>
         </main>
 
