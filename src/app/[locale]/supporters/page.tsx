@@ -4,7 +4,10 @@ import { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import Link from 'next/link';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, getDoc, query, orderBy, where } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy, limit, where } from 'firebase/firestore';
+
+// 💡 ກຳນົດອັດຕາແລກປ່ຽນ (ສາມາດປ່ຽນແປງໄດ້ຕາມຈິງ)
+const EXCHANGE_RATE_USD_TO_LAK = 22000;
 
 export default function SupportersPage() {
   const locale = useLocale();
@@ -27,7 +30,7 @@ export default function SupportersPage() {
         const sponsorsSnap = await getDocs(sponsorsQuery);
         setSponsors(sponsorsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
 
-        // 3. 💡 ດຶງຂໍ້ມູນການບໍລິຈາກທີ່ອະນຸມັດແລ້ວເພື່ອມາຈັດ Top 5 Ranking
+        // 3. ດຶງຂໍ້ມູນການບໍລິຈາກທີ່ອະນຸມັດແລ້ວເພື່ອມາຈັດ Top 5 Ranking
         const donationsQuery = query(
           collection(db, 'donations'),
           where('status', '==', 'Approved')
@@ -35,33 +38,52 @@ export default function SupportersPage() {
         const donationsSnap = await getDocs(donationsQuery);
         
         // ຈັດກຸ່ມ (Group) ຍອດບໍລິຈາກຕາມຊື່
-        const donorTotals: Record<string, { total: number; hideAmount: boolean }> = {};
+        const donorTotals: Record<string, { 
+          name: string, 
+          totalBaseLAK: number, 
+          totalLAK: number, 
+          totalUSD: number, 
+          hideAmount: boolean, 
+          profileUrl: string 
+        }> = {};
         
         donationsSnap.forEach((doc) => {
           const data = doc.data();
           
-          // 💡 ຖ້າເລືອກ "ບໍ່ປະສົງອອກນາມ" (hideName) ຈະບໍ່ເອົາມາສະແດງໃນ Ranking
           if (data.hideName) return; 
 
           const name = data.donor_name?.trim() || 'Anonymous';
           const amount = Number(data.amount) || 0;
+          const currency = data.currency || 'LAK'; // ດຶງສະກຸນເງິນ
+
+          // 💡 ຄຳນວນເງິນເຂົ້າເປັນ Base LAK ເພື່ອໃຊ້ໃນການຈັດອັນດັບ
+          const baseLAK = currency === 'USD' ? amount * EXCHANGE_RATE_USD_TO_LAK : amount;
           
           if (donorTotals[name]) {
-            donorTotals[name].total += amount;
-            // ຖ້າມີລາຍການໃດໜຶ່ງຂອງຄົນນີ້ຂໍເຊື່ອງເງິນ ໃຫ້ເຊື່ອງຍອດລວມໄປນຳ
+            donorTotals[name].totalBaseLAK += baseLAK;
+            if (currency === 'USD') donorTotals[name].totalUSD += amount;
+            else donorTotals[name].totalLAK += amount;
+
             if (data.hideAmount) donorTotals[name].hideAmount = true;
+            // ຖ້າຍັງບໍ່ມີຮູບ ແລະ ໃບບິນນີ້ມີຮູບທີ່ບໍ່ໄດ້ເຊື່ອງ ໃຫ້ດຶງມາໃສ່
+            if (!donorTotals[name].profileUrl && !data.hideProfile && data.profile_url) {
+              donorTotals[name].profileUrl = data.profile_url;
+            }
           } else {
             donorTotals[name] = { 
-              total: amount, 
-              hideAmount: data.hideAmount || false 
+              name: name,
+              totalBaseLAK: baseLAK,
+              totalLAK: currency === 'LAK' ? amount : 0,
+              totalUSD: currency === 'USD' ? amount : 0,
+              hideAmount: data.hideAmount || false,
+              profileUrl: (!data.hideProfile && data.profile_url) ? data.profile_url : ''
             };
           }
         });
 
-        // ປ່ຽນ Object ເປັນ Array, ຈັດລຽງຈາກຫຼາຍຫາໜ້ອຍ, ຕັດເອົາແຕ່ 5 ຄົນ
-        const sortedTopDonors = Object.entries(donorTotals)
-          .map(([name, val]) => ({ name, total: val.total, hideAmount: val.hideAmount }))
-          .sort((a, b) => b.total - a.total)
+        // 💡 ປ່ຽນ Object ເປັນ Array, ຈັດລຽງຈາກຫຼາຍຫາໜ້ອຍ ໂດຍໃຊ້ totalBaseLAK
+        const sortedTopDonors = Object.values(donorTotals)
+          .sort((a, b) => b.totalBaseLAK - a.totalBaseLAK)
           .slice(0, 5);
 
         setTopDonors(sortedTopDonors);
@@ -79,7 +101,6 @@ export default function SupportersPage() {
   const platinumSponsors = sponsors.filter(s => s.type === 'platinum');
   const generalSponsors = sponsors.filter(s => s.type === 'general');
 
-  // ກຳນົດຄ່າ Fallback (ຖ້າບໍ່ມີຂໍ້ມູນ)
   const headerTitle = pageSettings ? (locale === 'lo' ? pageSettings.header_title_lo : pageSettings.header_title_en) : '';
   const headerSubtitle = pageSettings ? (locale === 'lo' ? pageSettings.header_subtitle_lo : pageSettings.header_subtitle_en) : '';
   const ctaTitle = pageSettings ? (locale === 'lo' ? pageSettings.cta_title_lo : pageSettings.cta_title_en) : '';
@@ -90,7 +111,7 @@ export default function SupportersPage() {
   }
 
   return (
-    <div className="bg-white min-h-screen pb-24">
+    <div className="bg-white min-h-screen pb-24 font-sans">
       
       {/* 1. ສ່ວນຫົວ (Header) */}
       <section className="bg-gray-100 py-20 px-6 border-b border-gray-200 relative overflow-hidden">
@@ -107,7 +128,7 @@ export default function SupportersPage() {
         </div>
       </section>
 
-      {/* 2. 💡 ພາກສ່ວນ Top 5 (Wall of Fame) */}
+      {/* 2. Top 5 (Wall of Fame) */}
       {topDonors.length > 0 && (
         <section className="max-w-4xl mx-auto px-6 py-20">
           <div className="text-center mb-12">
@@ -137,20 +158,38 @@ export default function SupportersPage() {
                     {rankBadge}
                   </div>
                   
-                  <div className="flex-1 px-4">
+                  {/* 💡 ສ່ວນຮູບໂປຣໄຟລ໌ ແລະ ຊື່ */}
+                  <div className="flex-1 px-4 flex items-center gap-4">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-gray-100 border border-gray-200 shrink-0 shadow-sm flex items-center justify-center text-xl sm:text-2xl font-black text-teal-600">
+                      {donor.profileUrl ? (
+                        <img src={donor.profileUrl} alt={donor.name} className="w-full h-full object-cover" />
+                      ) : (
+                        // ຖ້າບໍ່ມີຮູບ ໃຫ້ສະແດງຕົວອັກສອນທຳອິດຂອງຊື່
+                        donor.name.charAt(0).toUpperCase()
+                      )}
+                    </div>
                     <h3 className={`font-black sm:text-xl uppercase tracking-wider ${isFirst ? 'text-gray-900' : 'text-gray-700'}`}>
                       {donor.name}
                     </h3>
                   </div>
                   
+                  {/* 💡 ສ່ວນສະແດງຍອດເງິນ (ສະແດງແຍກ LAK ແລະ USD ຖ້າມີ) */}
                   <div className="text-right shrink-0">
-                    {/* 💡 ກວດສອບເງື່ອນໄຂການສະແດງເງິນ */}
-                    {!donor.hideAmount && donor.total > 0 ? (
-                      <p className={`font-black tracking-wide ${isFirst ? 'text-teal-600 text-2xl sm:text-3xl' : 'text-teal-600 text-xl sm:text-2xl'}`}>
-                        {donor.total.toLocaleString()} <span className="text-sm font-bold text-gray-400 uppercase">LAK</span>
-                      </p>
+                    {!donor.hideAmount && donor.totalBaseLAK > 0 ? (
+                      <div className="flex flex-col items-end gap-1">
+                        {donor.totalLAK > 0 && (
+                          <p className={`font-black tracking-wide ${isFirst ? 'text-teal-600 text-2xl sm:text-3xl' : 'text-teal-600 text-xl sm:text-2xl'}`}>
+                            {donor.totalLAK.toLocaleString()} <span className="text-sm font-bold text-gray-400 uppercase">LAK</span>
+                          </p>
+                        )}
+                        {donor.totalUSD > 0 && (
+                          <p className={`font-black tracking-wide ${isFirst ? 'text-green-600 text-2xl sm:text-3xl' : 'text-green-600 text-xl sm:text-2xl'}`}>
+                            ${donor.totalUSD.toLocaleString()} <span className="text-sm font-bold text-gray-400 uppercase">USD</span>
+                          </p>
+                        )}
+                      </div>
                     ) : (
-                      <span className="inline-block bg-gray-50 text-gray-400 font-bold text-xs sm:text-sm px-4 py-2 rounded-full border border-gray-100">
+                      <span className="inline-block bg-gray-50 text-gray-400 font-bold text-xs sm:text-sm px-4 py-2 rounded-full border border-gray-100 uppercase tracking-widest">
                         {locale === 'lo' ? 'ບໍ່ເປີດເຜີຍຈຳນວນ' : 'UNDISCLOSED'}
                       </span>
                     )}
