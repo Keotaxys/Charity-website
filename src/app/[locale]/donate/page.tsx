@@ -228,7 +228,7 @@ function DonateForm() {
 
             <div>
               <h2 className="text-xl font-black mb-6 uppercase tracking-widest text-[#00457C] flex items-center gap-3">
-                <span className="bg-pink-50 text-[#00457C] w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                <span className="bg-blue-50 text-[#00457C] w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
                 {locale === 'lo' ? 'ບໍລິຈາກຜ່ານ PayPal' : 'DONATE VIA PAYPAL'}
               </h2>
               <div className="bg-[#00457C]/5 p-6 rounded-3xl border border-[#00457C]/10 text-center">
@@ -379,7 +379,7 @@ function DonateForm() {
                     <input type="checkbox" className="peer appearance-none w-6 h-6 border-2 border-gray-300 rounded-md checked:bg-blue-400 checked:border-blue-400 transition-all cursor-pointer" checked={formData.hideProfile} onChange={(e) => setFormData({...formData, hideProfile: e.target.checked})} />
                     <svg className="absolute w-4 h-4 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                   </div>
-                  <span className="text-gray-700 font-medium group-hover:text-blue-500 transition-colors">
+                  <span className="text-gray-700 font-medium group-hover:text-pink-500 transition-colors">
                     {locale === 'lo' ? 'ບໍ່ສະແດງຮູບໂປຣໄຟລ໌' : 'Hide my profile picture'}
                   </span>
                 </label>
