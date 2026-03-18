@@ -105,22 +105,23 @@ export default function TabDonatePage({ showMessage }: { showMessage: (text: str
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">ຊື່ທະນາຄານ (Bank Name)</label>
-              <input type="text" name="bank_name" value={formData.bank_name} onChange={handleChange} className="w-full p-4 border rounded-xl" />
+              {/* 💡 ເພີ່ມ font-bold text-gray-900 ເພື່ອໃຫ້ຕົວໜັງສືເຂັ້ມຂຶ້ນ */}
+              <input type="text" name="bank_name" value={formData.bank_name} onChange={handleChange} className="w-full p-4 border rounded-xl font-bold text-gray-900 bg-white outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all" />
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">ຊື່ບັນຊີ (Account Name)</label>
-              <input type="text" name="account_name" value={formData.account_name} onChange={handleChange} className="w-full p-4 border rounded-xl" />
+              <input type="text" name="account_name" value={formData.account_name} onChange={handleChange} className="w-full p-4 border rounded-xl font-bold text-gray-900 bg-white outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all" />
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-bold text-gray-700 mb-2">ເລກບັນຊີ (Account Number)</label>
-              <input type="text" name="account_number" value={formData.account_number} onChange={handleChange} className="w-full p-4 border rounded-xl font-mono text-lg" />
+              <input type="text" name="account_number" value={formData.account_number} onChange={handleChange} className="w-full p-4 border rounded-xl font-black text-xl text-gray-900 font-mono tracking-widest bg-white outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all" />
             </div>
             
             {/* ອັບໂຫຼດ QR Code */}
             <div className="md:col-span-2 border-t pt-6">
               <label className="block text-sm font-bold text-gray-700 mb-4">ຮູບ QR Code ສະແກນຈ່າຍ</label>
               <div className="flex items-center gap-6">
-                <div className="w-32 h-32 bg-white border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center overflow-hidden">
+                <div className="w-32 h-32 bg-white border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center overflow-hidden shadow-sm">
                   {qrPreview ? (
                     <img src={qrPreview} alt="QR Code" className="w-full h-full object-contain" />
                   ) : (
@@ -128,7 +129,7 @@ export default function TabDonatePage({ showMessage }: { showMessage: (text: str
                   )}
                 </div>
                 <div>
-                  <input type="file" accept="image/*" onChange={handleFileChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer" />
+                  <input type="file" accept="image/*" onChange={handleFileChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer transition-colors" />
                 </div>
               </div>
             </div>
@@ -141,15 +142,15 @@ export default function TabDonatePage({ showMessage }: { showMessage: (text: str
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <label className="block text-sm font-bold text-gray-700 mb-2">ລິ້ງ PayPal (PayPal Link)</label>
-              <input type="url" name="paypal_link" value={formData.paypal_link} onChange={handleChange} className="w-full p-4 border rounded-xl" placeholder="https://paypal.me/..." />
+              <input type="url" name="paypal_link" value={formData.paypal_link} onChange={handleChange} className="w-full p-4 border rounded-xl font-bold text-gray-900 bg-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="https://paypal.me/..." />
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">ຄຳອະທິບາຍ (ພາສາລາວ)</label>
-              <textarea name="paypal_desc_lo" value={formData.paypal_desc_lo} onChange={handleChange} rows={3} className="w-full p-4 border rounded-xl" />
+              <textarea name="paypal_desc_lo" value={formData.paypal_desc_lo} onChange={handleChange} rows={3} className="w-full p-4 border rounded-xl font-bold text-gray-900 bg-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all leading-relaxed" />
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">ຄຳອະທິບາຍ (English)</label>
-              <textarea name="paypal_desc_en" value={formData.paypal_desc_en} onChange={handleChange} rows={3} className="w-full p-4 border rounded-xl" />
+              <textarea name="paypal_desc_en" value={formData.paypal_desc_en} onChange={handleChange} rows={3} className="w-full p-4 border rounded-xl font-bold text-gray-900 bg-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all leading-relaxed" />
             </div>
           </div>
         </div>
@@ -158,10 +159,22 @@ export default function TabDonatePage({ showMessage }: { showMessage: (text: str
         <div className="p-6 bg-gray-50 rounded-3xl border border-gray-200">
           <h3 className="font-black text-lg text-gray-800 mb-6 uppercase">ຂໍ້ຄວາມສ່ວນຫົວ (Header)</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div><label className="block text-sm font-bold text-gray-700 mb-2">ຫົວຂໍ້ (ລາວ)</label><input type="text" name="header_title_lo" value={formData.header_title_lo} onChange={handleChange} className="w-full p-4 border rounded-xl" /></div>
-            <div><label className="block text-sm font-bold text-gray-700 mb-2">ຫົວຂໍ້ (English)</label><input type="text" name="header_title_en" value={formData.header_title_en} onChange={handleChange} className="w-full p-4 border rounded-xl" /></div>
-            <div><label className="block text-sm font-bold text-gray-700 mb-2">ຄຳອະທິບາຍ (ລາວ)</label><textarea name="header_subtitle_lo" value={formData.header_subtitle_lo} onChange={handleChange} className="w-full p-4 border rounded-xl" /></div>
-            <div><label className="block text-sm font-bold text-gray-700 mb-2">ຄຳອະທິບາຍ (English)</label><textarea name="header_subtitle_en" value={formData.header_subtitle_en} onChange={handleChange} className="w-full p-4 border rounded-xl" /></div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">ຫົວຂໍ້ (ລາວ)</label>
+              <input type="text" name="header_title_lo" value={formData.header_title_lo} onChange={handleChange} className="w-full p-4 border rounded-xl font-black text-gray-900 bg-white outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">ຫົວຂໍ້ (English)</label>
+              <input type="text" name="header_title_en" value={formData.header_title_en} onChange={handleChange} className="w-full p-4 border rounded-xl font-black text-gray-900 bg-white outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">ຄຳອະທິບາຍ (ລາວ)</label>
+              <textarea name="header_subtitle_lo" value={formData.header_subtitle_lo} onChange={handleChange} className="w-full p-4 border rounded-xl font-bold text-gray-900 bg-white outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all leading-relaxed" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">ຄຳອະທິບາຍ (English)</label>
+              <textarea name="header_subtitle_en" value={formData.header_subtitle_en} onChange={handleChange} className="w-full p-4 border rounded-xl font-bold text-gray-900 bg-white outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all leading-relaxed" />
+            </div>
           </div>
         </div>
 
