@@ -6,9 +6,10 @@ import Link from 'next/link';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, getDoc, query, orderBy, where } from 'firebase/firestore';
 
+// 💡 ກຳນົດອັດຕາແລກປ່ຽນລາຍວັນ (ສາມາດປ່ຽນແປງໄດ້ຕາມຈິງ)
 const EXCHANGE_RATE_USD_TO_LAK = 22000;
 
-// 💡 ຟັງຊັນກຳນົດ Theme ສີຕາມອັນດັບ (1=Teal, 2=Pink, 3+=Gray)
+// ຟັງຊັນກຳນົດ Theme ສີຕາມອັນດັບ (1=Teal, 2=Pink, 3+=Gray)
 const getRankTheme = (index: number) => {
   if (index === 0) return { text: 'text-teal-600', bg: 'bg-teal-50', border: 'border-teal-200' };
   if (index === 1) return { text: 'text-pink-500', bg: 'bg-pink-50', border: 'border-pink-200' };
@@ -37,7 +38,7 @@ export default function SupportersPage() {
         const donationsQuery = query(collection(db, 'donations'), where('status', '==', 'Approved'));
         const donationsSnap = await getDocs(donationsQuery);
         
-        const donorTotals: Record<string, { name: string, totalBaseLAK: number, totalLAK: number, totalUSD: number, hideAmount: boolean, profileUrl: string }> = {};
+        const donorTotals: Record<string, { name: string, totalBaseLAK: number, hideAmount: boolean, profileUrl: string }> = {};
         
         donationsSnap.forEach((doc) => {
           const data = doc.data();
@@ -47,20 +48,21 @@ export default function SupportersPage() {
           const amount = Number(data.amount) || 0;
           const currency = data.currency || 'LAK';
 
+          // ຄຳນວນທຸກຍອດໃຫ້ເປັນ LAK ເພື່ອໃຊ້ຈັດອັນດັບ ແລະ ສະແດງຜົນຫຼັກ
           const baseLAK = currency === 'USD' ? amount * EXCHANGE_RATE_USD_TO_LAK : amount;
           
           if (donorTotals[name]) {
             donorTotals[name].totalBaseLAK += baseLAK;
-            if (currency === 'USD') donorTotals[name].totalUSD += amount;
-            else donorTotals[name].totalLAK += amount;
-
             if (data.hideAmount) donorTotals[name].hideAmount = true;
             if (!donorTotals[name].profileUrl && !data.hideProfile && data.profile_url) {
               donorTotals[name].profileUrl = data.profile_url;
             }
           } else {
             donorTotals[name] = { 
-              name, totalBaseLAK: baseLAK, totalLAK: currency === 'LAK' ? amount : 0, totalUSD: currency === 'USD' ? amount : 0, hideAmount: data.hideAmount || false, profileUrl: (!data.hideProfile && data.profile_url) ? data.profile_url : ''
+              name, 
+              totalBaseLAK: baseLAK, 
+              hideAmount: data.hideAmount || false, 
+              profileUrl: (!data.hideProfile && data.profile_url) ? data.profile_url : ''
             };
           }
         });
@@ -95,7 +97,7 @@ export default function SupportersPage() {
   return (
     <div className="bg-[#F8FAFC] min-h-screen pb-24 font-sans relative">
       
-      {/* 1. ສ່ວນຫົວ (Header) ເຮັດໃຫ້ເບິ່ງສະອາດຕາຂຶ້ນ */}
+      {/* 1. ສ່ວນຫົວ (Header) */}
       <section className="bg-white py-16 px-6 border-b border-gray-100 relative overflow-hidden z-10">
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-widest uppercase">
@@ -107,7 +109,7 @@ export default function SupportersPage() {
         </div>
       </section>
 
-      {/* 2. Main Layout (ແບ່ງເປັນ 2 ຖັນ: ຊ້າຍ ໂລໂກ້, ຂວາ Ranking) */}
+      {/* 2. Main Layout */}
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
 
@@ -129,7 +131,6 @@ export default function SupportersPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {platinumSponsors.map((sponsor) => (
                     <div key={sponsor.id} className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 flex items-center justify-center group h-48">
-                      {/* 💡 ຫຼຸດຂະໜາດໂລໂກ້ລົງໃຫ້ພໍດີງາມ */}
                       <img src={sponsor.logo_url} alt={sponsor.name} className="w-full max-w-[180px] h-auto max-h-[100px] object-contain grayscale group-hover:grayscale-0 transition-all duration-500 opacity-80 group-hover:opacity-100" />
                     </div>
                   ))}
@@ -152,7 +153,6 @@ export default function SupportersPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
                   {generalSponsors.map((sponsor) => (
                     <div key={sponsor.id} className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-center group h-32 hover:border-teal-200 transition-colors">
-                      {/* 💡 ຫຼຸດຂະໜາດໂລໂກ້ລົງໃຫ້ພໍດີງາມ */}
                       <img src={sponsor.logo_url} alt={sponsor.name} className="w-full max-w-[120px] h-auto max-h-[60px] object-contain opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300" />
                     </div>
                   ))}
@@ -161,7 +161,7 @@ export default function SupportersPage() {
             </section>
           </div>
 
-          {/* ຝັ່ງຂວາ (4/12): Ranking Top 5 (ຕິດໜ້າຈໍ - Sticky) */}
+          {/* ຝັ່ງຂວາ (4/12): Ranking Top 5 */}
           <div className="lg:col-span-4 lg:sticky lg:top-10 order-1 lg:order-2 mb-10 lg:mb-0">
             <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-gray-200/50 border border-gray-100">
               
@@ -178,18 +178,19 @@ export default function SupportersPage() {
                 <div className="space-y-4">
                   {topDonors.map((donor, index) => {
                     const theme = getRankTheme(index);
+                    
+                    // 💡 ຄຳນວນ BaseLAK ກັບໄປເປັນ USD ສຳລັບສະແດງໃນວົງເລັບ
+                    const usdEquivalent = donor.totalBaseLAK / EXCHANGE_RATE_USD_TO_LAK;
 
                     return (
                       <div 
                         key={index} 
                         className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${theme.bg} ${theme.border} hover:scale-[1.02]`}
                       >
-                        {/* 💡 ໄອຄອນອັນດັບແບບ Minimal */}
                         <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center font-bold text-xs border bg-white ${theme.text} ${theme.border}`}>
                           {index + 1}
                         </div>
                         
-                        {/* ຮູບໂປຣໄຟລ໌ */}
                         <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden bg-white border border-gray-200 flex items-center justify-center text-sm font-black text-gray-400">
                           {donor.profileUrl ? (
                             <img src={donor.profileUrl} alt={donor.name} className="w-full h-full object-cover" />
@@ -198,27 +199,24 @@ export default function SupportersPage() {
                           )}
                         </div>
                         
-                        {/* ຊື່ຜູ້ບໍລິຈາກ */}
                         <div className="flex-1 min-w-0">
                           <h3 className={`font-bold text-sm truncate uppercase tracking-wide ${theme.text}`}>
                             {donor.name}
                           </h3>
                         </div>
                         
-                        {/* 💡 ຕົວເລກເງິນ (ຂະໜາດດຽວກັນ ແຕ່ປ່ຽນສີຕາມ Theme) */}
+                        {/* 💡 ສະແດງ LAK ເປັນຫຼັກ ແລະ (USD) ຢູ່ລຸ່ມ */}
                         <div className="text-right shrink-0">
                           {!donor.hideAmount && donor.totalBaseLAK > 0 ? (
-                            <div className="flex flex-col items-end leading-tight">
-                              {donor.totalLAK > 0 && (
-                                <p className={`font-black text-base ${theme.text}`}>
-                                  {donor.totalLAK.toLocaleString()} <span className="text-[10px] font-bold uppercase opacity-70">LAK</span>
-                                </p>
-                              )}
-                              {donor.totalUSD > 0 && (
-                                <p className={`font-black text-base ${theme.text}`}>
-                                  ${donor.totalUSD.toLocaleString()} <span className="text-[10px] font-bold uppercase opacity-70">USD</span>
-                                </p>
-                              )}
+                            <div className="flex flex-col items-end leading-tight gap-0.5">
+                              {/* ຍອດເງິນຫຼັກເປັນກີບ */}
+                              <p className={`font-black text-base sm:text-lg ${theme.text}`}>
+                                {donor.totalBaseLAK.toLocaleString()} <span className="text-[10px] font-bold uppercase opacity-70">LAK</span>
+                              </p>
+                              {/* ຍອດທຽບເທົ່າເປັນໂດລາໃນວົງເລັບ */}
+                              <p className={`text-[11px] font-bold opacity-60 ${theme.text}`}>
+                                (${usdEquivalent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
+                              </p>
                             </div>
                           ) : (
                             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
