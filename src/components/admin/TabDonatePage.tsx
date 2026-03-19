@@ -22,7 +22,8 @@ export default function TabDonatePage({ showMessage }: { showMessage: (text: str
     qr_image_url: '',
     paypal_link: 'https://paypal.me/yourpaypal',
     paypal_desc_lo: 'ສຳລັບຜູ້ທີ່ຢູ່ຕ່າງປະເທດ ສາມາດບໍລິຈາກໄດ້ຢ່າງປອດໄພຜ່ານລະບົບ PayPal.',
-    paypal_desc_en: 'For international donors, safely donate using PayPal.'
+    paypal_desc_en: 'For international donors, safely donate using PayPal.',
+    exchange_rate: 22000 // 💡 ເພີ່ມ State ສຳລັບອັດຕາແລກປ່ຽນ
   });
 
   const [qrFile, setQrFile] = useState<File | null>(null);
@@ -52,6 +53,10 @@ export default function TabDonatePage({ showMessage }: { showMessage: (text: str
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: Number(e.target.value) });
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -65,7 +70,6 @@ export default function TabDonatePage({ showMessage }: { showMessage: (text: str
     try {
       let finalQrUrl = formData.qr_image_url;
       
-      // ຖ້າມີການອັບໂຫຼດ QR Code ໃໝ່
       if (qrFile) {
         const fileRef = ref(storage, `settings/qr_${Date.now()}_${qrFile.name}`);
         await uploadBytes(fileRef, qrFile);
@@ -91,7 +95,7 @@ export default function TabDonatePage({ showMessage }: { showMessage: (text: str
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 className="text-2xl font-black text-gray-900">{locale === 'lo' ? 'ຕັ້ງຄ່າໜ້າບໍລິຈາກ' : 'Donate Page Settings'}</h2>
-          <p className="text-gray-500 mt-1">{locale === 'lo' ? 'ແກ້ໄຂຂໍ້ມູນທະນາຄານ, QR Code ແລະ PayPal' : 'Edit Bank, QR Code, and PayPal details'}</p>
+          <p className="text-gray-500 mt-1">{locale === 'lo' ? 'ແກ້ໄຂຂໍ້ມູນທະນາຄານ, ອັດຕາແລກປ່ຽນ ແລະ PayPal' : 'Edit Bank, Exchange Rate, and PayPal details'}</p>
         </div>
         <button onClick={handleSave} disabled={saving} className="bg-teal-600 hover:bg-teal-700 text-white font-black py-3 px-8 rounded-xl transition-all shadow-md disabled:bg-gray-400">
           {saving ? (locale === 'lo' ? 'ກຳລັງບັນທຶກ...' : 'Saving...') : (locale === 'lo' ? 'ບັນທຶກການຕັ້ງຄ່າ' : 'Save Settings')}
@@ -99,13 +103,29 @@ export default function TabDonatePage({ showMessage }: { showMessage: (text: str
       </div>
 
       <div className="space-y-8">
+        
+        {/* 💡 ສ່ວນຕັ້ງຄ່າອັດຕາແລກປ່ຽນ */}
+        <div className="p-6 bg-green-50/50 rounded-3xl border border-green-200">
+          <h3 className="font-black text-lg text-green-700 mb-4 uppercase flex items-center gap-2">
+             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+             {locale === 'lo' ? 'ອັດຕາແລກປ່ຽນ (Exchange Rate)' : 'Exchange Rate'}
+          </h3>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">{locale === 'lo' ? '1 USD ເທົ່າກັບຈັກກີບ? (ສຳລັບຄຳນວນຍອດ)' : '1 USD = ? LAK'}</label>
+            <div className="relative">
+               <input type="number" name="exchange_rate" value={formData.exchange_rate} onChange={handleNumberChange} className="w-full md:w-1/2 p-4 border border-green-300 rounded-xl font-black text-2xl text-green-800 bg-white outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all" />
+               <span className="absolute left-[calc(50%+10px)] md:left-auto md:right-[50%] top-1/2 -translate-y-1/2 -translate-x-full pr-4 font-bold text-gray-400">LAK</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">{locale === 'lo' ? '* ຕົວເລກນີ້ຈະຖືກນຳໄປໃຊ້ຄຳນວນການຈັດອັນດັບຜູ້ບໍລິຈາກ ແລະ ເພີ່ມຍອດເຂົ້າໂຄງການອັດຕະໂນມັດ.' : '* This rate is used for calculating donor rankings and campaign totals.'}</p>
+          </div>
+        </div>
+
         {/* ສ່ວນທະນາຄານ ແລະ QR Code */}
         <div className="p-6 bg-gray-50 rounded-3xl border border-gray-200">
           <h3 className="font-black text-lg text-teal-600 mb-6 uppercase">ຂໍ້ມູນບັນຊີທະນາຄານ (Bank Transfer)</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">ຊື່ທະນາຄານ (Bank Name)</label>
-              {/* 💡 ປ່ຽນຈາກ text-gray-900 ເປັນ text-gray-800 ເພື່ອໃຫ້ເປັນສີເທົາເຂັ້ມ */}
               <input type="text" name="bank_name" value={formData.bank_name} onChange={handleChange} className="w-full p-4 border rounded-xl font-bold text-gray-800 bg-white outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-gray-400 placeholder:font-medium" />
             </div>
             <div>
@@ -114,11 +134,9 @@ export default function TabDonatePage({ showMessage }: { showMessage: (text: str
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-bold text-gray-700 mb-2">ເລກບັນຊີ (Account Number)</label>
-              {/* 💡 ປ່ຽນຈາກ font-black text-gray-900 ເປັນ font-bold text-gray-800 */}
               <input type="text" name="account_number" value={formData.account_number} onChange={handleChange} className="w-full p-4 border rounded-xl font-bold text-xl text-gray-800 font-mono tracking-widest bg-white outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-gray-400 placeholder:font-medium" />
             </div>
             
-            {/* ອັບໂຫຼດ QR Code */}
             <div className="md:col-span-2 border-t pt-6">
               <label className="block text-sm font-bold text-gray-700 mb-4">ຮູບ QR Code ສະແກນຈ່າຍ</label>
               <div className="flex items-center gap-6">
@@ -137,7 +155,7 @@ export default function TabDonatePage({ showMessage }: { showMessage: (text: str
           </div>
         </div>
 
-        {/* ສ່ວນ PayPal */}
+        {/* ສ່ວນ PayPal ແລະ ຫົວຂໍ້ (ໂຄດເດີມ) */}
         <div className="p-6 bg-blue-50/50 rounded-3xl border border-blue-100">
           <h3 className="font-black text-lg text-[#00457C] mb-6 uppercase">ຊ່ອງທາງ PayPal</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -156,18 +174,15 @@ export default function TabDonatePage({ showMessage }: { showMessage: (text: str
           </div>
         </div>
 
-        {/* ສ່ວນຫົວຂໍ້ໜ້າເວັບ */}
         <div className="p-6 bg-gray-50 rounded-3xl border border-gray-200">
           <h3 className="font-black text-lg text-gray-800 mb-6 uppercase">ຂໍ້ຄວາມສ່ວນຫົວ (Header)</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">ຫົວຂໍ້ (ລາວ)</label>
-              {/* 💡 ປ່ຽນຈາກ font-black text-gray-900 ເປັນ font-bold text-gray-800 */}
               <input type="text" name="header_title_lo" value={formData.header_title_lo} onChange={handleChange} className="w-full p-4 border rounded-xl font-bold text-gray-800 bg-white outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-gray-400 placeholder:font-medium" />
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">ຫົວຂໍ້ (English)</label>
-              {/* 💡 ປ່ຽນຈາກ font-black text-gray-900 ເປັນ font-bold text-gray-800 */}
               <input type="text" name="header_title_en" value={formData.header_title_en} onChange={handleChange} className="w-full p-4 border rounded-xl font-bold text-gray-800 bg-white outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-gray-400 placeholder:font-medium" />
             </div>
             <div>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, updateDoc, increment, query, orderBy, where } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, updateDoc, increment, query, orderBy, where } from 'firebase/firestore'; // 💡 ເພີ່ມ getDoc
 
 export default function TabDonations({ showMessage }: { showMessage: (text: string, type: string) => void }) {
   const locale = useLocale();
@@ -12,15 +12,29 @@ export default function TabDonations({ showMessage }: { showMessage: (text: stri
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const [approvalData, setApprovalData] = useState<Record<string, { amount: string, currency: string }>>({});
-  
-  // State ສຳລັບຄວບຄຸມການເປີດ/ປິດ Custom Dropdown (ເກັບ ID ຂອງລາຍການທີ່ເປີດຢູ່)
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+
+  // 💡 State ເກັບອັດຕາແລກປ່ຽນ
+  const [exchangeRate, setExchangeRate] = useState(22000); 
 
   useEffect(() => {
     fetchDonations();
+    fetchExchangeRate(); // 💡 ເອີ້ນໃຊ້ຕອນໂຫຼດໜ້າ
   }, []);
 
-  // ຟັງຊັນປິດ Dropdown ເມື່ອກົດບ່ອນອື່ນນອກກ່ອງ
+  // 💡 ຟັງຊັນດຶງອັດຕາແລກປ່ຽນຈາກ Firebase
+  const fetchExchangeRate = async () => {
+    try {
+      const docRef = doc(db, 'settings', 'donate_page');
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists() && docSnap.data().exchange_rate) {
+        setExchangeRate(Number(docSnap.data().exchange_rate));
+      }
+    } catch (error) {
+      console.error("Error fetching exchange rate:", error);
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (!(e.target as Element).closest('.custom-currency-dropdown')) {
@@ -48,33 +62,25 @@ export default function TabDonations({ showMessage }: { showMessage: (text: stri
     setLoading(false);
   };
 
-  // ຟັງຊັນຈັດການຕົວເລກ ພ້ອມໃສ່ຈຸດ (,) ອັດຕະໂນມັດ
   const handleAmountChange = (id: string, value: string) => {
-    // ລຶບຕົວອັກສອນອື່ນທີ່ບໍ່ແມ່ນຕົວເລກອອກ
     const numericValue = value.replace(/\D/g, '');
-    // ໃສ່ຈຸດ (,) ຂັ້ນທຸກໆ 3 ຕົວ
     const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-
     setApprovalData(prev => ({ 
       ...prev, 
       [id]: { ...prev[id], amount: formattedValue, currency: prev[id]?.currency || 'LAK' } 
     }));
   };
 
-  // ຈັດການປ່ຽນສະກຸນເງິນ
   const handleCurrencyChange = (id: string, currency: string) => {
     setApprovalData(prev => ({ 
       ...prev, 
       [id]: { ...prev[id], amount: prev[id]?.amount || '', currency } 
     }));
-    setOpenDropdownId(null); // ປິດ dropdown ຫຼັງຈາກເລືອກແລ້ວ
+    setOpenDropdownId(null); 
   };
 
-  // ຟັງຊັນອະນຸມັດ
   const handleApprove = async (donation: any) => {
     const inputData = approvalData[donation.id];
-    
-    // ລຶບຈຸດ (,) ອອກກ່ອນເພື່ອແປງເປັນຕົວເລກແທ້ໆ
     const rawAmount = inputData?.amount?.replace(/,/g, '') || '0';
     const amountNum = Number(rawAmount);
     const currency = inputData?.currency || 'LAK';
@@ -99,9 +105,12 @@ export default function TabDonations({ showMessage }: { showMessage: (text: stri
         approved_at: new Date()
       });
 
+      // 💡 ໃຊ້ອັດຕາແລກປ່ຽນທີ່ດຶງມາຈາກຖານຂໍ້ມູນ
+      const baseLAK = currency === 'USD' ? amountNum * exchangeRate : amountNum;
+
       const campaignRef = doc(db, 'campaigns', donation.campaign_id);
       await updateDoc(campaignRef, {
-        raised_amount: increment(amountNum)
+        raised_amount: increment(baseLAK)
       });
 
       showMessage(locale === 'lo' ? 'ອະນຸມັດສຳເລັດແລ້ວ!' : 'Approved successfully!', 'success');
@@ -112,7 +121,6 @@ export default function TabDonations({ showMessage }: { showMessage: (text: stri
     setActionLoading(null);
   };
 
-  // ຟັງຊັນປະຕິເສດ
   const handleReject = async (id: string) => {
     const confirmMsg = locale === 'lo' ? 'ທ່ານຕ້ອງການປະຕິເສດລາຍການນີ້ແທ້ບໍ່?' : 'Reject this donation?';
     if (!confirm(confirmMsg)) return;
@@ -148,7 +156,6 @@ export default function TabDonations({ showMessage }: { showMessage: (text: stri
           {locale === 'lo' ? 'ກວດສອບສະລິບ, ປ້ອນຈຳນວນເງິນທີ່ຖືກຕ້ອງ ແລ້ວກົດອະນຸມັດ.' : 'Verify slips, enter the correct amount, and approve.'}
         </p>
 
-        {/* ລາຍການບໍລິຈາກ */}
         {loading ? (
           <div className="text-center py-10 text-gray-400 font-bold">{locale === 'lo' ? 'ກຳລັງໂຫຼດ...' : 'Loading...'}</div>
         ) : donations.length === 0 ? (
@@ -158,9 +165,9 @@ export default function TabDonations({ showMessage }: { showMessage: (text: stri
         ) : (
           <div className="grid grid-cols-1 gap-6">
             {donations.map((item) => (
-              <div key={item.id} className="bg-white border border-gray-100 rounded-[2.5rem] p-6 shadow-sm hover:shadow-md transition-all flex flex-col lg:flex-row gap-8 items-start lg:items-center">
+              <div key={item.id} className="bg-white border border-gray-200 rounded-[2.5rem] p-6 shadow-sm hover:shadow-md transition-all flex flex-col lg:flex-row gap-8 items-start lg:items-center">
                 
-                {/* ຮູບສະລິບ */}
+                {/* ຮູບສະລິບ (ໂຄດເດີມ) */}
                 <div className="w-full lg:w-44 shrink-0">
                   <a href={item.slip_url} target="_blank" rel="noreferrer" className="group relative block aspect-[3/4] overflow-hidden rounded-2xl bg-gray-100 border border-gray-200 shadow-inner">
                     <img src={item.slip_url} alt="slip" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
@@ -171,82 +178,57 @@ export default function TabDonations({ showMessage }: { showMessage: (text: stri
                 </div>
 
                 {/* ຂໍ້ມູນ ແລະ ຟອມປ້ອນເງິນ */}
-                <div className="flex-1 space-y-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="bg-teal-50 text-teal-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{locale === 'lo' ? 'ລໍຖ້າກວດສອບ' : 'PENDING'}</span>
-                    <span className="text-gray-400 text-xs">{item.created_at?.toDate ? new Date(item.created_at.toDate()).toLocaleString() : ''}</span>
+                <div className="flex-1 space-y-4 w-full">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="bg-teal-50 text-teal-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">{locale === 'lo' ? 'ລໍຖ້າກວດສອບ' : 'PENDING'}</span>
+                      <span className="text-gray-400 text-xs font-medium">{item.created_at?.toDate ? new Date(item.created_at.toDate()).toLocaleString() : ''}</span>
+                    </div>
+                    <h3 className="text-2xl font-black text-gray-900">{item.donor_name}</h3>
+                    <p className="text-gray-500 font-medium text-sm mt-1">
+                      {locale === 'lo' ? 'ບໍລິຈາກໃຫ້:' : 'Donated to:'} <span className="text-teal-600 font-bold">{locale === 'lo' ? item.campaign_title_lo : item.campaign_title_en}</span>
+                    </p>
                   </div>
                   
-                  <h3 className="text-xl font-black text-gray-900">{item.donor_name}</h3>
-                  <p className="text-gray-500 font-medium text-sm">
-                    {locale === 'lo' ? 'ບໍລິຈາກໃຫ້:' : 'Donated to:'} <span className="text-teal-600 font-bold">{locale === 'lo' ? item.campaign_title_lo : item.campaign_title_en}</span>
-                  </p>
-                  
-                  {/* 💡 ສ່ວນປ້ອນຈຳນວນເງິນ ແລະ Custom Dropdown */}
-                  <div className="pt-4 flex flex-wrap items-center gap-3">
-                    <div className="relative">
-                      {/* ປ່ຽນ type="number" ເປັນ "text" ເພື່ອໃຫ້ຮອງຮັບເຄື່ອງໝາຍຈຸດ */}
+                  <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    <div className="relative w-full sm:w-auto">
                       <input 
                         type="text" 
                         placeholder={locale === 'lo' ? 'ປ້ອນຈຳນວນເງິນ...' : 'Enter amount...'}
-                        className="w-48 md:w-56 p-4 bg-gray-50 border border-gray-200 rounded-2xl font-black text-2xl text-teal-600 outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-600/10 transition-all"
+                        className="w-full sm:w-56 p-4 bg-white border-2 border-gray-300 rounded-2xl font-black text-2xl text-gray-900 outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-600/10 placeholder:text-gray-400 placeholder:font-medium transition-all shadow-sm"
                         value={approvalData[item.id]?.amount || ''}
                         onChange={(e) => handleAmountChange(item.id, e.target.value)}
                       />
                     </div>
                     
-                    {/* Custom Dropdown */}
-                    <div className="relative custom-currency-dropdown shrink-0">
+                    <div className="relative custom-currency-dropdown shrink-0 w-full sm:w-auto">
                       <div 
                         onClick={() => setOpenDropdownId(openDropdownId === item.id ? null : item.id)}
-                        className={`h-[64px] px-6 bg-gray-50 border rounded-2xl font-black text-gray-700 flex items-center gap-3 cursor-pointer transition-all select-none
-                          ${openDropdownId === item.id ? 'border-teal-400 ring-4 ring-teal-600/10' : 'border-gray-200 hover:border-teal-300'}
+                        className={`h-[64px] px-6 bg-white border-2 rounded-2xl font-black text-gray-900 flex justify-between items-center gap-3 cursor-pointer transition-all select-none shadow-sm
+                          ${openDropdownId === item.id ? 'border-teal-500 ring-4 ring-teal-600/10' : 'border-gray-300 hover:border-teal-400'}
                         `}
                       >
                         <span className="text-lg">{approvalData[item.id]?.currency || 'LAK'}</span>
                         <svg className={`w-5 h-5 transition-transform duration-300 ${openDropdownId === item.id ? 'rotate-180 text-teal-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                       </div>
 
-                      {/* Dropdown Menu */}
                       {openDropdownId === item.id && (
-                        <div className="absolute top-[72px] right-0 w-32 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-in-up">
-                          <div 
-                            onClick={() => handleCurrencyChange(item.id, 'LAK')} 
-                            className={`px-5 py-4 font-black cursor-pointer transition-colors border-b border-gray-50
-                              ${(approvalData[item.id]?.currency || 'LAK') === 'LAK' ? 'bg-teal-50 text-teal-600' : 'text-gray-600 hover:bg-gray-50'}
-                            `}
-                          >
-                            LAK
-                          </div>
-                          <div 
-                            onClick={() => handleCurrencyChange(item.id, 'USD')} 
-                            className={`px-5 py-4 font-black cursor-pointer transition-colors
-                              ${approvalData[item.id]?.currency === 'USD' ? 'bg-teal-50 text-teal-600' : 'text-gray-600 hover:bg-gray-50'}
-                            `}
-                          >
-                            USD
-                          </div>
+                        <div className="absolute top-[72px] right-0 w-full sm:w-32 bg-white border border-gray-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-in-up">
+                          <div onClick={() => handleCurrencyChange(item.id, 'LAK')} className={`px-5 py-4 font-black cursor-pointer transition-colors border-b border-gray-100 ${(approvalData[item.id]?.currency || 'LAK') === 'LAK' ? 'bg-teal-50 text-teal-600' : 'text-gray-600 hover:bg-gray-50'}`}>LAK</div>
+                          <div onClick={() => handleCurrencyChange(item.id, 'USD')} className={`px-5 py-4 font-black cursor-pointer transition-colors ${approvalData[item.id]?.currency === 'USD' ? 'bg-teal-50 text-teal-600' : 'text-gray-600 hover:bg-gray-50'}`}>USD</div>
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* ປຸ່ມຈັດການ */}
-                <div className="w-full lg:w-auto flex flex-col gap-3 shrink-0">
-                  <button 
-                    onClick={() => handleApprove(item)}
-                    disabled={actionLoading === item.id}
-                    className="w-full lg:w-48 bg-teal-600 hover:bg-teal-700 text-white font-black py-5 px-6 rounded-2xl transition-all shadow-lg hover:shadow-teal-600/30 disabled:bg-gray-300 uppercase tracking-widest text-sm"
-                  >
+                {/* ປຸ່ມຈັດການ (Approve / Reject) (ໂຄດເດີມ) */}
+                <div className="w-full lg:w-auto flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
+                  <button onClick={() => handleApprove(item)} disabled={actionLoading === item.id} className="w-full lg:w-48 bg-teal-600 hover:bg-teal-700 text-white font-black py-5 px-6 rounded-2xl transition-all shadow-lg hover:shadow-teal-600/30 disabled:bg-gray-300 disabled:shadow-none uppercase tracking-widest text-sm">
                     {actionLoading === item.id ? (locale === 'lo' ? 'ກຳລັງບັນທຶກ...' : 'WAIT...') : (locale === 'lo' ? 'ອະນຸມັດ (APPROVE)' : 'APPROVE')}
                   </button>
-                  <button 
-                    onClick={() => handleReject(item.id)}
-                    disabled={actionLoading === item.id}
-                    className="w-full lg:w-48 bg-pink-50 text-pink-500 hover:bg-pink-100 font-black py-4 px-6 rounded-2xl transition-all text-sm uppercase tracking-widest"
-                  >
-                    {locale === 'lo' ? 'ປະຕິເສດ' : 'REJECT'}
+                  <button onClick={() => handleReject(item.id)} disabled={actionLoading === item.id} className="w-full lg:w-48 bg-white border-2 border-pink-100 text-pink-500 hover:bg-pink-50 font-black py-4 px-6 rounded-2xl transition-all text-sm uppercase tracking-widest disabled:opacity-50">
+                    {locale === 'lo' ? 'ປະຕິເສດ (REJECT)' : 'REJECT'}
                   </button>
                 </div>
 

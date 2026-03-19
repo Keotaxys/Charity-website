@@ -6,8 +6,6 @@ import Link from 'next/link';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, getDoc, query, orderBy, where } from 'firebase/firestore';
 
-const EXCHANGE_RATE_USD_TO_LAK = 22000;
-
 const getRankTheme = (index: number) => {
   if (index === 0) return { text: 'text-teal-600', bg: 'bg-teal-50', border: 'border-teal-200' };
   if (index === 1) return { text: 'text-pink-500', bg: 'bg-pink-50', border: 'border-pink-200' };
@@ -22,12 +20,25 @@ export default function SupportersPage() {
   const [topDonors, setTopDonors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // 💡 State ເກັບອັດຕາແລກປ່ຽນ
+  const [exchangeRate, setExchangeRate] = useState(22000);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // ດຶງການຕັ້ງຄ່າໜ້າຜູ້ສະໜັບສະໜູນ
         const docRef = doc(db, 'settings', 'supporters_page');
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) setPageSettings(docSnap.data());
+
+        // 💡 ດຶງການຕັ້ງຄ່າໜ້າບໍລິຈາກ ເພື່ອເອົາອັດຕາແລກປ່ຽນ
+        const donateRef = doc(db, 'settings', 'donate_page');
+        const donateSnap = await getDoc(donateRef);
+        let currentRate = 22000;
+        if (donateSnap.exists() && donateSnap.data().exchange_rate) {
+          currentRate = Number(donateSnap.data().exchange_rate);
+          setExchangeRate(currentRate);
+        }
 
         const sponsorsQuery = query(collection(db, 'sponsors'), orderBy('order_index', 'asc'));
         const sponsorsSnap = await getDocs(sponsorsQuery);
@@ -46,7 +57,8 @@ export default function SupportersPage() {
           const amount = Number(data.amount) || 0;
           const currency = data.currency || 'LAK';
 
-          const baseLAK = currency === 'USD' ? amount * EXCHANGE_RATE_USD_TO_LAK : amount;
+          // 💡 ໃຊ້ອັດຕາແລກປ່ຽນທີ່ດຶງມາຈາກຖານຂໍ້ມູນ
+          const baseLAK = currency === 'USD' ? amount * currentRate : amount;
           
           if (donorTotals[name]) {
             donorTotals[name].totalBaseLAK += baseLAK;
@@ -106,9 +118,8 @@ export default function SupportersPage() {
         </div>
       </section>
 
-      {/* 2. Main Layout - 💡 ປັບປ່ຽນອັດຕາສ່ວນຖັນເພື່ອໃຫ້ເບື້ອງຂວາກວ້າງຂຶ້ນ */}
+      {/* 2. Main Layout */}
       <div className="max-w-7xl mx-auto px-6 py-16">
-        {/* 💡 ປ່ຽນຈາກ lg:col-span-8 / 4 ເປັນ lg:col-span-7 / 5 ເພື່ອໃຫ້ບັດ Ranking ມີພື້ນທີ່ຫຼາຍຂຶ້ນ */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
 
           {/* ຝັ່ງຊ້າຍ (7/12): ໂລໂກ້ຜູ້ສະໜັບສະໜູນຕ່າງໆ */}
@@ -159,7 +170,7 @@ export default function SupportersPage() {
             </section>
           </div>
 
-          {/* ຝັ່ງຂວາ (5/12): Ranking Top 5 - 💡 ປັບຄວາມກວ້າງໃຫ້ພໍດີ */}
+          {/* ຝັ່ງຂວາ (5/12): Ranking Top 5 */}
           <div className="lg:col-span-5 lg:sticky lg:top-10 order-1 lg:order-2 mb-10 lg:mb-0">
             <div className="bg-white rounded-[2.5rem] p-6 lg:p-8 shadow-xl shadow-gray-200/50 border border-gray-100">
               
@@ -176,20 +187,19 @@ export default function SupportersPage() {
                 <div className="space-y-4">
                   {topDonors.map((donor, index) => {
                     const theme = getRankTheme(index);
-                    const usdEquivalent = donor.totalBaseLAK / EXCHANGE_RATE_USD_TO_LAK;
+                    
+                    // 💡 ຄຳນວນ BaseLAK ກັບໄປເປັນ USD ເພື່ອສະແດງໃນວົງເລັບ
+                    const usdEquivalent = donor.totalBaseLAK / exchangeRate;
 
                     return (
                       <div 
                         key={index} 
-                        // 💡 ປັບ Padding ພາຍໃນບັດໃຫ້ນ້ອຍລົງໜ້ອຍໜຶ່ງ ເພື່ອໃຫ້ມີພື້ນທີ່ສຳລັບເນື້ອຫາ
                         className={`flex items-center gap-3 p-3 sm:p-4 rounded-2xl border transition-all ${theme.bg} ${theme.border} hover:scale-[1.02]`}
                       >
-                        {/* ຕົວເລກອັນດັບ */}
                         <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center font-bold text-xs border bg-white ${theme.text} ${theme.border}`}>
                           {index + 1}
                         </div>
                         
-                        {/* ຮູບໂປຣໄຟລ໌ */}
                         <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden bg-white border border-gray-200 flex items-center justify-center text-sm font-black text-gray-400">
                           {donor.profileUrl ? (
                             <img src={donor.profileUrl} alt={donor.name} className="w-full h-full object-cover" />
@@ -198,22 +208,18 @@ export default function SupportersPage() {
                           )}
                         </div>
                         
-                        {/* 💡 ຊື່ຜູ້ບໍລິຈາກ - ປັບໃຫ້ສະແດງເຕັມ ຫຼື ຖ້າຍາວຫຼາຍໃຫ້ຕັດ (truncate) ພ້ອມຍະຫວ່າງທີ່ເໝາະສົມ */}
                         <div className="flex-1 min-w-0 pr-2">
                           <h3 className={`font-bold text-sm sm:text-base truncate uppercase tracking-wide ${theme.text}`} title={donor.name}>
                             {donor.name}
                           </h3>
                         </div>
                         
-                        {/* 💡 ຕົວເລກເງິນ - ປັບຂະໜາດໃຫ້ພໍດີ ບໍ່ບັງຊື່ */}
                         <div className="text-right shrink-0">
                           {!donor.hideAmount && donor.totalBaseLAK > 0 ? (
                             <div className="flex flex-col items-end leading-tight gap-0.5">
-                              {/* 💡 ປັບຂະໜາດເງິນກີບລົງມາໜ້ອຍໜຶ່ງເປັນ text-sm sm:text-base */}
                               <p className={`font-black text-sm sm:text-base whitespace-nowrap ${theme.text}`}>
                                 {donor.totalBaseLAK.toLocaleString()} <span className="text-[9px] font-bold uppercase opacity-70">LAK</span>
                               </p>
-                              {/* 💡 ປັບຂະໜາດເງິນໂດລາໃນວົງເລັບ */}
                               <p className={`text-[10px] sm:text-[11px] font-bold opacity-60 whitespace-nowrap ${theme.text}`}>
                                 (${usdEquivalent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
                               </p>
