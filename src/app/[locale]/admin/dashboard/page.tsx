@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { auth } from '@/lib/firebase';
+import { useState, useEffect } from 'react';
+import { auth, db } from '@/lib/firebase'; // 💡 ນຳເຂົ້າ db
 import { signOut } from 'firebase/auth';
+import { collection, query, where, onSnapshot } from 'firebase/firestore'; // 💡 ນຳເຂົ້າ onSnapshot ສຳລັບ Real-time
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import AdminGuard from '@/components/AdminGuard';
 
-// ນຳເຂົ້າທຸກ Tabs ທີ່ເຮົາແຍກໄຟລ໌ໄວ້
+// ນຳເຂົ້າທຸກ Tabs
 import TabHome from '@/components/admin/TabHome';
 import TabCampaigns from '@/components/admin/TabCampaigns';
 import TabDonations from '@/components/admin/TabDonations';
@@ -26,6 +27,9 @@ export default function AdminDashboard() {
   
   const [activeTab, setActiveTab] = useState('home');
   const [message, setMessage] = useState({ text: '', type: '' });
+  
+  // 💡 State ສຳລັບເກັບຈຳນວນລາຍການທີ່ລໍຖ້າອະນຸມັດ
+  const [pendingCount, setPendingCount] = useState(0);
 
   const showMessage = (text: string, type: string) => {
     setMessage({ text, type });
@@ -36,6 +40,19 @@ export default function AdminDashboard() {
     await signOut(auth);
     router.push(`/${locale}/admin/login`);
   };
+
+  // 💡 ດຶງຈຳນວນລາຍການບໍລິຈາກແບບ Real-time
+  useEffect(() => {
+    const q = query(collection(db, 'donations'), where('status', '==', 'Pending'));
+    
+    // onSnapshot ຈະເຮັດວຽກທັນທີເມື່ອມີຂໍ້ມູນປ່ຽນແປງໃນຖານຂໍ້ມູນ
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setPendingCount(snapshot.docs.length);
+    });
+
+    // ປິດການດຶງຂໍ້ມູນເມື່ອອອກຈາກໜ້ານີ້
+    return () => unsubscribe();
+  }, []);
 
   // Solid Icons Definition
   const Icons = {
@@ -56,7 +73,8 @@ export default function AdminDashboard() {
   const menuItems = [
     { id: 'home', icon: Icons.home, label: locale === 'lo' ? 'ຕັ້ງຄ່າໜ້າຫຼັກ' : 'Home Settings' },
     { id: 'campaigns', icon: Icons.campaigns, label: locale === 'lo' ? 'ໂຄງການ' : 'Campaigns' },
-    { id: 'donations', icon: Icons.donations, label: locale === 'lo' ? 'ອະນຸມັດຍອດບໍລິຈາກ' : 'Approve Donations' },
+    // 💡 ເພີ່ມ badge ໃສ່ເມນູອະນຸມັດຍອດບໍລິຈາກ
+    { id: 'donations', icon: Icons.donations, label: locale === 'lo' ? 'ອະນຸມັດຍອດບໍລິຈາກ' : 'Approve Donations', badge: pendingCount },
     { id: 'about', icon: Icons.about, label: locale === 'lo' ? 'ກ່ຽວກັບພວກເຮົາ' : 'About Us' },
     { id: 'history', icon: Icons.history, label: locale === 'lo' ? 'ປະຫວັດຂອງເຮົາ' : 'Our History' },
     { id: 'team', icon: Icons.team, label: locale === 'lo' ? 'ທີມງານ' : 'Our Team' },
@@ -66,13 +84,12 @@ export default function AdminDashboard() {
     { id: 'policies', icon: Icons.policies, label: locale === 'lo' ? 'ນະໂຍບາຍ & ລາຍງານ' : 'Policies & Reports' },
     { id: 'donateSettings', icon: Icons.donateSettings, label: locale === 'lo' ? 'ຕັ້ງຄ່າໜ້າບໍລິຈາກ' : 'Donate Page Settings' },
   ];
-  
 
   return (
     <AdminGuard>
       <div className="min-h-screen bg-[#F1F5F9] flex flex-col md:flex-row">
         
-        {/* Sidebar: ປັບໃຫ້ກວ້າງຂຶ້ນເລັກນ້ອຍ ແລະ ໃຊ້ສີທີ່ Soft ຂຶ້ນ */}
+        {/* Sidebar */}
         <aside className="w-full md:w-72 bg-white border-r border-gray-200 flex flex-col shrink-0 z-20 shadow-sm relative">
           <div className="p-8 border-b border-gray-50">
             <div className="flex items-center gap-3">
@@ -89,14 +106,23 @@ export default function AdminDashboard() {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all text-sm text-left
+                className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl font-bold transition-all text-sm text-left
                   ${activeTab === item.id 
                     ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20' 
                     : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}
                 `}
               >
-                <span className={activeTab === item.id ? 'text-white' : 'text-gray-400'}>{item.icon}</span>
-                {item.label}
+                <div className="flex items-center gap-4">
+                  <span className={activeTab === item.id ? 'text-white' : 'text-gray-400'}>{item.icon}</span>
+                  {item.label}
+                </div>
+                
+                {/* 💡 ສະແດງແຈ້ງເຕືອນ ຖ້າມີລາຍການຄ້າງຢູ່ (badge > 0) */}
+                {item.badge && item.badge > 0 ? (
+                  <span className={`px-2.5 py-0.5 text-xs font-black rounded-full transition-colors ${activeTab === item.id ? 'bg-white text-teal-600' : 'bg-pink-500 text-white shadow-sm'}`}>
+                    {item.badge}
+                  </span>
+                ) : null}
               </button>
             ))}
           </nav>
@@ -108,10 +134,9 @@ export default function AdminDashboard() {
           </div>
         </aside>
 
-        {/* Content Area: ເພີ່ມ Padding ແລະ ຈັດລຽງໃຫ້ສົມດຸນ */}
+        {/* Content Area */}
         <main className="flex-1 p-6 md:p-12 overflow-y-auto h-screen scroll-smooth relative">
           
-          {/* Message Toast ແບບ Floating ເດັ້ງລົງມາຈາກດ້ານເທິງ */}
           {message.text && (
             <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] animate-bounce">
                <div className={`px-8 py-4 rounded-2xl font-black shadow-2xl border flex items-center gap-3 ${
@@ -127,7 +152,7 @@ export default function AdminDashboard() {
           )}
 
           <div className="max-w-5xl mx-auto animate-fade-in-up">
-            {/* Render ແຕ່ລະແຖບ */}
+            {/* Render Tabs */}
             {activeTab === 'home' && <TabHome showMessage={showMessage} />}
             {activeTab === 'campaigns' && <TabCampaigns showMessage={showMessage} />}
             {activeTab === 'donations' && <TabDonations showMessage={showMessage} />}
