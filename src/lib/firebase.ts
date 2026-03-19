@@ -4,12 +4,12 @@ import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyB0jjymv2_y9ZHPNRjVNNJjPaQiY1qYhdc",
-    authDomain: "charity-website-f2daf.firebaseapp.com",
-    projectId: "charity-website-f2daf",
-    storageBucket: "charity-website-f2daf.firebasestorage.app",
-    messagingSenderId: "871312035963",
-    appId: "1:871312035963:web:16f1d96b47524b9db0d2de"
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
 // ປ້ອງກັນການ initialize ຊ້ຳຊ້ອນ (ສຳຄັນຫຼາຍສຳລັບ Next.js)
