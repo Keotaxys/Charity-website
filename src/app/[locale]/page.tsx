@@ -36,10 +36,9 @@ export default function HomePage() {
           }
         });
 
-        // ຖ້ານັບໄດ້ຫຼາຍກວ່າ 0 ກໍໃຫ້ອັບເດດຕົວເລກຈິງເລີຍ
-        if (count > 0) {
-          setCompletedCount(count);
-        }
+        // 💡 ແກ້ໄຂຈຸດນີ້: ເອົາ 4 (ໂຄງການເກົ່າ) ມາບວກກັບຈຳນວນໂຄງການໃໝ່ທີ່ສຳເລັດໃນລະບົບ
+        setCompletedCount(4 + count);
+        
       } catch (error) {
         console.error("Error fetching completed campaigns count:", error);
       }
