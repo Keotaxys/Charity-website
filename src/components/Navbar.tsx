@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import LanguageSwitcher from './LanguageSwitcher'; 
+import LanguageSwitcher from './LanguageSwitcher';
 
 export default function Navbar() {
   const locale = useLocale();
@@ -12,8 +12,8 @@ export default function Navbar() {
   const navLinks = [
     { name: locale === 'lo' ? 'ໜ້າຫຼັກ' : 'HOME', path: `/${locale}` },
     { name: locale === 'lo' ? 'ໂຄງການ' : 'CAMPAIGNS', path: `/${locale}/campaigns` },
-    { 
-      name: locale === 'lo' ? 'ກ່ຽວກັບພວກເຮົາ' : 'WHO WE ARE', 
+    {
+      name: locale === 'lo' ? 'ກ່ຽວກັບພວກເຮົາ' : 'WHO WE ARE',
       path: `/${locale}/about`,
       dropdown: [
         { name: locale === 'lo' ? 'ປະຫວັດຂອງເຮົາ' : 'OUR HISTORY', path: `/${locale}/about/history` },
@@ -23,11 +23,11 @@ export default function Navbar() {
     },
     { name: locale === 'lo' ? 'ຜູ້ສະໜັບສະໜູນ' : 'SUPPORTERS', path: `/${locale}/supporters` },
     { name: locale === 'lo' ? 'ວິດີໂອ' : 'VIDEOS', path: `/${locale}/videos` },
-    { 
-      name: locale === 'lo' ? 'ຮ້ານຄ້າ' : 'STORE', 
-      path: 'https://your-store-website.com', 
-      isExternal: true 
-    }, 
+    {
+      name: locale === 'lo' ? 'ຮ້ານຄ້າ' : 'STORE',
+      path: 'https://your-store-website.com',
+      isExternal: true
+    },
     // ປ່ຽນກັບມາເປັນລິ້ງ login ຄືເກົ່າເພື່ອໃຫ້ມັນກວດສອບສິດກ່ອນ
     { name: locale === 'lo' ? 'ແອັດມິນ' : 'ADMIN', path: `/${locale}/admin/dashboard` },
   ];
@@ -35,12 +35,12 @@ export default function Navbar() {
   return (
     <header className="fixed top-0 w-full z-50 bg-white border-b border-gray-100 shadow-sm h-20 flex items-center transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full flex justify-between items-center gap-4 xl:gap-8">
-        
+
         {/* ໂລໂກ້ */}
         <div className="flex-shrink-0">
           <Link href={`/${locale}`} className="flex items-center gap-2">
             <span className="text-2xl xl:text-3xl font-black text-teal-600 tracking-tighter uppercase">
-              BEAST<span className="text-gray-900">.LAO</span>
+              Little<span className="text-gray-900">Magician</span>
             </span>
           </Link>
         </div>
@@ -52,7 +52,7 @@ export default function Navbar() {
 
             return (
               <div key={link.name} className="relative group flex items-center h-20">
-                <Link 
+                <Link
                   href={link.path}
                   target={link.isExternal ? "_blank" : "_self"}
                   rel={link.isExternal ? "noopener noreferrer" : ""}
@@ -89,8 +89,8 @@ export default function Navbar() {
           <div className="hidden sm:block">
             <LanguageSwitcher />
           </div>
-          <Link 
-            href={`/${locale}/donate`} 
+          <Link
+            href={`/${locale}/donate`}
             className="bg-teal-600 hover:bg-teal-700 text-white font-black py-2.5 px-6 xl:py-3 xl:px-8 rounded-full transition-all shadow-md hover:shadow-teal-600/30 uppercase tracking-wide text-xs xl:text-sm transform hover:-translate-y-0.5 whitespace-nowrap"
           >
             {locale === 'lo' ? 'ບໍລິຈາກ' : 'DONATE'}
