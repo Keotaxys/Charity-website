@@ -14,12 +14,12 @@ export default function TabAbout({ showMessage }: { showMessage: (text: string, 
     header_subtitle_lo: 'ພວກເຮົາສ້າງການປ່ຽນແປງທີ່ຍິ່ງໃຫຍ່ ດ້ວຍການລົງມືເຮັດຕົວຈິງ.', header_subtitle_en: 'We create massive impact through real action.',
     cta_title_lo: 'ຮ່ວມເປັນສ່ວນໜຶ່ງກັບພວກເຮົາ', cta_title_en: 'JOIN OUR MISSION',
     cta_subtitle_lo: 'ບໍ່ວ່າທ່ານຈະເປັນໃຜ ກໍສາມາດສ້າງການປ່ຽນແປງໄດ້.', cta_subtitle_en: 'No matter who you are, you can make a difference.',
-    
+
     // 2. ຈຸດເລີ່ມຕົ້ນຂອງພວກເຮົາ (ປະຫວັດ)
     story_small_lo: 'ຈຸດເລີ່ມຕົ້ນຂອງພວກເຮົາ', story_small_en: 'OUR HUMBLE BEGINNINGS',
     story_main_lo: 'ຈາກຄວາມຕັ້ງໃຈນ້ອຍໆ ສູ່ການຊ່ວຍເຫຼືອທີ່ຍິ່ງໃຫຍ່', story_main_en: 'FROM A SIMPLE IDEA TO MASSIVE IMPACT',
-    story_desc1_lo: 'BEAST.LAO ຖືກສ້າງຕັ້ງຂຶ້ນມາຈາກກຸ່ມຄົນທຳມະດາ ທີ່ເຫັນເຖິງບັນຫາຄວາມຫຍຸ້ງຍາກໃນສັງຄົມ ແລະ ບໍ່ຢາກເປັນພຽງແຕ່ຜູ້ເຝົ້າເບິ່ງ. ພວກເຮົາຕັດສິນໃຈລວມຕົວກັນເພື່ອສ້າງແພລດຟອມ ທີ່ເປັນຂົວຕໍ່ລະຫວ່າງ "ຜູ້ໃຫ້" ແລະ "ຜູ້ຮັບ".',
-    story_desc1_en: 'BEAST.LAO was founded by a group of ordinary people who saw the struggles in our society and refused to just watch. We decided to build a platform that bridges the gap between those who want to give and those in need.',
+    story_desc1_lo: 'Little Magician ຖືກສ້າງຕັ້ງຂຶ້ນມາຈາກກຸ່ມຄົນທຳມະດາ ທີ່ເຫັນເຖິງບັນຫາຄວາມຫຍຸ້ງຍາກໃນສັງຄົມ ແລະ ບໍ່ຢາກເປັນພຽງແຕ່ຜູ້ເຝົ້າເບິ່ງ. ພວກເຮົາຕັດສິນໃຈລວມຕົວກັນເພື່ອສ້າງແພລດຟອມ ທີ່ເປັນຂົວຕໍ່ລະຫວ່າງ "ຜູ້ໃຫ້" ແລະ "ຜູ້ຮັບ".',
+    story_desc1_en: 'Little Magician was founded by a group of ordinary people who saw the struggles in our society and refused to just watch. We decided to build a platform that bridges the gap between those who want to give and those in need.',
     story_desc2_lo: 'ທຸກໆໂຄງການທີ່ພວກເຮົາເຮັດ ແມ່ນອີງໃສ່ຄວາມໂປ່ງໃສ 100%. ພວກເຮົາເຊື່ອວ່າທຸກການບໍລິຈາກ ບໍ່ວ່າຈະໜ້ອຍ ຫຼື ຫຼາຍ ລ້ວນແລ້ວແຕ່ມີພະລັງໃນການປ່ຽນແປງຊີວິດຂອງໃຜບາງຄົນສະເໝີ.',
     story_desc2_en: 'Every project we undertake is built on 100% transparency. We believe that every donation, big or small, has the power to change someone’s life forever.',
     story_image: 'https://images.unsplash.com/photo-1593113589914-07553e6c7800?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
@@ -77,9 +77,9 @@ export default function TabAbout({ showMessage }: { showMessage: (text: string, 
           </p>
         </div>
       </div>
-      
+
       <form onSubmit={handleSave} className="space-y-10">
-        
+
         {/* =========================================
             1. ໝວດ: ກ່ຽວກັບພວກເຮົາ
         ========================================= */}
@@ -91,7 +91,7 @@ export default function TabAbout({ showMessage }: { showMessage: (text: string, 
               {locale === 'lo' ? '(ໜ້າປົກ ແລະ ສ່ວນຊັກຊວນ)' : '(Hero and CTA)'}
             </span>
           </h3>
-          
+
           {/* ສ່ວນໜ້າປົກ (Hero) */}
           <div className="space-y-4 mb-8">
             <h4 className="font-bold text-teal-700 bg-teal-50 px-3 py-1 inline-block rounded-lg text-sm">
@@ -158,7 +158,7 @@ export default function TabAbout({ showMessage }: { showMessage: (text: string, 
               {locale === 'lo' ? '(ເນື້ອຫາປະຫວັດ ແລະ ຮູບພາບ)' : '(Story Content and Image)'}
             </span>
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ຫົວຂໍ້ຍ່ອຍ (ລາວ)' : 'Subtitle (Lao)'}</label>
@@ -220,7 +220,7 @@ export default function TabAbout({ showMessage }: { showMessage: (text: string, 
               {locale === 'lo' ? '(3 ກາດ)' : '(3 Cards)'}
             </span>
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 border-b border-gray-200 pb-6">
             <div>
               <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ຫົວຂໍ້ພາກສ່ວນນີ້ (ລາວ)' : 'Section Title (Lao)'}</label>
@@ -278,8 +278,8 @@ export default function TabAbout({ showMessage }: { showMessage: (text: string, 
         </div>
 
         <button type="submit" disabled={loading} className="w-full bg-teal-600 hover:bg-teal-700 text-white font-black py-5 rounded-2xl transition-all shadow-lg hover:shadow-teal-600/30 disabled:bg-gray-400 uppercase tracking-widest text-lg">
-          {loading 
-            ? (locale === 'lo' ? 'ກຳລັງບັນທຶກ...' : 'Saving...') 
+          {loading
+            ? (locale === 'lo' ? 'ກຳລັງບັນທຶກ...' : 'Saving...')
             : (locale === 'lo' ? 'ບັນທຶກຂໍ້ມູນທັງໝົດ' : 'Save All Changes')
           }
         </button>

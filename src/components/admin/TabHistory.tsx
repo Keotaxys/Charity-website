@@ -14,7 +14,7 @@ export default function TabHistory({ showMessage }: { showMessage: (text: string
     header_subtitle_lo: 'ທຸກໆບາດກ້າວຂອງພວກເຮົາ ຄືການສ້າງປະຫວັດສາດແຫ່ງການໃຫ້ທີ່ບໍ່ມີວັນສິ້ນສຸດ.', header_subtitle_en: 'Every step we take creates a history of endless giving.',
     footer_small_lo: 'ກ້າວຕໍ່ໄປຂອງພວກເຮົາ', footer_small_en: 'LOOKING FORWARD',
     footer_title_lo: 'ອະນາຄົດເລີ່ມຕົ້ນທີ່ມື້ນີ້', footer_title_en: 'THE FUTURE STARTS TODAY',
-    footer_desc_lo: 'ປະຫວັດສາດໜ້າຕໍ່ໄປຂອງ BEAST.LAO ກຳລັງຈະຖືກຂຽນຂຶ້ນ ດ້ວຍການຮ່ວມມືຈາກທ່ານ.', footer_desc_en: 'The next chapter of our history is being written with your support.',
+    footer_desc_lo: 'ປະຫວັດສາດໜ້າຕໍ່ໄປຂອງ Little Magician ກຳລັງຈະຖືກຂຽນຂຶ້ນ ດ້ວຍການຮ່ວມມືຈາກທ່ານ.', footer_desc_en: 'The next chapter of our history is being written with your support.',
     footer_btn_lo: 'ຮ່ວມສ້າງປະຫວັດສາດນຳກັນ', footer_btn_en: 'JOIN OUR CAUSE',
   });
   const [loadingSettings, setLoadingSettings] = useState(false);
@@ -23,7 +23,7 @@ export default function TabHistory({ showMessage }: { showMessage: (text: string
   const [milestones, setMilestones] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState({
     year: '', title_lo: '', title_en: '', desc_lo: '', desc_en: '', image: ''
   });
@@ -81,7 +81,7 @@ export default function TabHistory({ showMessage }: { showMessage: (text: string
         });
         showMessage(locale === 'lo' ? 'ເພີ່ມປະຫວັດໃໝ່ສຳເລັດແລ້ວ!' : 'New milestone added successfully!', 'success');
       }
-      
+
       setFormData({ year: '', title_lo: '', title_en: '', desc_lo: '', desc_en: '', image: '' });
       setIsEditing(false);
       setEditId(null);
@@ -149,7 +149,7 @@ export default function TabHistory({ showMessage }: { showMessage: (text: string
               <textarea name="header_subtitle_en" placeholder={locale === 'lo' ? 'ຄຳອະທິບາຍ (EN)' : 'Description (English)'} rows={2} className={`${inputClass} resize-none`} value={pageSettings.header_subtitle_en} onChange={handleSettingsChange} required></textarea>
             </div>
           </div>
-          
+
           <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200">
             <h4 className="font-black text-pink-600 mb-4 text-sm uppercase">
               {locale === 'lo' ? '» ສ່ວນທ້າຍ (Footer Section)' : '» Footer Section'}
@@ -165,7 +165,7 @@ export default function TabHistory({ showMessage }: { showMessage: (text: string
               <input type="text" name="footer_btn_en" placeholder={locale === 'lo' ? 'ປຸ່ມກົດ (EN)' : 'Button Text (English)'} className={inputClass} value={pageSettings.footer_btn_en} onChange={handleSettingsChange} required />
             </div>
           </div>
-          
+
           <button type="submit" disabled={loadingSettings} className="w-full md:w-auto bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-12 rounded-xl transition-all shadow-md hover:shadow-teal-600/30 uppercase tracking-widest">
             {loadingSettings ? (locale === 'lo' ? 'ກຳລັງບັນທຶກ...' : 'Saving...') : (locale === 'lo' ? 'ບັນທຶກການຕັ້ງຄ່າ' : 'Save Settings')}
           </button>
@@ -176,53 +176,53 @@ export default function TabHistory({ showMessage }: { showMessage: (text: string
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-teal-100">
         <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-4">
           <svg className="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" /></svg>
-          {isEditing 
-            ? (locale === 'lo' ? 'ແກ້ໄຂເຫດການ (Edit Milestone)' : 'Edit Milestone') 
+          {isEditing
+            ? (locale === 'lo' ? 'ແກ້ໄຂເຫດການ (Edit Milestone)' : 'Edit Milestone')
             : (locale === 'lo' ? 'ເພີ່ມເຫດການໃໝ່ (Add Milestone)' : 'Add New Milestone')}
         </h3>
         <form onSubmit={handleSaveMilestone} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-1">
               <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">{locale === 'lo' ? 'ປີ (Year)' : 'Year'}</label>
-              <input type="text" required className={`${inputClass} text-center text-xl font-black`} placeholder="2024" value={formData.year} onChange={(e) => setFormData({...formData, year: e.target.value})} />
+              <input type="text" required className={`${inputClass} text-center text-xl font-black`} placeholder="2024" value={formData.year} onChange={(e) => setFormData({ ...formData, year: e.target.value })} />
             </div>
             <div className="md:col-span-2">
               <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">{locale === 'lo' ? 'ລິ້ງຮູບພາບ (Image URL)' : 'Image URL'}</label>
-              <input type="url" required className={inputClass} placeholder="https://..." value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} />
+              <input type="url" required className={inputClass} placeholder="https://..." value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">{locale === 'lo' ? 'ຫົວຂໍ້ (ລາວ)' : 'Title (Lao)'}</label>
-              <input type="text" required className={inputClass} value={formData.title_lo} onChange={(e) => setFormData({...formData, title_lo: e.target.value})} />
+              <input type="text" required className={inputClass} value={formData.title_lo} onChange={(e) => setFormData({ ...formData, title_lo: e.target.value })} />
             </div>
             <div>
               <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">{locale === 'lo' ? 'ຫົວຂໍ້ (EN)' : 'Title (English)'}</label>
-              <input type="text" required className={inputClass} value={formData.title_en} onChange={(e) => setFormData({...formData, title_en: e.target.value})} />
+              <input type="text" required className={inputClass} value={formData.title_en} onChange={(e) => setFormData({ ...formData, title_en: e.target.value })} />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">{locale === 'lo' ? 'ເນື້ອຫາ (ລາວ)' : 'Content (Lao)'}</label>
-              <textarea required rows={4} className={`${inputClass} resize-none`} value={formData.desc_lo} onChange={(e) => setFormData({...formData, desc_lo: e.target.value})}></textarea>
+              <textarea required rows={4} className={`${inputClass} resize-none`} value={formData.desc_lo} onChange={(e) => setFormData({ ...formData, desc_lo: e.target.value })}></textarea>
             </div>
             <div>
               <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">{locale === 'lo' ? 'ເນື້ອຫາ (EN)' : 'Content (English)'}</label>
-              <textarea required rows={4} className={`${inputClass} resize-none`} value={formData.desc_en} onChange={(e) => setFormData({...formData, desc_en: e.target.value})}></textarea>
+              <textarea required rows={4} className={`${inputClass} resize-none`} value={formData.desc_en} onChange={(e) => setFormData({ ...formData, desc_en: e.target.value })}></textarea>
             </div>
           </div>
           <div className="flex gap-4">
             <button type="submit" disabled={loadingMilestone} className="flex-1 bg-teal-600 text-white font-black py-4 rounded-xl hover:bg-teal-700 transition-all shadow-md uppercase tracking-widest">
-              {loadingMilestone 
-                ? (locale === 'lo' ? 'ກຳລັງປະມວນຜົນ...' : 'Processing...') 
-                : (isEditing 
-                    ? (locale === 'lo' ? 'ບັນທຶກການແກ້ໄຂ' : 'Save Changes') 
-                    : (locale === 'lo' ? 'ເພີ່ມເຫດການລົງ Timeline' : 'Add to Timeline')
-                  )
+              {loadingMilestone
+                ? (locale === 'lo' ? 'ກຳລັງປະມວນຜົນ...' : 'Processing...')
+                : (isEditing
+                  ? (locale === 'lo' ? 'ບັນທຶກການແກ້ໄຂ' : 'Save Changes')
+                  : (locale === 'lo' ? 'ເພີ່ມເຫດການລົງ Timeline' : 'Add to Timeline')
+                )
               }
             </button>
             {isEditing && (
-              <button type="button" onClick={() => { setIsEditing(false); setEditId(null); setFormData({year:'', title_lo:'', title_en:'', desc_lo:'', desc_en:'', image:''}); }} className="flex-1 bg-gray-100 text-gray-500 hover:bg-gray-200 font-black py-4 rounded-xl transition-all uppercase tracking-widest">
+              <button type="button" onClick={() => { setIsEditing(false); setEditId(null); setFormData({ year: '', title_lo: '', title_en: '', desc_lo: '', desc_en: '', image: '' }); }} className="flex-1 bg-gray-100 text-gray-500 hover:bg-gray-200 font-black py-4 rounded-xl transition-all uppercase tracking-widest">
                 {locale === 'lo' ? 'ຍົກເລີກ' : 'Cancel'}
               </button>
             )}

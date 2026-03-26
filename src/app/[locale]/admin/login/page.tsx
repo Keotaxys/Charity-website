@@ -11,7 +11,7 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   const router = useRouter();
   const locale = useLocale();
 
@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center px-6">
-      
+
       {/* ໂລໂກ້ */}
       <div className="mb-8 text-center">
         <h1 className="text-4xl font-black text-teal-600 tracking-tighter uppercase">
@@ -57,12 +57,12 @@ export default function AdminLoginPage() {
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
             <label className="block text-gray-700 font-bold mb-2 text-sm">ອີເມວ (Email)</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               required
               /* ເພີ່ມ text-gray-900 ເຂົ້າໄປບ່ອນນີ້ເພື່ອໃຫ້ໂຕໜັງສືເປັນສີດຳເຂັ້ມແຈ້ງໆ */
               className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white transition-all"
-              placeholder="admin@beast.lao"
+              placeholder="admin@littlemagician"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -70,8 +70,8 @@ export default function AdminLoginPage() {
 
           <div>
             <label className="block text-gray-700 font-bold mb-2 text-sm">ລະຫັດຜ່ານ (Password)</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               required
               /* ເພີ່ມ text-gray-900 ເຂົ້າໄປບ່ອນນີ້ເຊັ່ນກັນ */
               className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white transition-all"
@@ -81,8 +81,8 @@ export default function AdminLoginPage() {
             />
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="w-full bg-teal-600 text-white font-black py-4 rounded-xl hover:bg-teal-700 transition-all shadow-md hover:shadow-teal-600/30 uppercase tracking-wide disabled:bg-gray-400 mt-4"
           >
@@ -90,7 +90,7 @@ export default function AdminLoginPage() {
           </button>
         </form>
       </div>
-      
+
     </div>
   );
 }

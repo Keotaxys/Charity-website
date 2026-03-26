@@ -7,7 +7,7 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 export default function TabContact({ showMessage }: { showMessage: (text: string, type: string) => void }) {
   const locale = useLocale(); // 💡 ເອີ້ນໃຊ້ useLocale ເພື່ອກວດສອບພາສາແອັດມິນ
-  
+
   const [settings, setSettings] = useState({
     phone: '',
     email: '',
@@ -68,7 +68,7 @@ export default function TabContact({ showMessage }: { showMessage: (text: string
       </div>
 
       <form onSubmit={handleSave} className="space-y-8">
-        
+
         {/* ສ່ວນຂໍ້ມູນພື້ນຖານ */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -81,7 +81,7 @@ export default function TabContact({ showMessage }: { showMessage: (text: string
             <label className="block text-gray-700 font-black mb-2 text-xs uppercase tracking-wider">
               {locale === 'lo' ? 'ອີເມວ (Email)' : 'Email Address'}
             </label>
-            <input type="email" name="email" placeholder="contact@beast.lao" className={inputClass} value={settings.email} onChange={handleChange} />
+            <input type="email" name="email" placeholder="contact@littlemagician" className={inputClass} value={settings.email} onChange={handleChange} />
           </div>
         </div>
 
@@ -109,33 +109,33 @@ export default function TabContact({ showMessage }: { showMessage: (text: string
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-               <label className="text-[10px] font-black text-gray-400 uppercase ml-2">Facebook URL</label>
-               <input type="url" name="facebook_url" className={inputClass} value={settings.facebook_url} onChange={handleChange} placeholder="https://facebook.com/..." />
+              <label className="text-[10px] font-black text-gray-400 uppercase ml-2">Facebook URL</label>
+              <input type="url" name="facebook_url" className={inputClass} value={settings.facebook_url} onChange={handleChange} placeholder="https://facebook.com/..." />
             </div>
             <div className="space-y-2">
-               <label className="text-[10px] font-black text-gray-400 uppercase ml-2">TikTok URL</label>
-               <input type="url" name="tiktok_url" className={inputClass} value={settings.tiktok_url} onChange={handleChange} placeholder="https://tiktok.com/@..." />
+              <label className="text-[10px] font-black text-gray-400 uppercase ml-2">TikTok URL</label>
+              <input type="url" name="tiktok_url" className={inputClass} value={settings.tiktok_url} onChange={handleChange} placeholder="https://tiktok.com/@..." />
             </div>
             <div className="space-y-2">
-               <label className="text-[10px] font-black text-gray-400 uppercase ml-2">Instagram URL</label>
-               <input type="url" name="instagram_url" className={inputClass} value={settings.instagram_url} onChange={handleChange} placeholder="https://instagram.com/..." />
+              <label className="text-[10px] font-black text-gray-400 uppercase ml-2">Instagram URL</label>
+              <input type="url" name="instagram_url" className={inputClass} value={settings.instagram_url} onChange={handleChange} placeholder="https://instagram.com/..." />
             </div>
             <div className="space-y-2">
-               <label className="text-[10px] font-black text-gray-400 uppercase ml-2">YouTube URL</label>
-               <input type="url" name="youtube_url" className={inputClass} value={settings.youtube_url} onChange={handleChange} placeholder="https://youtube.com/c/..." />
+              <label className="text-[10px] font-black text-gray-400 uppercase ml-2">YouTube URL</label>
+              <input type="url" name="youtube_url" className={inputClass} value={settings.youtube_url} onChange={handleChange} placeholder="https://youtube.com/c/..." />
             </div>
           </div>
         </div>
 
         {/* ປຸ່ມບັນທຶກສີ Teal */}
         <div className="pt-4">
-          <button 
-            type="submit" 
-            disabled={loading} 
+          <button
+            type="submit"
+            disabled={loading}
             className="w-full md:w-auto bg-teal-600 hover:bg-teal-700 text-white font-black py-4 px-12 rounded-2xl transition-all shadow-md hover:shadow-teal-600/30 disabled:bg-gray-400 uppercase tracking-widest text-sm"
           >
-            {loading 
-              ? (locale === 'lo' ? 'ກຳລັງບັນທຶກ...' : 'Saving...') 
+            {loading
+              ? (locale === 'lo' ? 'ກຳລັງບັນທຶກ...' : 'Saving...')
               : (locale === 'lo' ? 'ບັນທຶກຂໍ້ມູນການຕິດຕໍ່' : 'Save Contact Info')
             }
           </button>
