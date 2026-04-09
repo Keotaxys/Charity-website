@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react'; // 💡 ເພີ່ມ useState ເຂົ້າມາ
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale } from 'next-intl';
@@ -9,7 +9,17 @@ import LanguageSwitcher from './LanguageSwitcher';
 export default function Navbar() {
   const locale = useLocale();
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false); // 💡 ສ້າງ State ສຳລັບເປີດ/ປິດເມນູມືຖື
+  const [isOpen, setIsOpen] = useState(false);
+
+  // 💡 State ໃໝ່ສຳລັບຈັດການ Dropdown ໃນ Tablet/Touch Screen
+  const [tappedDropdown, setTappedDropdown] = useState<string | null>(null);
+
+  // 💡 ປິດ Dropdown ເມື່ອກົດບ່ອນອື່ນໃນໜ້າຈໍ
+  useEffect(() => {
+    const handleOutsideClick = () => setTappedDropdown(null);
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, []);
 
   const navLinks = [
     { name: locale === 'lo' ? 'ໜ້າຫຼັກ' : 'HOME', path: `/${locale}` },
@@ -46,7 +56,7 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* ເມນູຫຼັກ (ສຳລັບຈໍຄອມ) */}
+        {/* ເມນູຫຼັກ (ສຳລັບຈໍຄອມ ແລະ Tablet ທີ່ເປັນລວງນອນ) */}
         <nav className="hidden lg:flex flex-1 justify-center items-center space-x-5 xl:space-x-8 px-4 h-full">
           {navLinks.map((link) => {
             const isActive = !link.isExternal && (pathname === link.path || (link.path !== `/${locale}` && pathname.startsWith(link.path)));
@@ -57,22 +67,49 @@ export default function Navbar() {
                   href={link.path}
                   target={link.isExternal ? "_blank" : "_self"}
                   rel={link.isExternal ? "noopener noreferrer" : ""}
-                  className={`font-bold text-[14px] xl:text-[15px] tracking-wider uppercase transition-all duration-300 flex items-center h-full whitespace-nowrap
+                  onClick={(e) => {
+                    if (link.dropdown) {
+                      // 💡 ກວດສອບວ່າເປັນໜ້າຈໍສຳຜັດ (Tablet/iPad) ຫຼື ບໍ່
+                      const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+                      if (isTouch) {
+                        if (tappedDropdown !== link.name) {
+                          e.preventDefault(); // ຢຸດການປ່ຽນໜ້າ (ກົດຄັ້ງທີ 1)
+                          e.stopPropagation(); // ຢຸດບໍ່ໃຫ້ document click ເຮັດວຽກ
+                          setTappedDropdown(link.name); // ເປີດເມນູຍ່ອຍ
+                        }
+                        // ຖ້າກົດບາດທີ 2 ມັນຈະຂ້າມເງື່ອນໄຂນີ້ ແລະ ປ່ຽນໜ້າໄປເລີຍ
+                      }
+                    }
+                  }}
+                  className={`font-bold text-[14px] xl:text-[15px] tracking-wider uppercase transition-all duration-300 flex items-center gap-1 h-full whitespace-nowrap
                     ${isActive ? 'text-teal-600' : 'text-gray-700 hover:text-teal-600'}
                   `}
                 >
                   {link.name}
+
+                  {/* 💡 ເພີ່ມລູກສອນນ້ອຍໆ (Chevron) ບອກວ່າມີເມນູຍ່ອຍ */}
+                  {link.dropdown && (
+                    <svg className={`w-4 h-4 transition-transform duration-300 ${tappedDropdown === link.name ? 'rotate-180 text-teal-600' : 'text-gray-400 group-hover:rotate-180 group-hover:text-teal-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
+                  )}
+
                   {isActive && (
                     <span className="absolute bottom-[22px] left-0 w-full h-1 bg-pink-300 rounded-full"></span>
                   )}
                 </Link>
 
+                {/* 💡 ປັບປຸງ Class ຂອງ Dropdown ໃຫ້ຮອງຮັບທັງການ Hover (Mouse) ແລະ Tapped (Touch) */}
                 {link.dropdown && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 bg-white border border-gray-100 shadow-xl rounded-2xl w-48 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 before:absolute before:content-[''] before:-top-4 before:left-0 before:w-full before:h-4">
+                  <div
+                    className={`absolute top-full left-1/2 -translate-x-1/2 bg-white border border-gray-100 shadow-xl rounded-2xl w-48 py-2 transition-all duration-300 transform before:absolute before:content-[''] before:-top-4 before:left-0 before:w-full before:h-4
+                    ${tappedDropdown === link.name
+                        ? 'opacity-100 visible translate-y-0'
+                        : 'opacity-0 invisible translate-y-2 group-hover:translate-y-0 group-hover:opacity-100 group-hover:visible'}
+                  `}>
                     {link.dropdown.map((subLink) => (
                       <Link
                         key={subLink.name}
                         href={subLink.path}
+                        onClick={() => setTappedDropdown(null)} // ກົດແລ້ວໃຫ້ປິດເມນູທັນທີ
                         className="block px-5 py-3 text-sm xl:text-[15px] font-bold text-gray-700 hover:text-teal-600 hover:bg-teal-50 transition-colors uppercase tracking-wider whitespace-nowrap"
                       >
                         {subLink.name}
@@ -97,7 +134,6 @@ export default function Navbar() {
             {locale === 'lo' ? 'ບໍລິຈາກ' : 'DONATE'}
           </Link>
 
-          {/* 💡 ປຸ່ມ 3 ຂີດ ສຳລັບເປີດເມນູໃນມືຖື */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="lg:hidden p-2 text-gray-600 hover:text-teal-600 focus:outline-none"
@@ -112,7 +148,7 @@ export default function Navbar() {
 
       </div>
 
-      {/* 💡 ໜ້າຕ່າງເມນູສຳລັບມືຖື (Mobile Menu Dropdown) */}
+      {/* ໜ້າຕ່າງເມນູສຳລັບມືຖື (Mobile Menu Dropdown) */}
       {isOpen && (
         <div className="absolute top-20 left-0 w-full bg-white border-b border-gray-100 shadow-xl lg:hidden flex flex-col max-h-[calc(100vh-5rem)] overflow-y-auto animate-in slide-in-from-top-2 duration-200">
           <div className="px-6 py-6 flex flex-col space-y-5">
@@ -122,14 +158,13 @@ export default function Navbar() {
                 <div key={link.name} className="flex flex-col">
                   <Link
                     href={link.path}
-                    onClick={() => setIsOpen(false)} // ກົດແລ້ວປິດເມນູທັນທີ
+                    onClick={() => setIsOpen(false)}
                     target={link.isExternal ? "_blank" : "_self"}
                     className={`font-black text-lg tracking-wider uppercase ${isActive ? 'text-teal-600' : 'text-gray-800'}`}
                   >
                     {link.name}
                   </Link>
 
-                  {/* ເມນູຍ່ອຍໃນມືຖື */}
                   {link.dropdown && (
                     <div className="mt-3 pl-4 flex flex-col space-y-4 border-l-2 border-teal-100">
                       {link.dropdown.map(sub => (
@@ -148,7 +183,6 @@ export default function Navbar() {
               );
             })}
 
-            {/* ປຸ່ມປ່ຽນພາສາໃນມືຖື */}
             <div className="pt-6 mt-2 border-t border-gray-100 flex items-center justify-between">
               <span className="font-bold text-sm text-gray-400 uppercase">{locale === 'lo' ? 'ປ່ຽນພາສາ' : 'LANGUAGE'}</span>
               <LanguageSwitcher />
