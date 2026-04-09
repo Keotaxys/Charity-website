@@ -187,10 +187,12 @@ export default function CampaignClient({ id, locale }: { id: string, locale: str
                             <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                             <div className="relative z-10 space-y-8">
 
+                                {/* 💡 ແກ້ໄຂສີເປີເຊັນເປັນສີດຳ */}
                                 <div>
                                     <div className="flex justify-between items-end mb-4">
                                         <div className="flex flex-col">
-                                            <span className="text-teal-600 font-black text-5xl tracking-tighter">{percent}%</span>
+                                            {/* ປ່ຽນ text-teal-600 ເປັນ text-gray-900 */}
+                                            <span className="text-gray-900 font-black text-5xl tracking-tighter">{percent}%</span>
                                             <span className="text-gray-400 font-bold text-xs md:text-sm uppercase tracking-wider mt-1">
                                                 {locale === 'lo' ? 'ສຳເລັດແລ້ວ' : 'REACHED'}
                                             </span>
@@ -198,30 +200,35 @@ export default function CampaignClient({ id, locale }: { id: string, locale: str
                                     </div>
                                     <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-50">
                                         <div
-                                            className="h-full bg-linear-to-r from-teal-400 to-teal-600 rounded-full transition-all duration-1000 ease-out shadow-inner"
+                                            className="h-full bg-teal-500 rounded-full transition-all duration-1000 ease-out shadow-inner"
                                             style={{ width: `${percent}%` }}
                                         ></div>
                                     </div>
                                 </div>
 
                                 <div className="space-y-6 pt-2">
+
+                                    {/* 💡 ແກ້ໄຂສີຍອດບໍລິຈາກປັດຈຸບັນເປັນສີ Teal */}
                                     <div className="flex flex-col">
                                         <span className="text-gray-500 font-bold uppercase tracking-wider text-xs md:text-sm mb-1">
                                             {locale === 'lo' ? 'ຍອດບໍລິຈາກປັດຈຸບັນ' : 'CURRENTLY RAISED'}
                                         </span>
                                         <div className="flex items-baseline gap-1">
-                                            <span className="font-black text-gray-900 text-3xl">{Number(realRaisedAmount).toLocaleString()}</span>
-                                            <span className="text-gray-400 font-bold text-sm">LAK</span>
+                                            {/* ປ່ຽນເປັນ text-teal-600 */}
+                                            <span className="font-black text-teal-600 text-3xl">{Number(realRaisedAmount).toLocaleString()}</span>
+                                            <span className="text-teal-600 font-bold text-sm">LAK</span>
                                         </div>
                                     </div>
 
+                                    {/* 💡 ແກ້ໄຂສີເປົ້າໝາຍທັງໝົດເປັນສີບົວ (Pink) */}
                                     <div className="flex flex-col border-t border-gray-100 pt-6">
                                         <span className="text-gray-500 font-bold uppercase tracking-wider text-xs md:text-sm mb-1">
                                             {locale === 'lo' ? 'ເປົ້າໝາຍທັງໝົດ' : 'TOTAL GOAL'}
                                         </span>
                                         <div className="flex items-baseline gap-1">
-                                            <span className="font-bold text-gray-500 text-xl">{Number(campaign.target_amount).toLocaleString()}</span>
-                                            <span className="text-gray-400 font-medium text-xs">LAK</span>
+                                            {/* ປ່ຽນເປັນ text-pink-500 */}
+                                            <span className="font-bold text-pink-500 text-xl">{Number(campaign.target_amount).toLocaleString()}</span>
+                                            <span className="text-pink-400 font-medium text-xs">LAK</span>
                                         </div>
                                     </div>
                                 </div>
