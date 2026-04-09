@@ -37,9 +37,7 @@ function DonateForm() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // 💡 State ສຳລັບບອກສະຖານະການ Copy ເລກບັນຊີ
   const [copied, setCopied] = useState(false);
-  // 💡 State ສຳລັບບອກສະຖານະການດາວໂຫຼດ QR
   const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
@@ -99,18 +97,16 @@ function DonateForm() {
     }
   };
 
-  // 💡 ຟັງຊັນ Copy ເລກບັນຊີ
   const handleCopyAccount = async (accountNumber: string) => {
     try {
       await navigator.clipboard.writeText(accountNumber);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // ກັບມາເປັນຮູບເດີມຫຼັງຈາກ 2 ວິນາທີ
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy text: ', err);
     }
   };
 
-  // 💡 ຟັງຊັນດາວໂຫຼດຮູບ QR Code
   const handleDownloadQR = async (imgUrl: string) => {
     setIsDownloading(true);
     try {
@@ -217,7 +213,6 @@ function DonateForm() {
   return (
     <div className="bg-gray-50 min-h-screen pb-24">
 
-      {/* 1. ສ່ວນຫົວ (Header) */}
       <section className="bg-teal-50 py-20 px-6 relative overflow-hidden border-b border-teal-100">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-60"></div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
@@ -230,11 +225,9 @@ function DonateForm() {
         </div>
       </section>
 
-      {/* 2. ສ່ວນເນື້ອຫາຫຼັກ */}
       <section className="max-w-7xl mx-auto px-6 -mt-8 relative z-20">
         <div className="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden flex flex-col lg:flex-row">
 
-          {/* ຝັ່ງຊ້າຍ: ຊ່ອງທາງການຊຳລະເງິນ (QR & PayPal) */}
           <div className="w-full lg:w-2/5 bg-white p-6 md:p-12 border-b lg:border-b-0 lg:border-r border-gray-100 relative">
 
             <div className="mb-10">
@@ -245,12 +238,17 @@ function DonateForm() {
 
               <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
 
-                {/* 💡 1. ປັບຮູບ QR ໃຫ້ໃຫຍ່ ແລະ ບໍ່ມີສີສົ້ມ */}
-                <div className="w-full flex justify-center p-4 sm:p-6 bg-white">
-                  <img src={qrImage} alt="QR Code" className="w-full max-w-sm h-auto object-contain rounded-2xl shadow-sm border border-gray-100" />
+                <div className="w-full flex justify-center p-6 bg-white">
+                  {/* ປັບຂະໜາດຮູບ QR ໃຫ້ເປັນຮູບຈະຕຸລັດ ແລະ ໃຫຍ່ເຕັມຂອບ */}
+                  <div className="w-full max-w-[280px] sm:max-w-[320px] aspect-square bg-white flex items-center justify-center rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <img
+                      src={qrImage}
+                      alt="QR Code"
+                      className="w-full h-full object-contain bg-white"
+                    />
+                  </div>
                 </div>
 
-                {/* 💡 2. ປຸ່ມດາວໂຫຼດ (Save) */}
                 <div className="flex justify-center pb-6 bg-white border-b border-gray-100">
                   <button
                     onClick={() => handleDownloadQR(qrImage)}
@@ -270,7 +268,6 @@ function DonateForm() {
                   <p className="text-gray-900 font-bold text-lg mb-1">{bankName}</p>
                   <p className="text-pink-500 font-black tracking-wide mb-3">{accountName}</p>
 
-                  {/* 💡 3. ເພີ່ມປຸ່ມ Copy ເລກບັນຊີ */}
                   <div className="inline-flex items-center justify-center gap-3 bg-white border border-gray-200 py-3 px-5 rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors group shadow-sm" onClick={() => handleCopyAccount(accountNumber)}>
                     <span className="text-2xl font-black tracking-widest font-mono text-gray-900 group-hover:text-teal-700 transition-colors">
                       {accountNumber}
@@ -315,7 +312,6 @@ function DonateForm() {
             </div>
           </div>
 
-          {/* ຝັ່ງຂວາ: ຟອມແຈ້ງໂອນເງິນ & ອັບໂຫຼດສະລິບ */}
           <div className="w-full lg:w-3/5 p-8 md:p-12 bg-white">
             <h2 className="text-3xl font-black text-gray-900 mb-2 uppercase tracking-tight">
               {locale === 'lo' ? 'ແຈ້ງການໂອນເງິນ' : 'SUBMIT RECEIPT'}
@@ -334,7 +330,6 @@ function DonateForm() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                {/* ອັບໂຫຼດຮູບໂປຣໄຟລ໌ */}
                 <div className="md:col-span-2 flex flex-col items-center justify-center py-4">
                   <div className="relative w-24 h-24 rounded-full border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden hover:border-teal-400 transition-colors cursor-pointer group shadow-sm">
                     {profilePreviewUrl ? (
@@ -349,7 +344,6 @@ function DonateForm() {
                   </span>
                 </div>
 
-                {/* Custom Dropdown ສຳລັບເລືອກໂຄງການ */}
                 <div className="md:col-span-2 relative" ref={dropdownRef}>
                   <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wider">
                     {locale === 'lo' ? 'ເລືອກໂຄງການ' : 'SELECT CAMPAIGN'}
@@ -397,7 +391,6 @@ function DonateForm() {
                   <input type="tel" required name="donor_phone" className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-teal-600 outline-none transition-all" placeholder="020 xxxx xxxx" value={formData.donor_phone} onChange={handleInputChange} />
                 </div>
 
-                {/* ອັບໂຫຼດຮູບສະລິບ */}
                 <div className="md:col-span-2">
                   <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wider">
                     {locale === 'lo' ? 'ແນບຮູບໃບບິນ/ສະລິບການໂອນເງິນ' : 'UPLOAD TRANSFER SLIP / RECEIPT'}
@@ -426,7 +419,6 @@ function DonateForm() {
                 </div>
               </div>
 
-              {/* ການຕັ້ງຄ່າຄວາມເປັນສ່ວນຕົວ */}
               <div className="bg-pink-50/50 p-6 rounded-2xl border border-pink-100 mt-6 space-y-4">
                 <h3 className="font-bold text-gray-900 flex items-center gap-2 mb-4">
                   <svg className="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z" /></svg>
