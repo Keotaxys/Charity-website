@@ -1,10 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+// 💡 1. Import 'use' ຈາກ 'react' ແທນ
+import { useEffect, useState, use } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+
+type Props = {
+  // 💡 ໃນ Next.js 15, params ມັກຈະມາເປັນ Promise
+  params: Promise<{ locale: string; id: string }>;
+};
 
 const getYoutubeEmbedUrl = (url: string) => {
   if (!url) return null;
@@ -13,19 +18,16 @@ const getYoutubeEmbedUrl = (url: string) => {
   return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
 };
 
-// 💡 ຮັບ props ແບບ Optional (ມີກໍໄດ້ ບໍ່ມີກໍໄດ້)
-export default function CampaignDetailPage({ params: propsParams }: { params?: any }) {
-  // 💡 ໃຊ້ useParams ແບບລະມັດລະວັງ ບໍ່ໃຫ້ Error
-  const urlParams = useParams();
+export default function CampaignDetailPage({ params }: Props) {
+  // 💡 2. ໃຊ້ React.use() ເພື່ອແກະ (unwrap) Promise ຂອງ params
+  // ຖ້າ params ເປັນ undefined (ເຊັ່ນ ຖືກເອີ້ນຈາກໜ້າ Admin), ໃຫ້ໃຊ້ {} ເພື່ອບໍ່ໃຫ້ Error
+  const resolvedParams = params ? use(params) : { locale: 'lo', id: '' };
 
-  // 💡 ດຶງຄ່າມາຈາກ props ກ່ອນ ຖ້າບໍ່ມີຈຶ່ງໄປດຶງຈາກ URL
-  const locale = (propsParams?.locale || urlParams?.locale || 'lo') as string;
-  const id = (propsParams?.id || urlParams?.id) as string;
+  const locale = resolvedParams.locale;
+  const id = resolvedParams.id;
 
   const [campaign, setCampaign] = useState<any>(null);
-
-  // 💡 ຖ້າບໍ່ມີ ID (ເຊັ່ນ ຖືກເອີ້ນໃຊ້ຜິດໜ້າ) ໃຫ້ປ່ຽນ loading ເປັນ false ໂລດ ເພື່ອໃຫ້ມັນຈົບໄວໆ
-  const [loading, setLoading] = useState(!!id);
+  const [loading, setLoading] = useState(!!id); // ຖ້າບໍ່ມີ ID ບໍ່ຕ້ອງ loading
 
   const [activeImage, setActiveImage] = useState<string>('');
 
@@ -34,7 +36,7 @@ export default function CampaignDetailPage({ params: propsParams }: { params?: a
   const [realRaisedAmount, setRealRaisedAmount] = useState(0);
 
   useEffect(() => {
-    // 💡 ຖ້າບໍ່ມີ ID ສົ່ງມາ ໃຫ້ຢຸດເຮັດວຽກທັນທີ ຈະໄດ້ບໍ່ Error
+    // 💡 ຖ້າບໍ່ມີ ID ໃຫ້ອອກຈາກ useEffect ທັນທີ
     if (!id) {
       setLoading(false);
       return;
@@ -80,7 +82,7 @@ export default function CampaignDetailPage({ params: propsParams }: { params?: a
     setShowAllDonorsModal(true);
   };
 
-  // 💡 ຖ້າບໍ່ມີ ID ສົ່ງມາເລີຍ (ເຊັ່ນ ຖືກເອີ້ນໃຊ້ໃນໜ້າ Admin) ໃຫ້ Return ວ່າງເປົ່າໄປເລີຍ
+  // 💡 3. ຖ້າບໍ່ມີ ID (ເຊັ່ນ ຖືກ render ຢູ່ໃນໜ້າ Admin Dashboard) ໃຫ້ return null
   if (!id) return null;
 
   if (loading) return <div className="min-h-screen flex justify-center items-center font-bold text-xl text-teal-600 bg-white">ກຳລັງໂຫຼດຂໍ້ມູນ...</div>;
