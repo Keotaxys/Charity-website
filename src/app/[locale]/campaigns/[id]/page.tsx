@@ -1,15 +1,11 @@
 'use client';
 
-// 💡 1. Import 'use' ຈາກ 'react' ແທນ
-import { useEffect, useState, use } from 'react';
+// 🔴 ສັງເກດ: ເຮົາເອົາຄຳວ່າ 'use' ອອກຈາກການ import ແລ້ວ!
+import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import Link from 'next/link';
-
-type Props = {
-  // 💡 ໃນ Next.js 15, params ມັກຈະມາເປັນ Promise
-  params: Promise<{ locale: string; id: string }>;
-};
+import { useParams } from 'next/navigation'; // 💡 ໃຊ້ຕົວນີ້ແທນປອດໄພກວ່າ
 
 const getYoutubeEmbedUrl = (url: string) => {
   if (!url) return null;
@@ -18,16 +14,16 @@ const getYoutubeEmbedUrl = (url: string) => {
   return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
 };
 
-export default function CampaignDetailPage({ params }: Props) {
-  // 💡 2. ໃຊ້ React.use() ເພື່ອແກະ (unwrap) Promise ຂອງ params
-  // ຖ້າ params ເປັນ undefined (ເຊັ່ນ ຖືກເອີ້ນຈາກໜ້າ Admin), ໃຫ້ໃຊ້ {} ເພື່ອບໍ່ໃຫ້ Error
-  const resolvedParams = params ? use(params) : { locale: 'lo', id: '' };
+// 💡 ຮັບ props ເປັນ any ໄປເລີຍ ເພື່ອບໍ່ໃຫ້ Next.js Router ຕີກັນກັບໜ້າ Admin
+export default function CampaignDetailPage(props: any) {
+  const urlParams = useParams();
 
-  const locale = resolvedParams.locale;
-  const id = resolvedParams.id;
+  // 💡 ດຶງ ID ຈາກ props ກ່ອນ (ກໍລະນີ Admin ເອີ້ນໃຊ້ແລ້ວສົ່ງມາ), ຖ້າບໍ່ມີຈຶ່ງດຶງຈາກ URL
+  const id = (props?.id as string) || (urlParams?.id as string);
+  const locale = (props?.locale as string) || (urlParams?.locale as string) || 'lo';
 
   const [campaign, setCampaign] = useState<any>(null);
-  const [loading, setLoading] = useState(!!id); // ຖ້າບໍ່ມີ ID ບໍ່ຕ້ອງ loading
+  const [loading, setLoading] = useState(!!id); // ຖ້າບໍ່ມີ ID ບໍ່ຕ້ອງຂຶ້ນ Loading
 
   const [activeImage, setActiveImage] = useState<string>('');
 
@@ -36,7 +32,7 @@ export default function CampaignDetailPage({ params }: Props) {
   const [realRaisedAmount, setRealRaisedAmount] = useState(0);
 
   useEffect(() => {
-    // 💡 ຖ້າບໍ່ມີ ID ໃຫ້ອອກຈາກ useEffect ທັນທີ
+    // 💡 ຖ້າບໍ່ມີ ID ສົ່ງມາ ໃຫ້ຢຸດເຮັດວຽກທັນທີ (ປ້ອງກັນເວັບແຕກ)
     if (!id) {
       setLoading(false);
       return;
@@ -82,7 +78,7 @@ export default function CampaignDetailPage({ params }: Props) {
     setShowAllDonorsModal(true);
   };
 
-  // 💡 3. ຖ້າບໍ່ມີ ID (ເຊັ່ນ ຖືກ render ຢູ່ໃນໜ້າ Admin Dashboard) ໃຫ້ return null
+  // 💡 ຖ້າຖືກ Import ໄປໃຊ້ໃນໜ້າ Admin ແຕ່ບໍ່ໄດ້ສົ່ງ ID ມາ ໃຫ້ເຊື່ອງໄປເລີຍ (ບໍ່ໃຫ້ Error)
   if (!id) return null;
 
   if (loading) return <div className="min-h-screen flex justify-center items-center font-bold text-xl text-teal-600 bg-white">ກຳລັງໂຫຼດຂໍ້ມູນ...</div>;
