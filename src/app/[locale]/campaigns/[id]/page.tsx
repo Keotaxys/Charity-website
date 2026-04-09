@@ -1,13 +1,10 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import Link from 'next/link';
-
-type Props = {
-  params: Promise<{ locale: string; id: string }>;
-};
+import { useParams } from 'next/navigation'; // 💡 ເອີ້ນໃຊ້ useParams ແທນ
 
 const getYoutubeEmbedUrl = (url: string) => {
   if (!url) return null;
@@ -16,10 +13,11 @@ const getYoutubeEmbedUrl = (url: string) => {
   return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
 };
 
-export default function CampaignDetailPage({ params }: Props) {
-  const resolvedParams = use(params);
-  const locale = resolvedParams.locale;
-  const id = resolvedParams.id;
+export default function CampaignDetailPage() {
+  // 💡 ໃຊ້ useParams() ເພື່ອດຶງຄ່າ locale ແລະ id ແບບປອດໄພ ບໍ່ Error ແນ່ນອນ
+  const params = useParams();
+  const locale = params?.locale as string;
+  const id = params?.id as string;
 
   const [campaign, setCampaign] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +29,9 @@ export default function CampaignDetailPage({ params }: Props) {
   const [realRaisedAmount, setRealRaisedAmount] = useState(0);
 
   useEffect(() => {
+    // ຖ້າ id ຍັງບໍ່ມາ ໃຫ້ລໍຖ້າກ່ອນ
+    if (!id) return;
+
     const fetchCampaignData = async () => {
       try {
         const docRef = doc(db, "campaigns", id);
@@ -127,11 +128,11 @@ export default function CampaignDetailPage({ params }: Props) {
               </p>
             </div>
 
-            {/* 💡 ພາກສ່ວນ: ປະຫວັດການອັບເດດໂຄງການ (Timeline) */}
+            {/* ພາກສ່ວນ: ປະຫວັດການອັບເດດໂຄງການ (Timeline) */}
             {(campaign.updates && campaign.updates.length > 0) && (
               <div className="pt-10 mt-10 border-t border-gray-100 space-y-8">
                 <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3 mb-8">
-                  <span className="w-1.5 h-8 bg-blue-500 rounded-full"></span>
+                  <span className="w-1.5 h-8 bg-teal-500 rounded-full"></span>
                   {locale === 'lo' ? 'ການເຄື່ອນໄຫວ ແລະ ຕິດຕາມໂຄງການ' : 'PROJECT UPDATES & TRACKING'}
                 </h3>
 
@@ -141,20 +142,17 @@ export default function CampaignDetailPage({ params }: Props) {
                     return (
                       <div key={index} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
 
-                        {/* ໄອຄອນ Timeline */}
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-blue-100 text-blue-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-teal-100 text-teal-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
 
-                        {/* ເນື້ອຫາການອັບເດດ */}
-                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-sm border border-gray-100 group-hover:border-blue-200 transition-colors">
+                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-sm border border-gray-100 group-hover:border-teal-200 transition-colors">
                           <div className="flex items-center justify-between mb-4">
-                            <span className="font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full text-sm">
+                            <span className="font-bold text-teal-700 bg-teal-50 px-4 py-1.5 rounded-full text-sm border border-teal-100">
                               {new Date(update.date).toLocaleDateString(locale === 'lo' ? 'lo-LA' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
                             </span>
                           </div>
 
-                          {/* ວິດີໂອ YouTube */}
                           {embedUrl && (
                             <div className="w-full aspect-video rounded-xl overflow-hidden mb-4 bg-gray-50">
                               <iframe
@@ -166,13 +164,12 @@ export default function CampaignDetailPage({ params }: Props) {
                             </div>
                           )}
 
-                          {/* ປຸ່ມ Facebook */}
                           {update.facebook_link && (
                             <a
                               href={update.facebook_link}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center gap-2 w-full bg-gray-50 text-gray-700 hover:bg-blue-600 hover:text-white font-bold py-3 px-4 rounded-xl transition-all border border-gray-200 hover:border-blue-600 text-sm"
+                              className="inline-flex items-center justify-center gap-2 w-full bg-gray-50 text-gray-700 hover:bg-teal-600 hover:text-white font-bold py-3 px-4 rounded-xl transition-all border border-gray-200 hover:border-teal-600 text-sm"
                             >
                               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
                               {locale === 'lo' ? 'ເບິ່ງລາຍລະອຽດໃນ Facebook' : 'View on Facebook'}
@@ -188,7 +185,6 @@ export default function CampaignDetailPage({ params }: Props) {
             )}
           </div>
 
-          {/* --- ເບື້ອງຂວາ (4/12): ບັດຄວາມຄືບໜ້າ (Sticky) --- */}
           <div className="lg:col-span-4 lg:sticky lg:top-24">
             <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl shadow-teal-900/10 border border-teal-50 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
@@ -268,7 +264,7 @@ export default function CampaignDetailPage({ params }: Props) {
               <h3 className="text-xl font-black text-gray-900">
                 {locale === 'lo' ? 'ຜູ້ສະໜັບສະໜູນທັງໝົດ' : 'ALL SUPPORTERS'}
               </h3>
-              <button onClick={() => setShowAllDonorsModal(false)} className="text-gray-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">
+              <button onClick={() => setShowAllDonorsModal(false)} className="text-gray-400 hover:text-teal-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-teal-50">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
