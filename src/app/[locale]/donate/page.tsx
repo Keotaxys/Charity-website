@@ -230,7 +230,7 @@ function DonateForm() {
       <section className="max-w-7xl mx-auto px-6 -mt-8 relative z-20">
         <div className="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden flex flex-col lg:flex-row">
 
-          {/* ຝັ່ງຊ້າຍ: ຊ່ອງທາງການຊຳລະເງິນ (QR & PayPal) - ກັບມາເປັນສີຂາວສະອາດຄືເກົ່າ */}
+          {/* ຝັ່ງຊ້າຍ: ຊ່ອງທາງການຊຳລະເງິນ (QR & PayPal) */}
           <div className="w-full lg:w-2/5 bg-white p-6 md:p-12 border-b lg:border-b-0 lg:border-r border-gray-100 relative">
 
             <div className="mb-10">
@@ -241,7 +241,6 @@ function DonateForm() {
 
               <div className="bg-white rounded-4xl border border-gray-100 overflow-hidden shadow-sm">
 
-                {/* 💡 ແກ້ໄຂ: ບັງຄັບກ່ອງຈະຕຸລັດ ແລະ ໃຊ້ object-cover ເພື່ອຕັດຂອບດຳເທິງ/ລຸ່ມຖິ້ມ */}
                 <div className="w-full aspect-square bg-white relative p-4 sm:p-6 overflow-hidden flex items-center justify-center border-b border-gray-50">
                   <div className="w-full h-full relative rounded-2xl overflow-hidden shadow-sm border border-gray-100">
                     <img
@@ -267,15 +266,31 @@ function DonateForm() {
                   </button>
                 </div>
 
-                <div className="p-6 md:p-8 text-center bg-gray-50">
-                  <p className="text-gray-900 font-bold text-lg mb-1">{bankName}</p>
-                  <p className="text-pink-500 font-black tracking-wide mb-4">{accountName}</p>
+                {/* 📍 ສ່ວນແກ້ໄຂ Layout ຂໍ້ມູນບັນຊີໃໝ່ */}
+                <div className="p-6 md:p-8 text-center bg-gray-50 flex flex-col items-center">
 
-                  <div className="inline-flex items-center justify-center gap-3 bg-white border border-gray-200 py-4 px-6 rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors group shadow-sm" onClick={() => handleCopyAccount(accountNumber)}>
-                    <span className="text-2xl md:text-3xl font-black tracking-widest font-mono text-gray-900 group-hover:text-teal-700 transition-colors">
+                  <h3 className="text-slate-800 font-bold text-sm md:text-base leading-relaxed uppercase whitespace-pre-wrap">
+                    {bankName}
+                  </h3>
+
+                  <div className="text-pink-500 font-extrabold text-sm md:text-base leading-relaxed mt-1 mb-5 uppercase whitespace-pre-wrap">
+                    {accountName}
+                  </div>
+
+                  {/* ກ່ອງເລກບັນຊີທີ່ປັບປຸງໃໝ່ */}
+                  <div className="flex items-center justify-between w-full max-w-[320px] bg-white border border-gray-200 rounded-xl p-2 shadow-sm">
+                    {/* Spacer ຊ່ວຍຍູ້ໃຫ້ເລກບັນຊີຢູ່ເຄິ່ງກາງສະເໝີ */}
+                    <div className="w-12"></div>
+
+                    <div className="flex-1 text-center font-mono text-[20px] md:text-[22px] font-black text-slate-800 tracking-wider">
                       {accountNumber}
-                    </span>
-                    <button className="text-gray-400 group-hover:text-teal-600 transition-colors" title="Copy Account Number">
+                    </div>
+
+                    <button
+                      onClick={() => handleCopyAccount(accountNumber)}
+                      className="shrink-0 w-12 h-12 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200 text-gray-500 hover:text-teal-600 hover:bg-teal-50 active:scale-90 transition-all shadow-sm"
+                      title="Copy Account Number"
+                    >
                       {copied ? (
                         <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                       ) : (
@@ -283,9 +298,11 @@ function DonateForm() {
                       )}
                     </button>
                   </div>
+
                   {copied && <p className="text-green-600 text-sm font-bold mt-3 animate-pulse">{locale === 'lo' ? 'ກັອບປີ້ເລກບັນຊີແລ້ວ!' : 'Copied to clipboard!'}</p>}
 
                 </div>
+
               </div>
             </div>
 
