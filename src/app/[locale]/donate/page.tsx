@@ -110,7 +110,7 @@ function DonateForm() {
     }
   };
 
-  // 💡 ຟັງຊັນດາວໂຫຼດຮູບ QR Code (ໃຊ້ Fetch ເພື່ອຫຼີກລ້ຽງ CORS ຖ້າຮູບມາຈາກໂດເມນອື່ນ)
+  // 💡 ຟັງຊັນດາວໂຫຼດຮູບ QR Code
   const handleDownloadQR = async (imgUrl: string) => {
     setIsDownloading(true);
     try {
@@ -126,7 +126,6 @@ function DonateForm() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading image:", error);
-      // Fallback: ຖ້າ fetch ບໍ່ໄດ້ ໃຫ້ເປີດແຖບໃໝ່ແທນ
       window.open(imgUrl, '_blank');
     } finally {
       setIsDownloading(false);
@@ -244,19 +243,19 @@ function DonateForm() {
                 {locale === 'lo' ? 'ໂອນເງິນຜ່ານທະນາຄານ (QR)' : 'BANK TRANSFER (QR)'}
               </h2>
 
-              <div className="bg-gray-50 rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
 
-                {/* 💡 1. ປັບຮູບ QR ໃຫ້ເຕັມຂອບ */}
-                <div className="w-full bg-[#EAB308] flex justify-center">
-                  <img src={qrImage} alt="QR Code" className="w-full max-w-[300px] h-auto object-contain" />
+                {/* 💡 1. ປັບຮູບ QR ໃຫ້ໃຫຍ່ ແລະ ບໍ່ມີສີສົ້ມ */}
+                <div className="w-full flex justify-center p-4 sm:p-6 bg-white">
+                  <img src={qrImage} alt="QR Code" className="w-full max-w-sm h-auto object-contain rounded-2xl shadow-sm border border-gray-100" />
                 </div>
 
                 {/* 💡 2. ປຸ່ມດາວໂຫຼດ (Save) */}
-                <div className="bg-[#EAB308] border-b border-yellow-600/30 px-4 pb-4 flex justify-center">
+                <div className="flex justify-center pb-6 bg-white border-b border-gray-100">
                   <button
                     onClick={() => handleDownloadQR(qrImage)}
                     disabled={isDownloading}
-                    className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-yellow-900 text-sm font-bold py-2 px-6 rounded-full transition-all backdrop-blur-sm shadow-sm"
+                    className="flex items-center gap-2 bg-teal-50 hover:bg-teal-100 text-teal-700 text-sm font-bold py-2.5 px-6 rounded-full transition-all border border-teal-200"
                   >
                     {isDownloading ? (
                       <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
@@ -267,12 +266,12 @@ function DonateForm() {
                   </button>
                 </div>
 
-                <div className="p-6 text-center bg-white">
+                <div className="p-6 text-center bg-gray-50">
                   <p className="text-gray-900 font-bold text-lg mb-1">{bankName}</p>
                   <p className="text-pink-500 font-black tracking-wide mb-3">{accountName}</p>
 
                   {/* 💡 3. ເພີ່ມປຸ່ມ Copy ເລກບັນຊີ */}
-                  <div className="inline-flex items-center justify-center gap-3 bg-gray-50 border border-gray-200 py-3 px-5 rounded-2xl cursor-pointer hover:bg-gray-100 transition-colors group" onClick={() => handleCopyAccount(accountNumber)}>
+                  <div className="inline-flex items-center justify-center gap-3 bg-white border border-gray-200 py-3 px-5 rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors group shadow-sm" onClick={() => handleCopyAccount(accountNumber)}>
                     <span className="text-2xl font-black tracking-widest font-mono text-gray-900 group-hover:text-teal-700 transition-colors">
                       {accountNumber}
                     </span>
