@@ -1,326 +1,401 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocale } from 'next-intl';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import Link from 'next/link';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, setDoc, getDoc, query, orderBy } from 'firebase/firestore';
 
-type Props = {
-  params: Promise<{ locale: string; id: string }>;
-};
+export default function TabCampaigns({ showMessage }: { showMessage: (text: string, type: string) => void }) {
+  const locale = useLocale();
 
-const getYoutubeEmbedUrl = (url: string) => {
-  if (!url) return null;
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
-};
+  const [pageSettings, setPageSettings] = useState({
+    header_title_lo: 'ທຸກໆການຊ່ວຍເຫຼືອມີຄວາມໝາຍ',
+    header_title_en: 'EVERY CONTRIBUTION COUNTS',
+    header_subtitle_lo: 'ຮ່ວມເປັນສ່ວນໜຶ່ງໃນການປ່ຽນແປງສັງຄົມ ຜ່ານໂຄງການຕ່າງໆຂອງພວກເຮົາ. ເງິນທຸກກີບຈະຖືກນຳໄປໃຊ້ຢ່າງໂປ່ງໃສ ແລະ ເກີດປະໂຫຍດສູງສຸດ.',
+    header_subtitle_en: 'Be a part of social change through our various campaigns. Every contribution is used transparently for maximum impact.'
+  });
+  const [loadingSettings, setLoadingSettings] = useState(false);
 
-export default function CampaignDetailPage({ params }: Props) {
-  const resolvedParams = use(params);
-  const locale = resolvedParams.locale;
-  const id = resolvedParams.id;
+  const [campaignsList, setCampaignsList] = useState<any[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
 
-  const [campaign, setCampaign] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    title_lo: '',
+    title_en: '',
+    description_lo: '',
+    description_en: '',
+    target_amount: '',
+    cover_image: '',
+    gallery_links: '',
+  });
 
-  const [activeImage, setActiveImage] = useState<string>('');
+  // 💡 State ສຳລັບເກັບປະຫວັດການອັບເດດໂຄງການ (Timeline)
+  const [updates, setUpdates] = useState<any[]>([]);
 
-  const [showAllDonorsModal, setShowAllDonorsModal] = useState(false);
-  const [allDonors, setAllDonors] = useState<any[]>([]);
-  const [realRaisedAmount, setRealRaisedAmount] = useState(0);
+  const [loadingCampaign, setLoadingCampaign] = useState(false);
 
   useEffect(() => {
-    const fetchCampaignData = async () => {
-      try {
-        const docRef = doc(db, "campaigns", id);
-        const docSnap = await getDoc(docRef);
-        let campData: any = null;
-        if (docSnap.exists()) {
-          campData = { id: docSnap.id, ...docSnap.data() };
-          setCampaign(campData);
-          setActiveImage(campData.cover_image);
-        }
+    fetchData();
+  }, []);
 
-        if (campData) {
-          const qDonations = query(
-            collection(db, 'donations'),
-            where('campaign_id', '==', id),
-            where('status', '==', 'Approved')
-          );
-          const donSnap = await getDocs(qDonations);
-          const donorsList = donSnap.docs.map(d => ({ id: d.id, ...d.data() } as any));
-
-          donorsList.sort((a: any, b: any) => Number(b.amount) - Number(a.amount));
-          setAllDonors(donorsList);
-
-          const total = donorsList.reduce((sum: number, donor: any) => sum + (Number(donor.amount) || 0), 0);
-          setRealRaisedAmount(total);
-        }
-
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
+  const fetchData = async () => {
+    try {
+      const docRef = doc(db, 'settings', 'campaigns_page');
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setPageSettings(docSnap.data() as any);
       }
-    };
-    fetchCampaignData();
-  }, [id]);
+    } catch (error) {
+      console.error("Error fetching page settings:", error);
+    }
 
-  const handleViewAllDonors = () => {
-    setShowAllDonorsModal(true);
+    try {
+      const q = query(collection(db, 'campaigns'), orderBy('created_at', 'desc'));
+      const snapshot = await getDocs(q);
+      setCampaignsList(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    } catch (error) {
+      console.error("Error fetching campaigns:", error);
+    }
   };
 
-  if (loading) return <div className="min-h-screen flex justify-center items-center font-bold text-xl text-teal-600 bg-white">ກຳລັງໂຫຼດຂໍ້ມູນ...</div>;
-  if (!campaign) return <div className="min-h-screen flex justify-center items-center font-bold text-xl text-gray-500 bg-white">ບໍ່ພົບຂໍ້ມູນໂຄງການນີ້</div>;
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoadingSettings(true);
+    try {
+      await setDoc(doc(db, 'settings', 'campaigns_page'), pageSettings, { merge: true });
+      showMessage(locale === 'lo' ? 'ບັນທຶກຂໍ້ຄວາມ Header ສຳເລັດແລ້ວ!' : 'Header settings saved successfully!', 'success');
+    } catch (error) {
+      showMessage(locale === 'lo' ? 'ເກີດຂໍ້ຜິດພາດໃນການບັນທຶກ Header' : 'Error saving header settings', 'error');
+    }
+    setLoadingSettings(false);
+  };
 
-  const percent = Math.min(Math.round((realRaisedAmount / campaign.target_amount) * 100), 100) || 0;
+  // 💡 ຟັງຊັນຈັດການ Array ຂອງການອັບເດດໂຄງການ
+  const addUpdateField = () => {
+    setUpdates([{ date: '', youtube_link: '', facebook_link: '' }, ...updates]);
+  };
+
+  const removeUpdateField = (indexToRemove: number) => {
+    setUpdates(updates.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleUpdateChange = (index: number, field: string, value: string) => {
+    const newUpdates = [...updates];
+    newUpdates[index][field] = value;
+    setUpdates(newUpdates);
+  };
+
+  const handleSaveCampaign = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoadingCampaign(true);
+
+    const galleryArray = formData.gallery_links
+      ? formData.gallery_links.split(',').map(link => link.trim()).filter(link => link !== '')
+      : [];
+
+    // 💡 ກັ່ນຕອງເອົາສະເພາະອັບເດດທີ່ມີວັນທີກ່ອນບັນທຶກ ແລະ ຈັດລຽງວັນທີຈາກໃໝ່ໄປເກົ່າ
+    const validUpdates = updates.filter(update => update.date.trim() !== '');
+    validUpdates.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    const campaignDataToSave = {
+      title_lo: formData.title_lo,
+      title_en: formData.title_en,
+      description_lo: formData.description_lo,
+      description_en: formData.description_en,
+      target_amount: Number(formData.target_amount),
+      cover_image: formData.cover_image,
+      gallery: galleryArray,
+      updates: validUpdates // ບັນທຶກ Array ການອັບເດດ
+    };
+
+    try {
+      if (isEditing && editId) {
+        await updateDoc(doc(db, 'campaigns', editId), campaignDataToSave);
+        showMessage(locale === 'lo' ? 'ແກ້ໄຂຂໍ້ມູນໂຄງການສຳເລັດແລ້ວ!' : 'Campaign updated successfully!', 'success');
+      } else {
+        await addDoc(collection(db, 'campaigns'), {
+          ...campaignDataToSave,
+          raised_amount: 0,
+          status: 'Active',
+          created_at: new Date()
+        });
+        showMessage(locale === 'lo' ? 'ສ້າງໂຄງການໃໝ່ສຳເລັດແລ້ວ!' : 'New campaign created successfully!', 'success');
+      }
+
+      setFormData({ title_lo: '', title_en: '', description_lo: '', description_en: '', target_amount: '', cover_image: '', gallery_links: '' });
+      setUpdates([]);
+      setIsEditing(false);
+      setEditId(null);
+      fetchData();
+    } catch (error) {
+      showMessage(locale === 'lo' ? 'ເກີດຂໍ້ຜິດພາດໃນການບັນທຶກໂຄງການ' : 'Error saving campaign', 'error');
+    }
+    setLoadingCampaign(false);
+  };
+
+  const handleEditClick = (campaign: any) => {
+    const galleryString = campaign.gallery && Array.isArray(campaign.gallery) ? campaign.gallery.join(', ') : '';
+
+    setFormData({
+      title_lo: campaign.title_lo || '',
+      title_en: campaign.title_en || '',
+      description_lo: campaign.description_lo || '',
+      description_en: campaign.description_en || '',
+      target_amount: campaign.target_amount ? campaign.target_amount.toString() : '',
+      cover_image: campaign.cover_image || '',
+      gallery_links: galleryString,
+    });
+
+    // ດຶງຂໍ້ມູນການອັບເດດເກົ່າມາສະແດງ
+    setUpdates(campaign.updates || []);
+
+    setIsEditing(true);
+    setEditId(campaign.id);
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setFormData({ title_lo: '', title_en: '', description_lo: '', description_en: '', target_amount: '', cover_image: '', gallery_links: '' });
+    setUpdates([]);
+    setIsEditing(false);
+    setEditId(null);
+  };
+
+  const handleDeleteClick = async (id: string) => {
+    const confirmMsg = locale === 'lo'
+      ? 'ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລຶບໂຄງການນີ້? ຂໍ້ມູນຈະຖືກລຶບຖາວອນ!'
+      : 'Are you sure you want to delete this campaign? This action cannot be undone!';
+
+    if (confirm(confirmMsg)) {
+      try {
+        await deleteDoc(doc(db, 'campaigns', id));
+        showMessage(locale === 'lo' ? 'ລຶບໂຄງການສຳເລັດແລ້ວ!' : 'Campaign deleted successfully!', 'success');
+        fetchData();
+      } catch (error) {
+        showMessage(locale === 'lo' ? 'ເກີດຂໍ້ຜິດພາດໃນການລຶບ' : 'Error deleting campaign', 'error');
+      }
+    }
+  };
+
+  const handleSettingsChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setPageSettings({ ...pageSettings, [e.target.name]: e.target.value });
+  };
 
   return (
-    <div className="bg-white min-h-screen pb-24 font-sans relative">
+    <div className="space-y-8 animate-fade-in-up">
 
-      <div className="max-w-6xl mx-auto px-6 pt-10 md:pt-16">
-        <Link href={`/${locale}/campaigns`} className="inline-flex items-center gap-2 text-teal-600 font-bold text-sm mb-6 hover:text-teal-700 transition-all uppercase tracking-widest">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          {locale === 'lo' ? 'ກັບຄືນໜ້າໂຄງການ' : 'BACK TO PROJECTS'}
-        </Link>
-        <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-10 leading-tight max-w-4xl">
-          {locale === 'lo' ? campaign.title_lo : campaign.title_en}
-        </h1>
+      {/* --- ສ່ວນທີ 1: ຕັ້ງຄ່າ Header ໜ້າໂຄງການ --- */}
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <div className="flex items-center gap-3 mb-6">
+          <svg className="w-6 h-6 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" /><path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z" /></svg>
+          <h2 className="text-2xl font-black text-gray-900">
+            {locale === 'lo' ? 'ຕັ້ງຄ່າຂໍ້ຄວາມໜ້າໂຄງການ (Page Header)' : 'Campaign Page Settings (Header)'}
+          </h2>
+        </div>
+
+        <form onSubmit={handleSaveSettings} className="space-y-6 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ຫົວຂໍ້ (ພາສາລາວ)' : 'Title (Lao)'}</label>
+              <input type="text" name="header_title_lo" required className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" value={pageSettings.header_title_lo} onChange={handleSettingsChange} />
+            </div>
+            <div>
+              <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ຫົວຂໍ້ (ພາສາອັງກິດ)' : 'Title (English)'}</label>
+              <input type="text" name="header_title_en" required className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" value={pageSettings.header_title_en} onChange={handleSettingsChange} />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ຄຳອະທິບາຍ (ພາສາລາວ)' : 'Description (Lao)'}</label>
+              <textarea name="header_subtitle_lo" required rows={3} className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium resize-none" value={pageSettings.header_subtitle_lo} onChange={handleSettingsChange}></textarea>
+            </div>
+            <div>
+              <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ຄຳອະທິບາຍ (ພາສາອັງກິດ)' : 'Description (English)'}</label>
+              <textarea name="header_subtitle_en" required rows={3} className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium resize-none" value={pageSettings.header_subtitle_en} onChange={handleSettingsChange}></textarea>
+            </div>
+          </div>
+          <button type="submit" disabled={loadingSettings} className="bg-gray-900 hover:bg-gray-800 text-white font-black py-3 px-8 rounded-xl transition-all shadow-md disabled:bg-gray-400">
+            {loadingSettings
+              ? (locale === 'lo' ? 'ກຳລັງບັນທຶກ...' : 'Saving...')
+              : (locale === 'lo' ? 'ບັນທຶກ Header' : 'Save Header Settings')
+            }
+          </button>
+        </form>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+      {/* --- ສ່ວນທີ 2: ຟອມສ້າງ / ແກ້ໄຂໂຄງການ --- */}
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-teal-100">
+        <div className="flex items-center gap-3 mb-6">
+          <svg className="w-6 h-6 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path d="M3 2.25a.75.75 0 01.75.75v.54l1.838-.46a9.75 9.75 0 016.725.738l.108.054a8.25 8.25 0 005.58.652l3.109-.732a.75.75 0 01.917.81 47.784 47.784 0 00-.479 4.024m-18.068 4.253l2.8-.7a8.25 8.25 0 015.58.652l.108.054a9.75 9.75 0 006.725.738l1.838-.46V10.5a.75.75 0 01-.75.75h-.02a9.75 9.75 0 01-6.725-.738l-.108-.054a8.25 8.25 0 00-5.58-.652l-2.8.7V21a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75z" /></svg>
+          <h2 className="text-2xl font-black text-gray-900">
+            {isEditing
+              ? (locale === 'lo' ? 'ແກ້ໄຂຂໍ້ມູນໂຄງການ (Edit Campaign)' : 'Edit Campaign')
+              : (locale === 'lo' ? 'ສ້າງໂຄງການໃໝ່ (Create Campaign)' : 'Create New Campaign')
+            }
+          </h2>
+        </div>
 
-          <div className="lg:col-span-8 space-y-10">
+        <form onSubmit={handleSaveCampaign} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ຊື່ໂຄງການ (ລາວ)' : 'Campaign Name (Lao)'}</label>
+              <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" value={formData.title_lo} onChange={(e) => setFormData({ ...formData, title_lo: e.target.value })} />
+            </div>
+            <div>
+              <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ຊື່ໂຄງການ (ອັງກິດ)' : 'Campaign Name (English)'}</label>
+              <input type="text" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" value={formData.title_en} onChange={(e) => setFormData({ ...formData, title_en: e.target.value })} />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ລາຍລະອຽດ (ລາວ)' : 'Description (Lao)'}</label>
+              <textarea required rows={4} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium resize-none" value={formData.description_lo} onChange={(e) => setFormData({ ...formData, description_lo: e.target.value })}></textarea>
+            </div>
+            <div>
+              <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ລາຍລະອຽດ (ອັງກິດ)' : 'Description (English)'}</label>
+              <textarea required rows={4} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium resize-none" value={formData.description_en} onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}></textarea>
+            </div>
+          </div>
 
-            <div className="space-y-4">
-              <div className="w-full bg-gray-50 rounded-4xl overflow-hidden shadow-md border border-gray-100 flex items-center justify-center p-2 h-[300px] sm:h-[450px]">
-                <img
-                  src={activeImage}
-                  alt="cover"
-                  className="w-full h-full object-contain rounded-3xl transition-all duration-300"
-                />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ຍອດເງິນເປົ້າໝາຍ (ກີບ)' : 'Target Amount (LAK)'}</label>
+              <input type="number" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" placeholder="10000000" value={formData.target_amount} onChange={(e) => setFormData({ ...formData, target_amount: e.target.value })} />
+            </div>
+            <div>
+              <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ລິ້ງຮູບໜ້າປົກ (Cover Image URL)' : 'Cover Image URL'}</label>
+              <input type="url" required className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 font-medium" placeholder="https://..." value={formData.cover_image} onChange={(e) => setFormData({ ...formData, cover_image: e.target.value })} />
+            </div>
+          </div>
+
+          {/* 💡 ພາກສ່ວນ: Gallery ແລະ ອັບເດດໂຄງການ (ປ່ຽນເປັນ Theme ສີ Teal) */}
+          <div className="p-6 bg-teal-50/50 rounded-2xl border border-teal-100 space-y-6">
+            <h3 className="font-bold text-teal-900 text-lg flex items-center gap-2">
+              <svg className="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zM5 19V5h14l.002 14H5z" /><path d="M10 14v-4l4 2-4 2z" /></svg>
+              {locale === 'lo' ? 'ຂໍ້ມູນເພີ່ມເຕີມ & ການອັບເດດ (ທາງເລືອກ)' : 'Additional Media & Updates (Optional)'}
+            </h3>
+
+            <div>
+              <label className="block text-gray-700 font-bold mb-2 text-sm">
+                {locale === 'lo' ? 'ຮູບພາບເພີ່ມເຕີມ (Gallery)' : 'Additional Images (Gallery)'} <span className="text-gray-400 font-normal ml-1">({locale === 'lo' ? 'ຖ້າມີຫຼາຍຮູບໃຫ້ໃຊ້ໝາຍຈຸດ , ຂັ້ນກາງ' : 'Separate multiple URLs with commas'})</span>
+              </label>
+              <textarea rows={3} className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 text-sm resize-none" placeholder="https://img1.jpg, https://img2.png" value={formData.gallery_links} onChange={(e) => setFormData({ ...formData, gallery_links: e.target.value })}></textarea>
+            </div>
+
+            {/* ລະບົບເພີ່ມປະຫວັດການອັບເດດແບບ Dynamic */}
+            <div className="border-t border-teal-200 pt-6 mt-4">
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="font-bold text-teal-800 text-lg flex items-center gap-2">
+                  <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  {locale === 'lo' ? 'ປະຫວັດການອັບເດດໂຄງການ (Timeline)' : 'Campaign Updates Timeline'}
+                </h4>
+                <button
+                  type="button"
+                  onClick={addUpdateField}
+                  className="flex items-center gap-1 bg-teal-100 hover:bg-teal-200 text-teal-700 text-sm font-bold py-2 px-4 rounded-lg transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                  {locale === 'lo' ? 'ເພີ່ມການອັບເດດ' : 'Add Update'}
+                </button>
               </div>
 
-              {(campaign.gallery && campaign.gallery.length > 0) && (
-                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                  <button onClick={() => setActiveImage(campaign.cover_image)} className={`shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-4 transition-all ${activeImage === campaign.cover_image ? 'border-teal-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}>
-                    <img src={campaign.cover_image} className="w-full h-full object-cover" alt="thumbnail" />
-                  </button>
-                  {campaign.gallery.map((img: string, index: number) => (
-                    <button key={index} onClick={() => setActiveImage(img)} className={`shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-4 transition-all ${activeImage === img ? 'border-teal-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}>
-                      <img src={img} className="w-full h-full object-cover" alt={`thumbnail ${index}`} />
-                    </button>
+              {updates.length === 0 ? (
+                <p className="text-teal-600 text-sm text-center py-4 bg-teal-50/50 rounded-xl border border-teal-100 border-dashed">
+                  {locale === 'lo' ? 'ຍັງບໍ່ມີຂໍ້ມູນການອັບເດດ. ກົດປຸ່ມເພີ່ມການອັບເດດດ້ານເທິງ.' : 'No updates yet. Click the button above to add one.'}
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {updates.map((update, index) => (
+                    <div key={index} className="relative p-5 bg-white border border-teal-100 rounded-2xl shadow-sm">
+
+                      <button
+                        type="button"
+                        onClick={() => removeUpdateField(index)}
+                        className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"
+                        title={locale === 'lo' ? 'ລຶບການອັບເດດນີ້' : 'Delete this update'}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pr-8">
+                        <div>
+                          <label className="block text-gray-700 font-bold mb-2 text-xs uppercase tracking-wider">{locale === 'lo' ? 'ວັນທີອັບເດດ *' : 'Update Date *'}</label>
+                          <input type="date" required className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 text-sm" value={update.date} onChange={(e) => handleUpdateChange(index, 'date', e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="block text-gray-700 font-bold mb-2 text-xs uppercase tracking-wider">{locale === 'lo' ? 'ລິ້ງວິດີໂອ YouTube' : 'YouTube Link'}</label>
+                          <input type="url" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 text-sm" placeholder="https://youtube.com/..." value={update.youtube_link} onChange={(e) => handleUpdateChange(index, 'youtube_link', e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="block text-gray-700 font-bold mb-2 text-xs uppercase tracking-wider">{locale === 'lo' ? 'ລິ້ງ Facebook' : 'Facebook Link'}</label>
+                          <input type="url" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 text-sm" placeholder="https://facebook.com/..." value={update.facebook_link} onChange={(e) => handleUpdateChange(index, 'facebook_link', e.target.value)} />
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
             </div>
+          </div>
 
-            <div className="prose prose-lg max-w-none">
-              <h3 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
-                <span className="w-1.5 h-8 bg-teal-500 rounded-full"></span>
-                {locale === 'lo' ? 'ກ່ຽວກັບໂຄງການນີ້' : 'ABOUT THIS CAMPAIGN'}
-              </h3>
-              <p className="whitespace-pre-line text-lg leading-relaxed text-gray-600">
-                {locale === 'lo' ? campaign.description_lo : campaign.description_en}
-              </p>
-            </div>
-
-            {/* 💡 ພາກສ່ວນ: ປະຫວັດການອັບເດດໂຄງການ (Timeline) - ປ່ຽນເປັນໂທນສີ Teal (ຂຽວ) */}
-            {(campaign.updates && campaign.updates.length > 0) && (
-              <div className="pt-10 mt-10 border-t border-gray-100 space-y-8">
-                <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3 mb-8">
-                  <span className="w-1.5 h-8 bg-teal-500 rounded-full"></span>
-                  {locale === 'lo' ? 'ການເຄື່ອນໄຫວ ແລະ ຕິດຕາມໂຄງການ' : 'PROJECT UPDATES & TRACKING'}
-                </h3>
-
-                <div className="space-y-12 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-linear-to-b before:from-transparent before:via-gray-200 before:to-transparent">
-                  {campaign.updates.map((update: any, index: number) => {
-                    const embedUrl = getYoutubeEmbedUrl(update.youtube_link);
-                    return (
-                      <div key={index} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-
-                        {/* ໄອຄອນ Timeline - ປ່ຽນເປັນສີ Teal */}
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-teal-100 text-teal-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        </div>
-
-                        {/* ເນື້ອຫາການອັບເດດ */}
-                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-sm border border-gray-100 group-hover:border-teal-200 transition-colors">
-                          <div className="flex items-center justify-between mb-4">
-                            {/* ປ້າຍວັນທີ - ປ່ຽນເປັນສີ Teal */}
-                            <span className="font-bold text-teal-700 bg-teal-50 px-4 py-1.5 rounded-full text-sm border border-teal-100">
-                              {new Date(update.date).toLocaleDateString(locale === 'lo' ? 'lo-LA' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
-                            </span>
-                          </div>
-
-                          {/* ວິດີໂອ YouTube */}
-                          {embedUrl && (
-                            <div className="w-full aspect-video rounded-xl overflow-hidden mb-4 bg-gray-50">
-                              <iframe
-                                src={embedUrl}
-                                className="w-full h-full"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                              ></iframe>
-                            </div>
-                          )}
-
-                          {/* ປຸ່ມ Facebook - ປ່ຽນ Hover ເປັນສີ Teal */}
-                          {update.facebook_link && (
-                            <a
-                              href={update.facebook_link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center gap-2 w-full bg-gray-50 text-gray-700 hover:bg-teal-600 hover:text-white font-bold py-3 px-4 rounded-xl transition-all border border-gray-200 hover:border-teal-600 text-sm"
-                            >
-                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
-                              {locale === 'lo' ? 'ເບິ່ງລາຍລະອຽດໃນ Facebook' : 'View on Facebook'}
-                            </a>
-                          )}
-                        </div>
-
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+          <div className="flex gap-4 pt-2">
+            <button type="submit" disabled={loadingCampaign} className="flex-1 bg-teal-600 text-white font-black py-4 rounded-xl hover:bg-teal-700 transition-all shadow-md uppercase tracking-wide disabled:bg-gray-400">
+              {loadingCampaign
+                ? (locale === 'lo' ? 'ກຳລັງບັນທຶກ...' : 'Saving...')
+                : (isEditing
+                  ? (locale === 'lo' ? 'ບັນທຶກການແກ້ໄຂ' : 'Save Changes')
+                  : (locale === 'lo' ? 'ສ້າງ ແລະ ເຜີຍແຜ່' : 'Create & Publish')
+                )
+              }
+            </button>
+            {isEditing && (
+              <button type="button" onClick={handleCancelEdit} className="flex-1 bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 font-bold py-4 rounded-xl transition-all shadow-sm uppercase tracking-wide">
+                {locale === 'lo' ? 'ຍົກເລີກ (Cancel)' : 'Cancel'}
+              </button>
             )}
           </div>
-
-          {/* --- ເບື້ອງຂວາ (4/12): ບັດຄວາມຄືບໜ້າ (Sticky) --- */}
-          <div className="lg:col-span-4 lg:sticky lg:top-24">
-            <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl shadow-teal-900/10 border border-teal-50 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-              <div className="relative z-10 space-y-8">
-
-                <div>
-                  <div className="flex justify-between items-end mb-4">
-                    <div className="flex flex-col">
-                      <span className="text-teal-600 font-black text-5xl tracking-tighter">{percent}%</span>
-                      <span className="text-gray-400 font-bold text-xs md:text-sm uppercase tracking-wider mt-1">
-                        {locale === 'lo' ? 'ສຳເລັດແລ້ວ' : 'REACHED'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-50">
-                    <div
-                      className="h-full bg-linear-to-r from-teal-400 to-teal-600 rounded-full transition-all duration-1000 ease-out shadow-inner"
-                      style={{ width: `${percent}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div className="space-y-6 pt-2">
-                  <div className="flex flex-col">
-                    <span className="text-gray-500 font-bold uppercase tracking-wider text-xs md:text-sm mb-1">
-                      {locale === 'lo' ? 'ຍອດບໍລິຈາກປັດຈຸບັນ' : 'CURRENTLY RAISED'}
-                    </span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="font-black text-gray-900 text-3xl">{Number(realRaisedAmount).toLocaleString()}</span>
-                      <span className="text-gray-400 font-bold text-sm">LAK</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col border-t border-gray-100 pt-6">
-                    <span className="text-gray-500 font-bold uppercase tracking-wider text-xs md:text-sm mb-1">
-                      {locale === 'lo' ? 'ເປົ້າໝາຍທັງໝົດ' : 'TOTAL GOAL'}
-                    </span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="font-bold text-gray-500 text-xl">{Number(campaign.target_amount).toLocaleString()}</span>
-                      <span className="text-gray-400 font-medium text-xs">LAK</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 space-y-3">
-                  <Link
-                    href={`/${locale}/donate?campaignId=${campaign.id}`}
-                    className="flex items-center justify-center w-full bg-teal-600 hover:bg-teal-700 text-white text-center font-black py-6 rounded-3xl transition-all shadow-xl shadow-teal-600/20 hover:-translate-y-1 active:scale-95 uppercase tracking-wider text-lg"
-                  >
-                    {locale === 'lo' ? 'ຮ່ວມບໍລິຈາກ' : 'DONATE NOW'}
-                  </Link>
-
-                  <button
-                    onClick={handleViewAllDonors}
-                    className="w-full py-3 bg-teal-50 text-teal-700 font-bold rounded-2xl hover:bg-teal-100 transition-all uppercase tracking-wider text-sm border border-teal-100"
-                  >
-                    {locale === 'lo' ? 'ເບິ່ງຜູ້ບໍລິຈາກທັງໝົດ' : 'VIEW ALL DONORS'}
-                  </button>
-                </div>
-
-                <p className="text-center text-gray-400 text-xs md:text-sm font-bold leading-relaxed px-4">
-                  {locale === 'lo'
-                    ? 'ຂໍ້ມູນການບໍລິຈາກຂອງທ່ານຈະຖືກບັນທຶກຢ່າງໂປ່ງໃສ'
-                    : 'YOUR CONTRIBUTION IS SECURE AND TRANSPARENT'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        </form>
       </div>
 
-      {showAllDonorsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200">
+      {/* --- ສ່ວນທີ 3: ລາຍການໂຄງການທີ່ມີໃນລະບົບ --- */}
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <h2 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
+          <svg className="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M2.25 4.125c0-1.036.84-1.875 1.875-1.875h15.75c1.036 0 1.875.84 1.875 1.875V17.25c0 1.035-.84 1.875-1.875 1.875h-11.25l-4.5 4.5V4.125z" clipRule="evenodd" /></svg>
+          {locale === 'lo' ? 'ລາຍການໂຄງການທັງໝົດ' : 'All Campaigns'}
+        </h2>
 
-            <div className="p-6 border-b flex justify-between items-center bg-gray-50">
-              <h3 className="text-xl font-black text-gray-900">
-                {locale === 'lo' ? 'ຜູ້ສະໜັບສະໜູນທັງໝົດ' : 'ALL SUPPORTERS'}
-              </h3>
-              <button onClick={() => setShowAllDonorsModal(false)} className="text-gray-400 hover:text-teal-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-teal-50">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
-
-            <div className="p-6 overflow-y-auto flex-1">
-              {allDonors.length > 0 ? (
-                <div className="space-y-3">
-                  {allDonors.map((donor, index) => (
-                    <div key={donor.id} className="flex justify-between items-center p-4 bg-white border border-gray-100 shadow-sm rounded-2xl hover:shadow-md transition-all">
-                      <div className="flex items-center gap-4">
-                        {!donor.hideProfile && donor.profile_url ? (
-                          <img src={donor.profile_url} alt="profile" className="w-10 h-10 rounded-full object-cover border border-gray-200" />
-                        ) : (
-                          <div className="w-10 h-10 flex items-center justify-center bg-teal-50 text-teal-700 rounded-full font-black text-sm">
-                            {index + 1}
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-bold text-gray-900 text-lg">
-                            {donor.hideName ? (locale === 'lo' ? 'ຜູ້ບໍ່ປະສົງອອກນາມ' : 'Anonymous') : donor.donor_name}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="font-black text-teal-600 text-lg">
-                        {donor.hideAmount ? (
-                          <span className="text-sm text-gray-400 uppercase tracking-wider font-bold bg-gray-50 px-3 py-1 rounded-full">{locale === 'lo' ? 'ປິດບັງຍອດເງິນ' : 'Hidden'}</span>
-                        ) : (
-                          <>{Number(donor.amount).toLocaleString()} <span className="text-sm font-bold text-gray-400">LAK</span></>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-10">
-                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
+        {campaignsList.length === 0 ? (
+          <p className="text-gray-500 text-center py-6 bg-gray-50 rounded-xl">
+            {locale === 'lo' ? 'ຍັງບໍ່ມີໂຄງການໃນລະບົບ.' : 'No campaigns available.'}
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {campaignsList.map((campaign) => (
+              <div key={campaign.id} className="flex flex-col md:flex-row items-center justify-between p-4 bg-white hover:bg-gray-50 rounded-xl border border-gray-200 gap-4 transition-colors">
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                  <img src={campaign.cover_image} alt="cover" className="w-20 h-14 object-cover rounded-lg shadow-sm border border-gray-100" />
+                  <div>
+                    <h3 className="font-bold text-gray-900 line-clamp-1">{locale === 'lo' ? campaign.title_lo : campaign.title_en}</h3>
+                    <p className="text-sm text-gray-500 font-medium">
+                      {locale === 'lo' ? 'ເປົ້າໝາຍ:' : 'Target:'} {Number(campaign.target_amount).toLocaleString()} LAK
+                    </p>
                   </div>
-                  <p className="text-gray-500 font-medium text-lg">
-                    {locale === 'lo' ? 'ຍັງບໍ່ມີຂໍ້ມູນຜູ້ບໍລິຈາກທີ່ອະນຸມັດແລ້ວ' : 'No approved donors yet.'}
-                  </p>
-                  <p className="text-gray-400 text-sm mt-2">
-                    {locale === 'lo' ? 'ຮ່ວມເປັນຜູ້ບໍລິຈາກຄົນທຳອິດສຳລັບໂຄງການນີ້!' : 'Be the first to donate to this campaign!'}
-                  </p>
                 </div>
-              )}
-            </div>
-
+                <div className="flex gap-2 w-full md:w-auto shrink-0">
+                  <button onClick={() => handleEditClick(campaign)} className="flex-1 md:flex-none text-teal-600 hover:text-white font-bold text-sm bg-teal-50 hover:bg-teal-600 px-5 py-2.5 rounded-lg transition-colors border border-teal-100 hover:border-teal-600">
+                    {locale === 'lo' ? 'ແກ້ໄຂ' : 'Edit'}
+                  </button>
+                  <button onClick={() => handleDeleteClick(campaign.id)} className="flex-1 md:flex-none text-pink-500 hover:text-white font-bold text-sm bg-pink-50 hover:bg-pink-500 px-5 py-2.5 rounded-lg transition-colors border border-pink-100 hover:border-pink-500">
+                    {locale === 'lo' ? 'ລຶບ' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
     </div>
   );
