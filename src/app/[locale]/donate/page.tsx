@@ -206,7 +206,7 @@ function DonateForm() {
   const bankName = pageSettings?.bank_name || 'BCEL Bank';
   const accountName = pageSettings?.account_name || 'BEAST LAO FOUNDATION';
   const accountNumber = pageSettings?.account_number || '160-120-00-0000';
-  const qrImage = pageSettings?.qr_image_url || 'https://via.placeholder.com/400x500/F59E0B/ffffff?text=QR+CODE';
+  const qrImage = pageSettings?.qr_image_url || 'https://via.placeholder.com/500x500/ffffff/0d9488?text=QR+CODE';
   const paypalLink = pageSettings?.paypal_link || 'https://paypal.me/';
   const paypalDesc = pageSettings ? (locale === 'lo' ? pageSettings.paypal_desc_lo : pageSettings.paypal_desc_en) : '';
 
@@ -238,20 +238,20 @@ function DonateForm() {
 
               <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
 
-                {/* 💡 ປັບຮູບ QR ໃຫ້ໃຫຍ່ເຕັມຂອບ 100% ແລະ ເອົາຂອບຕ່າງໆອອກ */}
-                <div className="w-full bg-white p-2 sm:p-4">
+                {/* 💡 ແກ້ໄຂບັນຫາຂອບສີດຳ ແລະ ເຮັດໃຫ້ເຕັມຂອບເປັນຮູບຈະຕຸລັດ */}
+                <div className="w-full bg-white">
                   <img
                     src={qrImage}
                     alt="QR Code"
-                    className="w-full h-auto object-contain rounded-2xl shadow-sm border border-gray-100"
+                    className="w-full aspect-square object-contain bg-white block"
                   />
                 </div>
 
-                <div className="flex justify-center pb-6 bg-white border-b border-gray-100">
+                <div className="flex justify-center py-5 bg-white border-b border-gray-100">
                   <button
                     onClick={() => handleDownloadQR(qrImage)}
                     disabled={isDownloading}
-                    className="flex items-center gap-2 bg-teal-50 hover:bg-teal-100 text-teal-700 text-sm font-bold py-2.5 px-6 rounded-full transition-all border border-teal-200"
+                    className="flex items-center gap-2 bg-teal-50 hover:bg-teal-100 text-teal-700 text-sm font-bold py-3 px-8 rounded-full transition-all border border-teal-200"
                   >
                     {isDownloading ? (
                       <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
