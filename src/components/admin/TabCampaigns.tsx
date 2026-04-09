@@ -269,9 +269,9 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
             </div>
           </div>
 
-          <div className="p-6 bg-black-50/50 rounded-2xl border border-blue-100 space-y-6">
-            <h3 className="font-bold text-black-900 text-lg flex items-center gap-2">
-              <svg className="w-5 h-5 text-black-600" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zM5 19V5h14l.002 14H5z" /><path d="M10 14v-4l4 2-4 2z" /></svg>
+          <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100 space-y-6">
+            <h3 className="font-bold text-blue-900 text-lg flex items-center gap-2">
+              <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zM5 19V5h14l.002 14H5z" /><path d="M10 14v-4l4 2-4 2z" /></svg>
               {locale === 'lo' ? 'ຂໍ້ມູນເພີ່ມເຕີມ & ການອັບເດດ (ທາງເລືອກ)' : 'Additional Media & Updates (Optional)'}
             </h3>
 
@@ -283,16 +283,16 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
             </div>
 
             {/* 💡 ປັບປຸງ: ລະບົບເພີ່ມປະຫວັດການອັບເດດແບບ Dynamic (ເພີ່ມ/ລຶບ ໄດ້ຫຼາຍອັນ) */}
-            <div className="border-t border-black-200 pt-6 mt-4">
+            <div className="border-t border-blue-200 pt-6 mt-4">
               <div className="flex justify-between items-center mb-4">
-                <h4 className="font-bold text-black-800 text-lg flex items-center gap-2">
+                <h4 className="font-bold text-blue-800 text-lg flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   {locale === 'lo' ? 'ປະຫວັດການອັບເດດໂຄງການ (Timeline)' : 'Campaign Updates Timeline'}
                 </h4>
                 <button
                   type="button"
                   onClick={addUpdateField}
-                  className="flex items-center gap-1 bg-blue-100 hover:bg-blue-200 text-black-700 text-sm font-bold py-2 px-4 rounded-lg transition-colors"
+                  className="flex items-center gap-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-bold py-2 px-4 rounded-lg transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                   {locale === 'lo' ? 'ເພີ່ມການອັບເດດ' : 'Add Update'}
@@ -300,7 +300,7 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
               </div>
 
               {updates.length === 0 ? (
-                <p className="text-black-500 text-sm text-center py-4 bg-blue-50/50 rounded-xl border border-blue-100 border-dashed">
+                <p className="text-blue-500 text-sm text-center py-4 bg-blue-50/50 rounded-xl border border-blue-100 border-dashed">
                   {locale === 'lo' ? 'ຍັງບໍ່ມີຂໍ້ມູນການອັບເດດ. ກົດປຸ່ມເພີ່ມການອັບເດດດ້ານເທິງ.' : 'No updates yet. Click the button above to add one.'}
                 </p>
               ) : (
