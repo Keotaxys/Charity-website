@@ -238,15 +238,13 @@ function DonateForm() {
 
               <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
 
-                <div className="w-full flex justify-center p-6 bg-white">
-                  {/* ປັບຂະໜາດຮູບ QR ໃຫ້ເປັນຮູບຈະຕຸລັດ ແລະ ໃຫຍ່ເຕັມຂອບ */}
-                  <div className="w-full max-w-[280px] sm:max-w-[320px] aspect-square bg-white flex items-center justify-center rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                    <img
-                      src={qrImage}
-                      alt="QR Code"
-                      className="w-full h-full object-contain bg-white"
-                    />
-                  </div>
+                {/* 💡 ປັບຮູບ QR ໃຫ້ໃຫຍ່ເຕັມຂອບ 100% ແລະ ເອົາຂອບຕ່າງໆອອກ */}
+                <div className="w-full bg-white p-2 sm:p-4">
+                  <img
+                    src={qrImage}
+                    alt="QR Code"
+                    className="w-full h-auto object-contain rounded-2xl shadow-sm border border-gray-100"
+                  />
                 </div>
 
                 <div className="flex justify-center pb-6 bg-white border-b border-gray-100">
