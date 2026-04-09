@@ -49,7 +49,7 @@ export default async function RootLayout({
           <Navbar />
 
           {/* ເນື້ອຫາຫຼັກຂອງແຕ່ລະໜ້າ: ໃຊ້ flex-grow ເພື່ອຍູ້ Footer ລົງລຸ່ມສຸດສະເໝີ */}
-          <main className="flex-grow pt-20">
+          <main className="grow pt-20">
             {children}
           </main>
 

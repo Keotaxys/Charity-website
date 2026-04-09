@@ -239,7 +239,7 @@ function DonateForm() {
                 {locale === 'lo' ? 'ໂອນເງິນຜ່ານທະນາຄານ (QR)' : 'BANK TRANSFER (QR)'}
               </h2>
 
-              <div className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm">
+              <div className="bg-white rounded-4xl border border-gray-100 overflow-hidden shadow-sm">
 
                 {/* 💡 ແກ້ໄຂ: ບັງຄັບກ່ອງຈະຕຸລັດ ແລະ ໃຊ້ object-cover ເພື່ອຕັດຂອບດຳເທິງ/ລຸ່ມຖິ້ມ */}
                 <div className="w-full aspect-square bg-white relative p-4 sm:p-6 overflow-hidden flex items-center justify-center border-b border-gray-50">

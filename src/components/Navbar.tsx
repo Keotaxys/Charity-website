@@ -38,7 +38,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full flex justify-between items-center gap-4 xl:gap-8">
 
         {/* ໂລໂກ້ */}
-        <div className="flex-shrink-0 flex items-center h-20">
+        <div className="shrink-0 flex items-center h-20">
           <Link href={`/${locale}`} className="flex items-center gap-2">
             <span className="text-2xl xl:text-3xl font-black text-teal-600 tracking-tighter uppercase">
               Little<span className="text-gray-900">Magician</span>
@@ -86,7 +86,7 @@ export default function Navbar() {
         </nav>
 
         {/* ປຸ່ມບໍລິຈາກ, ປ່ຽນພາສາ ແລະ ປຸ່ມ 3 ຂີດ (ມືຖື) */}
-        <div className="flex-shrink-0 flex items-center gap-3 sm:gap-5 xl:gap-6 ml-auto">
+        <div className="shrink-0 flex items-center gap-3 sm:gap-5 xl:gap-6 ml-auto">
           <div className="hidden lg:block">
             <LanguageSwitcher />
           </div>

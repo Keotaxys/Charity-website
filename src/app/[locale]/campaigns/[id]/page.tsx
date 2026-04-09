@@ -88,7 +88,7 @@ export default function CampaignDetailPage({ params }: Props) {
               <img
                 src={campaign.cover_image}
                 alt="cover"
-                className="w-full max-h-[450px] object-contain rounded-[2rem]"
+                className="w-full max-h-[450px] object-contain rounded-4xl"
               />
             </div>
 
@@ -121,7 +121,7 @@ export default function CampaignDetailPage({ params }: Props) {
                   </div>
                   <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-50">
                     <div
-                      className="h-full bg-gradient-to-r from-teal-400 to-teal-600 rounded-full transition-all duration-1000 ease-out shadow-inner"
+                      className="h-full bg-linear-to-r from-teal-400 to-teal-600 rounded-full transition-all duration-1000 ease-out shadow-inner"
                       style={{ width: `${percent}%` }}
                     ></div>
                   </div>
