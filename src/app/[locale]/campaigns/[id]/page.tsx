@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import Link from 'next/link';
-import { useParams } from 'next/navigation'; // 💡 ເອີ້ນໃຊ້ useParams ແທນ
+import { useParams } from 'next/navigation';
 
 const getYoutubeEmbedUrl = (url: string) => {
   if (!url) return null;
@@ -13,14 +13,19 @@ const getYoutubeEmbedUrl = (url: string) => {
   return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
 };
 
-export default function CampaignDetailPage() {
-  // 💡 ໃຊ້ useParams() ເພື່ອດຶງຄ່າ locale ແລະ id ແບບປອດໄພ ບໍ່ Error ແນ່ນອນ
-  const params = useParams();
-  const locale = params?.locale as string;
-  const id = params?.id as string;
+// 💡 ຮັບ props ແບບ Optional (ມີກໍໄດ້ ບໍ່ມີກໍໄດ້)
+export default function CampaignDetailPage({ params: propsParams }: { params?: any }) {
+  // 💡 ໃຊ້ useParams ແບບລະມັດລະວັງ ບໍ່ໃຫ້ Error
+  const urlParams = useParams();
+
+  // 💡 ດຶງຄ່າມາຈາກ props ກ່ອນ ຖ້າບໍ່ມີຈຶ່ງໄປດຶງຈາກ URL
+  const locale = (propsParams?.locale || urlParams?.locale || 'lo') as string;
+  const id = (propsParams?.id || urlParams?.id) as string;
 
   const [campaign, setCampaign] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+
+  // 💡 ຖ້າບໍ່ມີ ID (ເຊັ່ນ ຖືກເອີ້ນໃຊ້ຜິດໜ້າ) ໃຫ້ປ່ຽນ loading ເປັນ false ໂລດ ເພື່ອໃຫ້ມັນຈົບໄວໆ
+  const [loading, setLoading] = useState(!!id);
 
   const [activeImage, setActiveImage] = useState<string>('');
 
@@ -29,8 +34,11 @@ export default function CampaignDetailPage() {
   const [realRaisedAmount, setRealRaisedAmount] = useState(0);
 
   useEffect(() => {
-    // ຖ້າ id ຍັງບໍ່ມາ ໃຫ້ລໍຖ້າກ່ອນ
-    if (!id) return;
+    // 💡 ຖ້າບໍ່ມີ ID ສົ່ງມາ ໃຫ້ຢຸດເຮັດວຽກທັນທີ ຈະໄດ້ບໍ່ Error
+    if (!id) {
+      setLoading(false);
+      return;
+    }
 
     const fetchCampaignData = async () => {
       try {
@@ -71,6 +79,9 @@ export default function CampaignDetailPage() {
   const handleViewAllDonors = () => {
     setShowAllDonorsModal(true);
   };
+
+  // 💡 ຖ້າບໍ່ມີ ID ສົ່ງມາເລີຍ (ເຊັ່ນ ຖືກເອີ້ນໃຊ້ໃນໜ້າ Admin) ໃຫ້ Return ວ່າງເປົ່າໄປເລີຍ
+  if (!id) return null;
 
   if (loading) return <div className="min-h-screen flex justify-center items-center font-bold text-xl text-teal-600 bg-white">ກຳລັງໂຫຼດຂໍ້ມູນ...</div>;
   if (!campaign) return <div className="min-h-screen flex justify-center items-center font-bold text-xl text-gray-500 bg-white">ບໍ່ພົບຂໍ້ມູນໂຄງການນີ້</div>;
@@ -128,7 +139,6 @@ export default function CampaignDetailPage() {
               </p>
             </div>
 
-            {/* ພາກສ່ວນ: ປະຫວັດການອັບເດດໂຄງການ (Timeline) */}
             {(campaign.updates && campaign.updates.length > 0) && (
               <div className="pt-10 mt-10 border-t border-gray-100 space-y-8">
                 <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3 mb-8">
