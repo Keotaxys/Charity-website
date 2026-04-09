@@ -28,10 +28,11 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
     target_amount: '',
     cover_image: '',
     gallery_links: '',
-    youtube_link: '',
-    facebook_link: '',
-    update_date: '' // 💡 ເພີ່ມ Field ໃໝ່ສຳລັບເກັບວັນທີອັບເດດ
   });
+
+  // 💡 State ໃໝ່ສຳລັບເກັບປະຫວັດການອັບເດດໂຄງການ (ເປັນ Array)
+  const [updates, setUpdates] = useState<any[]>([]);
+
   const [loadingCampaign, setLoadingCampaign] = useState(false);
 
   useEffect(() => {
@@ -70,6 +71,21 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
     setLoadingSettings(false);
   };
 
+  // 💡 ຟັງຊັນຈັດການ Array ຂອງການອັບເດດໂຄງການ
+  const addUpdateField = () => {
+    setUpdates([{ date: '', youtube_link: '', facebook_link: '' }, ...updates]);
+  };
+
+  const removeUpdateField = (indexToRemove: number) => {
+    setUpdates(updates.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleUpdateChange = (index: number, field: string, value: string) => {
+    const newUpdates = [...updates];
+    newUpdates[index][field] = value;
+    setUpdates(newUpdates);
+  };
+
   const handleSaveCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoadingCampaign(true);
@@ -77,6 +93,11 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
     const galleryArray = formData.gallery_links
       ? formData.gallery_links.split(',').map(link => link.trim()).filter(link => link !== '')
       : [];
+
+    // 💡 ກັ່ນຕອງເອົາສະເພາະອັບເດດທີ່ມີວັນທີກ່ອນບັນທຶກ
+    const validUpdates = updates.filter(update => update.date.trim() !== '');
+    // ຈັດລຽງວັນທີຈາກໃໝ່ໄປເກົ່າ
+    validUpdates.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     const campaignDataToSave = {
       title_lo: formData.title_lo,
@@ -86,9 +107,7 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
       target_amount: Number(formData.target_amount),
       cover_image: formData.cover_image,
       gallery: galleryArray,
-      youtube_link: formData.youtube_link,
-      facebook_link: formData.facebook_link,
-      update_date: formData.update_date // 💡 ບັນທຶກວັນທີອັບເດດລົງຖານຂໍ້ມູນ
+      updates: validUpdates // 💡 ບັນທຶກ Array ການອັບເດດລົງຖານຂໍ້ມູນ
     };
 
     try {
@@ -105,7 +124,8 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
         showMessage(locale === 'lo' ? 'ສ້າງໂຄງການໃໝ່ສຳເລັດແລ້ວ!' : 'New campaign created successfully!', 'success');
       }
 
-      setFormData({ title_lo: '', title_en: '', description_lo: '', description_en: '', target_amount: '', cover_image: '', gallery_links: '', youtube_link: '', facebook_link: '', update_date: '' });
+      setFormData({ title_lo: '', title_en: '', description_lo: '', description_en: '', target_amount: '', cover_image: '', gallery_links: '' });
+      setUpdates([]); // 💡 ລ້າງຂໍ້ມູນອັບເດດຫຼັງຈາກບັນທຶກແລ້ວ
       setIsEditing(false);
       setEditId(null);
       fetchData();
@@ -126,10 +146,11 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
       target_amount: campaign.target_amount ? campaign.target_amount.toString() : '',
       cover_image: campaign.cover_image || '',
       gallery_links: galleryString,
-      youtube_link: campaign.youtube_link || '',
-      facebook_link: campaign.facebook_link || '',
-      update_date: campaign.update_date || '' // 💡 ດຶງວັນທີອັບເດດມາສະແດງຕອນກົດແກ້ໄຂ
     });
+
+    // 💡 ດຶງຂໍ້ມູນການອັບເດດເກົ່າມາສະແດງ
+    setUpdates(campaign.updates || []);
+
     setIsEditing(true);
     setEditId(campaign.id);
 
@@ -137,7 +158,8 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
   };
 
   const handleCancelEdit = () => {
-    setFormData({ title_lo: '', title_en: '', description_lo: '', description_en: '', target_amount: '', cover_image: '', gallery_links: '', youtube_link: '', facebook_link: '', update_date: '' });
+    setFormData({ title_lo: '', title_en: '', description_lo: '', description_en: '', target_amount: '', cover_image: '', gallery_links: '' });
+    setUpdates([]);
     setIsEditing(false);
     setEditId(null);
   };
@@ -260,23 +282,60 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
               <textarea rows={3} className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm resize-none" placeholder="https://img1.jpg, https://img2.png" value={formData.gallery_links} onChange={(e) => setFormData({ ...formData, gallery_links: e.target.value })}></textarea>
             </div>
 
-            {/* 💡 ສ່ວນໃໝ່: ຂີດເສັ້ນແບ່ງ ແລະ ເພີ່ມວັນທີອັບເດດ */}
+            {/* 💡 ປັບປຸງ: ລະບົບເພີ່ມປະຫວັດການອັບເດດແບບ Dynamic (ເພີ່ມ/ລຶບ ໄດ້ຫຼາຍອັນ) */}
             <div className="border-t border-blue-200 pt-6 mt-4">
-              <h4 className="font-bold text-blue-800 mb-4">{locale === 'lo' ? '🔄 ບັນທຶກການອັບເດດໂຄງການ' : '🔄 Campaign Updates Log'}</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ວັນທີອັບເດດລ່າສຸດ' : 'Update Date'}</label>
-                  <input type="date" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm" value={formData.update_date} onChange={(e) => setFormData({ ...formData, update_date: e.target.value })} />
-                </div>
-                <div>
-                  <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ລິ້ງວິດີໂອ YouTube' : 'YouTube Video Link'}</label>
-                  <input type="url" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm" placeholder="https://youtube.com/watch?v=..." value={formData.youtube_link} onChange={(e) => setFormData({ ...formData, youtube_link: e.target.value })} />
-                </div>
-                <div>
-                  <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ລິ້ງ Facebook (ໂພສຕ໌ ຫຼື ເພຈ)' : 'Facebook Link'}</label>
-                  <input type="url" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm" placeholder="https://facebook.com/..." value={formData.facebook_link} onChange={(e) => setFormData({ ...formData, facebook_link: e.target.value })} />
-                </div>
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="font-bold text-blue-800 text-lg flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  {locale === 'lo' ? 'ປະຫວັດການອັບເດດໂຄງການ (Timeline)' : 'Campaign Updates Timeline'}
+                </h4>
+                <button
+                  type="button"
+                  onClick={addUpdateField}
+                  className="flex items-center gap-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-bold py-2 px-4 rounded-lg transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                  {locale === 'lo' ? 'ເພີ່ມການອັບເດດ' : 'Add Update'}
+                </button>
               </div>
+
+              {updates.length === 0 ? (
+                <p className="text-blue-500 text-sm text-center py-4 bg-blue-50/50 rounded-xl border border-blue-100 border-dashed">
+                  {locale === 'lo' ? 'ຍັງບໍ່ມີຂໍ້ມູນການອັບເດດ. ກົດປຸ່ມເພີ່ມການອັບເດດດ້ານເທິງ.' : 'No updates yet. Click the button above to add one.'}
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {updates.map((update, index) => (
+                    <div key={index} className="relative p-5 bg-white border border-blue-100 rounded-2xl shadow-sm">
+
+                      {/* ປຸ່ມລຶບ */}
+                      <button
+                        type="button"
+                        onClick={() => removeUpdateField(index)}
+                        className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"
+                        title={locale === 'lo' ? 'ລຶບການອັບເດດນີ້' : 'Delete this update'}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pr-8">
+                        <div>
+                          <label className="block text-gray-700 font-bold mb-2 text-xs uppercase tracking-wider">{locale === 'lo' ? 'ວັນທີອັບເດດ *' : 'Update Date *'}</label>
+                          <input type="date" required className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm" value={update.date} onChange={(e) => handleUpdateChange(index, 'date', e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="block text-gray-700 font-bold mb-2 text-xs uppercase tracking-wider">{locale === 'lo' ? 'ລິ້ງວິດີໂອ YouTube' : 'YouTube Link'}</label>
+                          <input type="url" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm" placeholder="https://youtube.com/..." value={update.youtube_link} onChange={(e) => handleUpdateChange(index, 'youtube_link', e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="block text-gray-700 font-bold mb-2 text-xs uppercase tracking-wider">{locale === 'lo' ? 'ລິ້ງ Facebook' : 'Facebook Link'}</label>
+                          <input type="url" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm" placeholder="https://facebook.com/..." value={update.facebook_link} onChange={(e) => handleUpdateChange(index, 'facebook_link', e.target.value)} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

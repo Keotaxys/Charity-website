@@ -75,7 +75,6 @@ export default function CampaignDetailPage({ params }: Props) {
   if (!campaign) return <div className="min-h-screen flex justify-center items-center font-bold text-xl text-gray-500 bg-white">ບໍ່ພົບຂໍ້ມູນໂຄງການນີ້</div>;
 
   const percent = Math.min(Math.round((realRaisedAmount / campaign.target_amount) * 100), 100) || 0;
-  const youtubeEmbedUrl = getYoutubeEmbedUrl(campaign.youtube_link);
 
   return (
     <div className="bg-white min-h-screen pb-24 font-sans relative">
@@ -128,53 +127,63 @@ export default function CampaignDetailPage({ params }: Props) {
               </p>
             </div>
 
-            {/* 💡 ສ່ວນການອັບເດດໂຄງການ (ມີວັນທີແຈ້ງບອກ) */}
-            {(youtubeEmbedUrl || campaign.facebook_link) && (
-              <div className="pt-10 mt-10 border-t border-gray-100 space-y-6">
+            {/* 💡 ພາກສ່ວນ: ປະຫວັດການອັບເດດໂຄງການ (Timeline) */}
+            {(campaign.updates && campaign.updates.length > 0) && (
+              <div className="pt-10 mt-10 border-t border-gray-100 space-y-8">
+                <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3 mb-8">
+                  <span className="w-1.5 h-8 bg-blue-500 rounded-full"></span>
+                  {locale === 'lo' ? 'ການເຄື່ອນໄຫວ ແລະ ຕິດຕາມໂຄງການ' : 'PROJECT UPDATES & TRACKING'}
+                </h3>
 
-                {/* ຫົວຂໍ້ ພ້ອມກັບ ວັນທີອັບເດດ */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                    <span className="w-1.5 h-8 bg-blue-500 rounded-full"></span>
-                    {locale === 'lo' ? 'ອັບເດດຄວາມຄືບໜ້າໂຄງການ' : 'PROJECT UPDATES'}
-                  </h3>
+                <div className="space-y-12 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-linear-to-b before:from-transparent before:via-gray-200 before:to-transparent">
+                  {campaign.updates.map((update: any, index: number) => {
+                    const embedUrl = getYoutubeEmbedUrl(update.youtube_link);
+                    return (
+                      <div key={index} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
 
-                  {/* ສະແດງວັນທີອັບເດດ ຖ້າມີຂໍ້ມູນ */}
-                  {campaign.update_date && (
-                    <span className="inline-flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-full border border-blue-100">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                      {locale === 'lo' ? 'ອັບເດດລ່າສຸດ: ' : 'Last Updated: '}
-                      {/* ປ່ຽນຮູບແບບວັນທີໃຫ້ນຳສະເໜີງ່າຍຂຶ້ນ */}
-                      {new Date(campaign.update_date).toLocaleDateString(locale === 'lo' ? 'lo-LA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </span>
-                  )}
+                        {/* ໄອຄອນ Timeline */}
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-blue-100 text-blue-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+
+                        {/* ເນື້ອຫາການອັບເດດ */}
+                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-sm border border-gray-100 group-hover:border-blue-200 transition-colors">
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full text-sm">
+                              {new Date(update.date).toLocaleDateString(locale === 'lo' ? 'lo-LA' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </span>
+                          </div>
+
+                          {/* ວິດີໂອ YouTube */}
+                          {embedUrl && (
+                            <div className="w-full aspect-video rounded-xl overflow-hidden mb-4 bg-gray-50">
+                              <iframe
+                                src={embedUrl}
+                                className="w-full h-full"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                              ></iframe>
+                            </div>
+                          )}
+
+                          {/* ປຸ່ມ Facebook */}
+                          {update.facebook_link && (
+                            <a
+                              href={update.facebook_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center gap-2 w-full bg-gray-50 text-gray-700 hover:bg-blue-600 hover:text-white font-bold py-3 px-4 rounded-xl transition-all border border-gray-200 hover:border-blue-600 text-sm"
+                            >
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                              {locale === 'lo' ? 'ເບິ່ງລາຍລະອຽດໃນ Facebook' : 'View on Facebook'}
+                            </a>
+                          )}
+                        </div>
+
+                      </div>
+                    );
+                  })}
                 </div>
-
-                {/* ວິດີໂອ YouTube */}
-                {youtubeEmbedUrl && (
-                  <div className="w-full aspect-video rounded-3xl overflow-hidden shadow-lg border border-gray-100">
-                    <iframe
-                      src={youtubeEmbedUrl}
-                      title="YouTube video player"
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    ></iframe>
-                  </div>
-                )}
-
-                {/* ປຸ່ມ Facebook */}
-                {campaign.facebook_link && (
-                  <a
-                    href={campaign.facebook_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-3 w-full sm:w-auto bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white font-bold py-4 px-8 rounded-2xl transition-all shadow-sm"
-                  >
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
-                    {locale === 'lo' ? 'ກົດເບິ່ງລາຍລະອຽດໃນ Facebook' : 'See Details on Facebook'}
-                  </a>
-                )}
               </div>
             )}
           </div>
