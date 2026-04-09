@@ -110,18 +110,36 @@ function DonateForm() {
   const handleDownloadQR = async (imgUrl: string) => {
     setIsDownloading(true);
     try {
+      // 1. ພະຍາຍາມດຶງຮູບມາແປງເປັນໄຟລ໌
       const response = await fetch(imgUrl);
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `LittleMagician_QR_${Date.now()}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      const file = new File([blob], `LittleMagician_QR_${Date.now()}.jpg`, { type: blob.type || 'image/jpeg' });
+
+      // 2. ລອງໃຊ້ Web Share API (ສຳລັບມືຖື iOS/Android ຈະຂຶ້ນເມນູໃຫ້ກົດ Save Image ໄດ້ເລີຍ)
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'QR Code ບໍລິຈາກ',
+        });
+      } else {
+        // 3. ສຳລັບຄອມພິວເຕີ ຫຼື Browser ທີ່ບໍ່ຮອງຮັບ Share API (ດາວໂຫຼດແບບປົກກະຕິ)
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
     } catch (error) {
-      console.error("Error downloading image:", error);
+      console.error("Download failed (CORS or Browser issue):", error);
+      // 4. ແຜນສຳຮອງ (Fallback): ຖ້າຕິດບັນຫາ CORS ຫຼື ມືຖືບລັອກ
+      alert(locale === 'lo'
+        ? 'ລະບົບບໍ່ສາມາດບັນທຶກຮູບອັດຕະໂນມັດໄດ້. ກະລຸນາ "ກົດຄ້າງໄວ້ທີ່ຮູບ QR" ດ້ານເທິງ ແລ້ວເລືອກ "Save Image / ບັນທຶກຮູບພາບ" ແທນເດີ້.'
+        : 'Cannot auto-download. Please "Long Press" on the QR Code image above and select "Save Image".');
+
+      // ເປີດຮູບແທັບໃໝ່ໃຫ້ພ້ອມ
       window.open(imgUrl, '_blank');
     } finally {
       setIsDownloading(false);
