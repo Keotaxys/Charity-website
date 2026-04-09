@@ -1,11 +1,11 @@
 'use client';
 
-// 🔴 ສັງເກດ: ເຮົາເອົາຄຳວ່າ 'use' ອອກຈາກການ import ແລ້ວ!
+// 🔴 ບໍ່ມີການ import 'use' ຈາກ react ອີກແລ້ວ
 import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import Link from 'next/link';
-import { useParams } from 'next/navigation'; // 💡 ໃຊ້ຕົວນີ້ແທນປອດໄພກວ່າ
+import { useParams } from 'next/navigation';
 
 const getYoutubeEmbedUrl = (url: string) => {
   if (!url) return null;
@@ -14,16 +14,16 @@ const getYoutubeEmbedUrl = (url: string) => {
   return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
 };
 
-// 💡 ຮັບ props ເປັນ any ໄປເລີຍ ເພື່ອບໍ່ໃຫ້ Next.js Router ຕີກັນກັບໜ້າ Admin
-export default function CampaignDetailPage(props: any) {
+// 💡 ປ່ຽນມາເປັນ function ວ່າງໆ ບໍ່ຮັບ params ໃດໆທັງນັ້ນ ເພື່ອປ້ອງກັນ Error ຈາກ Admin
+export default function CampaignDetailPage() {
   const urlParams = useParams();
 
-  // 💡 ດຶງ ID ຈາກ props ກ່ອນ (ກໍລະນີ Admin ເອີ້ນໃຊ້ແລ້ວສົ່ງມາ), ຖ້າບໍ່ມີຈຶ່ງດຶງຈາກ URL
-  const id = (props?.id as string) || (urlParams?.id as string);
-  const locale = (props?.locale as string) || (urlParams?.locale as string) || 'lo';
+  // 💡 ດຶງ ID ແລະ locale ຈາກ URL ໂດຍກົງ
+  const id = urlParams?.id as string;
+  const locale = (urlParams?.locale as string) || 'lo';
 
   const [campaign, setCampaign] = useState<any>(null);
-  const [loading, setLoading] = useState(!!id); // ຖ້າບໍ່ມີ ID ບໍ່ຕ້ອງຂຶ້ນ Loading
+  const [loading, setLoading] = useState(!!id);
 
   const [activeImage, setActiveImage] = useState<string>('');
 
@@ -32,7 +32,7 @@ export default function CampaignDetailPage(props: any) {
   const [realRaisedAmount, setRealRaisedAmount] = useState(0);
 
   useEffect(() => {
-    // 💡 ຖ້າບໍ່ມີ ID ສົ່ງມາ ໃຫ້ຢຸດເຮັດວຽກທັນທີ (ປ້ອງກັນເວັບແຕກ)
+    // 💡 ຖ້າບໍ່ມີ ID (ເຊັ່ນ ຖືກເອີ້ນໃຊ້ຜິດໜ້າ) ໃຫ້ຢຸດເຮັດວຽກທັນທີ
     if (!id) {
       setLoading(false);
       return;
@@ -78,7 +78,7 @@ export default function CampaignDetailPage(props: any) {
     setShowAllDonorsModal(true);
   };
 
-  // 💡 ຖ້າຖືກ Import ໄປໃຊ້ໃນໜ້າ Admin ແຕ່ບໍ່ໄດ້ສົ່ງ ID ມາ ໃຫ້ເຊື່ອງໄປເລີຍ (ບໍ່ໃຫ້ Error)
+  // 💡 ຖ້າບໍ່ມີ ID ໃຫ້ Return null ໄປເລີຍ ເພື່ອບໍ່ໃຫ້ໜ້າ Admin ພັງ
   if (!id) return null;
 
   if (loading) return <div className="min-h-screen flex justify-center items-center font-bold text-xl text-teal-600 bg-white">ກຳລັງໂຫຼດຂໍ້ມູນ...</div>;
