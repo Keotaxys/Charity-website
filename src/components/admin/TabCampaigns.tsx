@@ -8,7 +8,6 @@ import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, setDoc, getDoc,
 export default function TabCampaigns({ showMessage }: { showMessage: (text: string, type: string) => void }) {
   const locale = useLocale();
 
-  // 1. State ສຳລັບ Header ຂອງໜ້າໂຄງການ
   const [pageSettings, setPageSettings] = useState({
     header_title_lo: 'ທຸກໆການຊ່ວຍເຫຼືອມີຄວາມໝາຍ',
     header_title_en: 'EVERY CONTRIBUTION COUNTS',
@@ -17,12 +16,10 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
   });
   const [loadingSettings, setLoadingSettings] = useState(false);
 
-  // 2. State ສຳລັບການຈັດການໂຄງການ (Campaigns)
   const [campaignsList, setCampaignsList] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
 
-  // 💡 ເພີ່ມ fields ໃໝ່ເຂົ້າໄປໃນ formData
   const [formData, setFormData] = useState({
     title_lo: '',
     title_en: '',
@@ -30,9 +27,10 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
     description_en: '',
     target_amount: '',
     cover_image: '',
-    gallery_links: '', // ສຳລັບຮັບລິ້ງຮູບຫຼາຍໆອັນ (ແຍກດ້ວຍຈຸດ)
+    gallery_links: '',
     youtube_link: '',
-    facebook_link: ''
+    facebook_link: '',
+    update_date: '' // 💡 ເພີ່ມ Field ໃໝ່ສຳລັບເກັບວັນທີອັບເດດ
   });
   const [loadingCampaign, setLoadingCampaign] = useState(false);
 
@@ -76,7 +74,6 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
     e.preventDefault();
     setLoadingCampaign(true);
 
-    // 💡 ແປງ text ທີ່ໃສ່ໝາຍຈຸດ (,) ໃຫ້ກາຍເປັນ Array ຂອງລິ້ງຮູບພາບ
     const galleryArray = formData.gallery_links
       ? formData.gallery_links.split(',').map(link => link.trim()).filter(link => link !== '')
       : [];
@@ -88,9 +85,10 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
       description_en: formData.description_en,
       target_amount: Number(formData.target_amount),
       cover_image: formData.cover_image,
-      gallery: galleryArray, // ບັນທຶກເປັນ Array
+      gallery: galleryArray,
       youtube_link: formData.youtube_link,
-      facebook_link: formData.facebook_link
+      facebook_link: formData.facebook_link,
+      update_date: formData.update_date // 💡 ບັນທຶກວັນທີອັບເດດລົງຖານຂໍ້ມູນ
     };
 
     try {
@@ -107,7 +105,7 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
         showMessage(locale === 'lo' ? 'ສ້າງໂຄງການໃໝ່ສຳເລັດແລ້ວ!' : 'New campaign created successfully!', 'success');
       }
 
-      setFormData({ title_lo: '', title_en: '', description_lo: '', description_en: '', target_amount: '', cover_image: '', gallery_links: '', youtube_link: '', facebook_link: '' });
+      setFormData({ title_lo: '', title_en: '', description_lo: '', description_en: '', target_amount: '', cover_image: '', gallery_links: '', youtube_link: '', facebook_link: '', update_date: '' });
       setIsEditing(false);
       setEditId(null);
       fetchData();
@@ -118,7 +116,6 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
   };
 
   const handleEditClick = (campaign: any) => {
-    // 💡 ແປງ Array ກັບມາເປັນ String ເພື່ອສະແດງໃນ Form
     const galleryString = campaign.gallery && Array.isArray(campaign.gallery) ? campaign.gallery.join(', ') : '';
 
     setFormData({
@@ -130,7 +127,8 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
       cover_image: campaign.cover_image || '',
       gallery_links: galleryString,
       youtube_link: campaign.youtube_link || '',
-      facebook_link: campaign.facebook_link || ''
+      facebook_link: campaign.facebook_link || '',
+      update_date: campaign.update_date || '' // 💡 ດຶງວັນທີອັບເດດມາສະແດງຕອນກົດແກ້ໄຂ
     });
     setIsEditing(true);
     setEditId(campaign.id);
@@ -139,7 +137,7 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
   };
 
   const handleCancelEdit = () => {
-    setFormData({ title_lo: '', title_en: '', description_lo: '', description_en: '', target_amount: '', cover_image: '', gallery_links: '', youtube_link: '', facebook_link: '' });
+    setFormData({ title_lo: '', title_en: '', description_lo: '', description_en: '', target_amount: '', cover_image: '', gallery_links: '', youtube_link: '', facebook_link: '', update_date: '' });
     setIsEditing(false);
     setEditId(null);
   };
@@ -167,7 +165,6 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
   return (
     <div className="space-y-8 animate-fade-in-up">
 
-      {/* --- ສ່ວນທີ 1: ຕັ້ງຄ່າ Header ໜ້າໂຄງການ --- */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
         <div className="flex items-center gap-3 mb-6">
           <svg className="w-6 h-6 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" /><path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z" /></svg>
@@ -206,7 +203,6 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
         </form>
       </div>
 
-      {/* --- ສ່ວນທີ 2: ຟອມສ້າງ / ແກ້ໄຂໂຄງການ --- */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-teal-100">
         <div className="flex items-center gap-3 mb-6">
           <svg className="w-6 h-6 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path d="M3 2.25a.75.75 0 01.75.75v.54l1.838-.46a9.75 9.75 0 016.725.738l.108.054a8.25 8.25 0 005.58.652l3.109-.732a.75.75 0 01.917.81 47.784 47.784 0 00-.479 4.024m-18.068 4.253l2.8-.7a8.25 8.25 0 015.58.652l.108.054a9.75 9.75 0 006.725.738l1.838-.46V10.5a.75.75 0 01-.75.75h-.02a9.75 9.75 0 01-6.725-.738l-.108-.054a8.25 8.25 0 00-5.58-.652l-2.8.7V21a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75z" /></svg>
@@ -251,11 +247,10 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
             </div>
           </div>
 
-          {/* 💡 ພາກສ່ວນໃໝ່: Gallery, YouTube, Facebook */}
           <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100 space-y-6">
             <h3 className="font-bold text-blue-900 text-lg flex items-center gap-2">
               <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zM5 19V5h14l.002 14H5z" /><path d="M10 14v-4l4 2-4 2z" /></svg>
-              {locale === 'lo' ? 'ຂໍ້ມູນເພີ່ມເຕີມ & ການຕິດຕາມ (ທາງເລືອກ)' : 'Additional Media & Tracking (Optional)'}
+              {locale === 'lo' ? 'ຂໍ້ມູນເພີ່ມເຕີມ & ການອັບເດດ (ທາງເລືອກ)' : 'Additional Media & Updates (Optional)'}
             </h3>
 
             <div>
@@ -265,14 +260,22 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
               <textarea rows={3} className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm resize-none" placeholder="https://img1.jpg, https://img2.png" value={formData.gallery_links} onChange={(e) => setFormData({ ...formData, gallery_links: e.target.value })}></textarea>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ລິ້ງວິດີໂອ YouTube' : 'YouTube Video Link'}</label>
-                <input type="url" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm" placeholder="https://youtube.com/watch?v=..." value={formData.youtube_link} onChange={(e) => setFormData({ ...formData, youtube_link: e.target.value })} />
-              </div>
-              <div>
-                <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ລິ້ງ Facebook (ໂພສຕ໌ ຫຼື ເພຈ)' : 'Facebook Link'}</label>
-                <input type="url" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm" placeholder="https://facebook.com/..." value={formData.facebook_link} onChange={(e) => setFormData({ ...formData, facebook_link: e.target.value })} />
+            {/* 💡 ສ່ວນໃໝ່: ຂີດເສັ້ນແບ່ງ ແລະ ເພີ່ມວັນທີອັບເດດ */}
+            <div className="border-t border-blue-200 pt-6 mt-4">
+              <h4 className="font-bold text-blue-800 mb-4">{locale === 'lo' ? '🔄 ບັນທຶກການອັບເດດໂຄງການ' : '🔄 Campaign Updates Log'}</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ວັນທີອັບເດດລ່າສຸດ' : 'Update Date'}</label>
+                  <input type="date" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm" value={formData.update_date} onChange={(e) => setFormData({ ...formData, update_date: e.target.value })} />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ລິ້ງວິດີໂອ YouTube' : 'YouTube Video Link'}</label>
+                  <input type="url" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm" placeholder="https://youtube.com/watch?v=..." value={formData.youtube_link} onChange={(e) => setFormData({ ...formData, youtube_link: e.target.value })} />
+                </div>
+                <div>
+                  <label className="block text-gray-700 font-bold mb-2 text-sm">{locale === 'lo' ? 'ລິ້ງ Facebook (ໂພສຕ໌ ຫຼື ເພຈ)' : 'Facebook Link'}</label>
+                  <input type="url" className="w-full p-4 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm" placeholder="https://facebook.com/..." value={formData.facebook_link} onChange={(e) => setFormData({ ...formData, facebook_link: e.target.value })} />
+                </div>
               </div>
             </div>
           </div>
@@ -296,7 +299,6 @@ export default function TabCampaigns({ showMessage }: { showMessage: (text: stri
         </form>
       </div>
 
-      {/* --- ສ່ວນທີ 3: ລາຍການໂຄງການທີ່ມີໃນລະບົບ --- */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
         <h2 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
           <svg className="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M2.25 4.125c0-1.036.84-1.875 1.875-1.875h15.75c1.036 0 1.875.84 1.875 1.875V17.25c0 1.035-.84 1.875-1.875 1.875h-11.25l-4.5 4.5V4.125z" clipRule="evenodd" /></svg>

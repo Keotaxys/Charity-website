@@ -9,7 +9,6 @@ type Props = {
   params: Promise<{ locale: string; id: string }>;
 };
 
-// ຟັງຊັນສຳລັບແປງລິ້ງ YouTube ທຳມະດາ ໃຫ້ເປັນລິ້ງສຳລັບຝັງ (Embed) ໃນເວັບ
 const getYoutubeEmbedUrl = (url: string) => {
   if (!url) return null;
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -25,10 +24,8 @@ export default function CampaignDetailPage({ params }: Props) {
   const [campaign, setCampaign] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // ສຳລັບລະບົບຫຼາຍຮູບພາບ (Gallery)
   const [activeImage, setActiveImage] = useState<string>('');
 
-  // ສຳລັບ Pop-up ຜູ້ບໍລິຈາກ ແລະ ຄຳນວນຍອດເງິນ
   const [showAllDonorsModal, setShowAllDonorsModal] = useState(false);
   const [allDonors, setAllDonors] = useState<any[]>([]);
   const [realRaisedAmount, setRealRaisedAmount] = useState(0);
@@ -36,17 +33,15 @@ export default function CampaignDetailPage({ params }: Props) {
   useEffect(() => {
     const fetchCampaignData = async () => {
       try {
-        // 1. ດຶງຂໍ້ມູນລາຍລະອຽດໂຄງການ
         const docRef = doc(db, "campaigns", id);
         const docSnap = await getDoc(docRef);
-        let campData: any = null; // 💡 ແກ້ໄຂ: ກຳນົດ Type ເປັນ any ເພື່ອບໍ່ໃຫ້ຕິດ Error
+        let campData: any = null;
         if (docSnap.exists()) {
           campData = { id: docSnap.id, ...docSnap.data() };
           setCampaign(campData);
           setActiveImage(campData.cover_image);
         }
 
-        // 2. ດຶງຂໍ້ມູນຜູ້ບໍລິຈາກ (ດຶງສະເພາະຄົນທີ່ແອັດມິນອະນຸມັດແລ້ວເທົ່ານັ້ນ)
         if (campData) {
           const qDonations = query(
             collection(db, 'donations'),
@@ -54,14 +49,11 @@ export default function CampaignDetailPage({ params }: Props) {
             where('status', '==', 'Approved')
           );
           const donSnap = await getDocs(qDonations);
-          // 💡 ແກ້ໄຂ: ກຳນົດ Type ເປັນ any ເພື່ອບໍ່ໃຫ້ຕິດ Error ເວລາຮຽກໃຊ້ amount
           const donorsList = donSnap.docs.map(d => ({ id: d.id, ...d.data() } as any));
 
-          // ຈັດລຽງຈາກຄົນບໍລິຈາກຫຼາຍສຸດໄປຫາໜ້ອຍສຸດ
           donorsList.sort((a: any, b: any) => Number(b.amount) - Number(a.amount));
           setAllDonors(donorsList);
 
-          // ຄຳນວນຍອດເງິນຕົວຈິງ
           const total = donorsList.reduce((sum: number, donor: any) => sum + (Number(donor.amount) || 0), 0);
           setRealRaisedAmount(total);
         }
@@ -75,7 +67,6 @@ export default function CampaignDetailPage({ params }: Props) {
     fetchCampaignData();
   }, [id]);
 
-  // ຟັງຊັນສຳລັບເປີດໜ້າຕ່າງ Pop-up
   const handleViewAllDonors = () => {
     setShowAllDonorsModal(true);
   };
@@ -83,16 +74,12 @@ export default function CampaignDetailPage({ params }: Props) {
   if (loading) return <div className="min-h-screen flex justify-center items-center font-bold text-xl text-teal-600 bg-white">ກຳລັງໂຫຼດຂໍ້ມູນ...</div>;
   if (!campaign) return <div className="min-h-screen flex justify-center items-center font-bold text-xl text-gray-500 bg-white">ບໍ່ພົບຂໍ້ມູນໂຄງການນີ້</div>;
 
-  // ຄຳນວນເປີເຊັນຈາກຍອດເງິນຕົວຈິງ
   const percent = Math.min(Math.round((realRaisedAmount / campaign.target_amount) * 100), 100) || 0;
-
-  // ແປງລິ້ງ YouTube
   const youtubeEmbedUrl = getYoutubeEmbedUrl(campaign.youtube_link);
 
   return (
     <div className="bg-white min-h-screen pb-24 font-sans relative">
 
-      {/* 1. Header Navigation */}
       <div className="max-w-6xl mx-auto px-6 pt-10 md:pt-16">
         <Link href={`/${locale}/campaigns`} className="inline-flex items-center gap-2 text-teal-600 font-bold text-sm mb-6 hover:text-teal-700 transition-all uppercase tracking-widest">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -103,16 +90,12 @@ export default function CampaignDetailPage({ params }: Props) {
         </h1>
       </div>
 
-      {/* 2. Main Content Grid */}
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
 
-          {/* --- ເບື້ອງຊ້າຍ (8/12): ຮູບພາບ ແລະ ລາຍລະອຽດ --- */}
           <div className="lg:col-span-8 space-y-10">
 
-            {/* ສ່ວນສະແດງຮູບພາບ (ຮອງຮັບ Gallery) */}
             <div className="space-y-4">
-              {/* ຮູບໃຫຍ່ (ຮູບທີ່ກຳລັງເລືອກ) */}
               <div className="w-full bg-gray-50 rounded-4xl overflow-hidden shadow-md border border-gray-100 flex items-center justify-center p-2 h-[300px] sm:h-[450px]">
                 <img
                   src={activeImage}
@@ -121,14 +104,11 @@ export default function CampaignDetailPage({ params }: Props) {
                 />
               </div>
 
-              {/* ຮູບນ້ອຍ (Thumbnails) ຖ້າມີຮູບອື່ນໆ */}
               {(campaign.gallery && campaign.gallery.length > 0) && (
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                  {/* 💡 ແກ້ໄຂ: ປ່ຽນ flex-shrink-0 ເປັນ shrink-0 ຕາມ Tailwind ແນະນຳ */}
                   <button onClick={() => setActiveImage(campaign.cover_image)} className={`shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-4 transition-all ${activeImage === campaign.cover_image ? 'border-teal-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}>
                     <img src={campaign.cover_image} className="w-full h-full object-cover" alt="thumbnail" />
                   </button>
-                  {/* ລາຍການຮູບເພີ່ມເຕີມຈາກ Gallery */}
                   {campaign.gallery.map((img: string, index: number) => (
                     <button key={index} onClick={() => setActiveImage(img)} className={`shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-4 transition-all ${activeImage === img ? 'border-teal-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}>
                       <img src={img} className="w-full h-full object-cover" alt={`thumbnail ${index}`} />
@@ -148,13 +128,27 @@ export default function CampaignDetailPage({ params }: Props) {
               </p>
             </div>
 
-            {/* ສ່ວນການອັບເດດ ແລະ ຕິດຕາມໂຄງການ (YouTube & Facebook) */}
+            {/* 💡 ສ່ວນການອັບເດດໂຄງການ (ມີວັນທີແຈ້ງບອກ) */}
             {(youtubeEmbedUrl || campaign.facebook_link) && (
-              <div className="pt-10 mt-10 border-t border-gray-100 space-y-8">
-                <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                  <span className="w-1.5 h-8 bg-blue-500 rounded-full"></span>
-                  {locale === 'lo' ? 'ການເຄື່ອນໄຫວ ແລະ ຕິດຕາມໂຄງການ' : 'PROJECT UPDATES & TRACKING'}
-                </h3>
+              <div className="pt-10 mt-10 border-t border-gray-100 space-y-6">
+
+                {/* ຫົວຂໍ້ ພ້ອມກັບ ວັນທີອັບເດດ */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+                    <span className="w-1.5 h-8 bg-blue-500 rounded-full"></span>
+                    {locale === 'lo' ? 'ອັບເດດຄວາມຄືບໜ້າໂຄງການ' : 'PROJECT UPDATES'}
+                  </h3>
+
+                  {/* ສະແດງວັນທີອັບເດດ ຖ້າມີຂໍ້ມູນ */}
+                  {campaign.update_date && (
+                    <span className="inline-flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-full border border-blue-100">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      {locale === 'lo' ? 'ອັບເດດລ່າສຸດ: ' : 'Last Updated: '}
+                      {/* ປ່ຽນຮູບແບບວັນທີໃຫ້ນຳສະເໜີງ່າຍຂຶ້ນ */}
+                      {new Date(campaign.update_date).toLocaleDateString(locale === 'lo' ? 'lo-LA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  )}
+                </div>
 
                 {/* ວິດີໂອ YouTube */}
                 {youtubeEmbedUrl && (
@@ -178,7 +172,7 @@ export default function CampaignDetailPage({ params }: Props) {
                     className="inline-flex items-center justify-center gap-3 w-full sm:w-auto bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white font-bold py-4 px-8 rounded-2xl transition-all shadow-sm"
                   >
                     <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
-                    {locale === 'lo' ? 'ຕິດຕາມຜ່ານ Facebook' : 'Follow on Facebook'}
+                    {locale === 'lo' ? 'ກົດເບິ່ງລາຍລະອຽດໃນ Facebook' : 'See Details on Facebook'}
                   </a>
                 )}
               </div>
@@ -191,7 +185,6 @@ export default function CampaignDetailPage({ params }: Props) {
               <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
               <div className="relative z-10 space-y-8">
 
-                {/* Progress Bar */}
                 <div>
                   <div className="flex justify-between items-end mb-4">
                     <div className="flex flex-col">
@@ -209,7 +202,6 @@ export default function CampaignDetailPage({ params }: Props) {
                   </div>
                 </div>
 
-                {/* Amount Details */}
                 <div className="space-y-6 pt-2">
                   <div className="flex flex-col">
                     <span className="text-gray-500 font-bold uppercase tracking-wider text-xs md:text-sm mb-1">
@@ -232,7 +224,6 @@ export default function CampaignDetailPage({ params }: Props) {
                   </div>
                 </div>
 
-                {/* Buttons Action */}
                 <div className="pt-4 space-y-3">
                   <Link
                     href={`/${locale}/donate?campaignId=${campaign.id}`}
@@ -241,7 +232,6 @@ export default function CampaignDetailPage({ params }: Props) {
                     {locale === 'lo' ? 'ຮ່ວມບໍລິຈາກ' : 'DONATE NOW'}
                   </Link>
 
-                  {/* ປຸ່ມເບິ່ງຜູ້ບໍລິຈາກທັງໝົດ */}
                   <button
                     onClick={handleViewAllDonors}
                     className="w-full py-3 bg-teal-50 text-teal-700 font-bold rounded-2xl hover:bg-teal-100 transition-all uppercase tracking-wider text-sm border border-teal-100"
@@ -261,7 +251,6 @@ export default function CampaignDetailPage({ params }: Props) {
         </div>
       </div>
 
-      {/* --- 3. Pop-up (Modal) ສຳລັບສະແດງລາຍຊື່ຜູ້ບໍລິຈາກທັງໝົດ --- */}
       {showAllDonorsModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-white rounded-3xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200">
@@ -281,8 +270,6 @@ export default function CampaignDetailPage({ params }: Props) {
                   {allDonors.map((donor, index) => (
                     <div key={donor.id} className="flex justify-between items-center p-4 bg-white border border-gray-100 shadow-sm rounded-2xl hover:shadow-md transition-all">
                       <div className="flex items-center gap-4">
-
-                        {/* ສະແດງຮູບໂປຣໄຟລ໌ ຖ້າມີ ແລະ ຖ້າບໍ່ໄດ້ເລືອກເຊື່ອງໄວ້ */}
                         {!donor.hideProfile && donor.profile_url ? (
                           <img src={donor.profile_url} alt="profile" className="w-10 h-10 rounded-full object-cover border border-gray-200" />
                         ) : (
@@ -290,14 +277,12 @@ export default function CampaignDetailPage({ params }: Props) {
                             {index + 1}
                           </div>
                         )}
-
                         <div>
                           <p className="font-bold text-gray-900 text-lg">
                             {donor.hideName ? (locale === 'lo' ? 'ຜູ້ບໍ່ປະສົງອອກນາມ' : 'Anonymous') : donor.donor_name}
                           </p>
                         </div>
                       </div>
-
                       <div className="font-black text-teal-600 text-lg">
                         {donor.hideAmount ? (
                           <span className="text-sm text-gray-400 uppercase tracking-wider font-bold bg-gray-50 px-3 py-1 rounded-full">{locale === 'lo' ? 'ປິດບັງຍອດເງິນ' : 'Hidden'}</span>
